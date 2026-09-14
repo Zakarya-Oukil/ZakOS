@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bot, Shield, BookOpen, Cpu, HardDrive, Sparkles, CheckCircle } from 'lucide-react';
+import { JarvisCrewSuite } from '../../agents/JarvisCrewSuite';
 import { soundEngine } from '../../../services/soundEffects';
 
 interface AgentCouncilAppProps {
@@ -58,36 +58,8 @@ export const AgentCouncilApp: React.FC<AgentCouncilAppProps> = () => {
   ];
 
   return (
-    <div className="h-full flex flex-col p-4 bg-[#050914] text-zinc-200 font-sans">
-      <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <Bot className="w-4 h-4 text-cyan-400" />
-          <span className="text-xs font-mono font-bold text-white uppercase">The Agent Council // Active Roster</span>
-        </div>
-        <span className="text-[10px] font-mono text-cyan-300 font-bold bg-cyan-500/20 px-2 py-0.5 rounded">
-          5 Autonomous Runtimes
-        </span>
-      </div>
-
-      <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 font-mono text-xs">
-        {agents.map((agent) => (
-          <div key={agent.name} className="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 transition-all">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full bg-cyan-400 animate-pulse`} />
-                <span className="font-bold text-white text-sm">{agent.name}</span>
-                <span className="text-zinc-400 text-xs font-normal">• {agent.role}</span>
-              </div>
-              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${agent.bg} ${agent.color}`}>
-                {agent.model}
-              </span>
-            </div>
-            <div className="text-[11px] text-zinc-400 bg-black/40 p-2 rounded-lg border border-white/5 mt-2">
-              <span className="text-zinc-500">Current Task:</span> <span className="text-zinc-200">{agent.task}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="h-full flex flex-col bg-[#050914] text-zinc-200 overflow-hidden">
+      <JarvisCrewSuite />
     </div>
   );
 };

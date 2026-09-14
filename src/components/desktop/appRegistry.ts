@@ -1,4 +1,7 @@
-import { AppDefinition } from '../../types/desktop';
+import { AppDefinition, DesktopFolderDefinition } from '../../types/desktop';
+
+// Common Apps
+import { ObsidianVaultApp } from '../os_apps/common/ObsidianVaultApp';
 
 // CyberOS Apps
 import { SpiderReconApp } from '../os_apps/cyber/SpiderReconApp';
@@ -14,6 +17,7 @@ import { DocSynthesizerApp } from '../os_apps/study/DocSynthesizerApp';
 import { StudyStudioApp } from '../os_apps/study/StudyStudioApp';
 
 // DevOS Apps
+import { MonacoIdeApp } from '../os_apps/dev/MonacoIdeApp';
 import { TacticalDevTerminalApp } from '../os_apps/dev/TacticalDevTerminalApp';
 import { GitMatrixApp } from '../os_apps/dev/GitMatrixApp';
 import { DockerFleetApp } from '../os_apps/dev/DockerFleetApp';
@@ -40,9 +44,9 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'spider',
     os: 'cyber',
     category: 'Offensive Recon',
-    description: 'Automated web crawler, endpoint discovery, and fuzzing.',
-    defaultWidth: 720,
-    defaultHeight: 520,
+    description: 'Automated web crawler, endpoint discovery, port scanning, and DNS fuzzing.',
+    defaultWidth: 740,
+    defaultHeight: 530,
     defaultX: 80,
     defaultY: 80,
     component: SpiderReconApp,
@@ -54,7 +58,7 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'recon',
     os: 'cyber',
     category: 'Target Intel',
-    description: 'Subnet map and open port visualizer.',
+    description: 'Subnet map, target dossiers, and live open port visualizer.',
     defaultWidth: 760,
     defaultHeight: 520,
     defaultX: 120,
@@ -68,9 +72,9 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'Shield',
     os: 'cyber',
     category: 'Exploitation',
-    description: 'One-click reverse shell and payload generator.',
-    defaultWidth: 680,
-    defaultHeight: 500,
+    description: 'Reverse shell generator in 9 languages, Msfvenom commands, and evasion encoders.',
+    defaultWidth: 700,
+    defaultHeight: 520,
     defaultX: 160,
     defaultY: 120,
     component: PayloadForgeApp,
@@ -82,7 +86,7 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'recon',
     os: 'cyber',
     category: 'Vulnerability Intel',
-    description: 'Search CVEs, CVSS scores, and Metasploit modules.',
+    description: 'Search CVEs, CVSS scores, POC exploits, and Metasploit modules.',
     defaultWidth: 680,
     defaultHeight: 480,
     defaultX: 200,
@@ -95,12 +99,26 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'FileText',
     os: 'cyber',
     category: 'Assessment & Labs',
-    description: '33 verified exam questions with technical evidence.',
+    description: '33 verified exam questions with technical proof, credentials, and evidence.',
     defaultWidth: 720,
     defaultHeight: 540,
     defaultX: 240,
     defaultY: 90,
     component: EjptAssistantApp,
+    isPinned: true
+  },
+  {
+    id: 'cyber-vault',
+    title: 'Cyber Warfare Vault',
+    iconName: 'vault',
+    os: 'cyber',
+    category: 'Knowledge Base',
+    description: 'Obsidian notes filtered for penetration testing, target dossiers, and lab writeups.',
+    defaultWidth: 800,
+    defaultHeight: 560,
+    defaultX: 180,
+    defaultY: 80,
+    component: ObsidianVaultApp,
     isPinned: true
   },
 
@@ -113,9 +131,9 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'socrates',
     os: 'study',
     category: 'Socratic Mentorship',
-    description: 'Conversational tutor for oral boards and concept testing.',
-    defaultWidth: 680,
-    defaultHeight: 520,
+    description: 'Conversational tutor for deep philosophical questioning and exam preparation.',
+    defaultWidth: 700,
+    defaultHeight: 530,
     defaultX: 90,
     defaultY: 80,
     component: SocratesTutorApp,
@@ -127,9 +145,9 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'study',
     os: 'study',
     category: 'Active Recall',
-    description: 'Leitner flashcards generated from Obsidian notes.',
-    defaultWidth: 640,
-    defaultHeight: 480,
+    description: 'SM-2 Leitner flashcards generated from Obsidian notes with retention telemetry.',
+    defaultWidth: 660,
+    defaultHeight: 500,
     defaultX: 140,
     defaultY: 110,
     component: FlashcardsApp,
@@ -141,7 +159,7 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'study',
     os: 'study',
     category: 'Deep Synthesis',
-    description: 'Synthesize PDFs and lectures into mental models.',
+    description: 'Synthesize research papers, PDFs, and lectures into durable mental models.',
     defaultWidth: 700,
     defaultHeight: 500,
     defaultX: 180,
@@ -154,12 +172,26 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'notes',
     os: 'study',
     category: 'Knowledge Authoring',
-    description: 'Distraction-free Markdown editor synced with vault.',
-    defaultWidth: 680,
-    defaultHeight: 520,
+    description: 'Distraction-free Markdown editor synced with live Obsidian vault.',
+    defaultWidth: 700,
+    defaultHeight: 530,
     defaultX: 220,
     defaultY: 100,
     component: StudyStudioApp,
+    isPinned: true
+  },
+  {
+    id: 'study-vault',
+    title: 'Academic Obsidian Vault',
+    iconName: 'vault',
+    os: 'study',
+    category: 'Knowledge Base',
+    description: 'Full Obsidian vault browser filtered for study notes and academic research.',
+    defaultWidth: 800,
+    defaultHeight: 560,
+    defaultX: 160,
+    defaultY: 80,
+    component: ObsidianVaultApp,
     isPinned: true
   },
 
@@ -167,16 +199,30 @@ export const ALL_APPS: AppDefinition[] = [
   // 💻 DEV_OS APPS (Fullstack & DevOps Cockpit)
   // -------------------------------------------------------------
   {
+    id: 'dev-ide',
+    title: 'Monaco Code IDE',
+    iconName: 'terminal',
+    os: 'dev',
+    category: 'Software Engineering',
+    description: 'Full-featured Monaco code editor with file tree, terminal, Git, and AI coding assistant.',
+    defaultWidth: 840,
+    defaultHeight: 580,
+    defaultX: 60,
+    defaultY: 50,
+    component: MonacoIdeApp,
+    isPinned: true
+  },
+  {
     id: 'dev-terminal',
     title: 'Tactical Dev Terminal',
     iconName: 'terminal',
     os: 'dev',
     category: 'Interactive Shell',
-    description: 'PowerShell / Bash interactive execution terminal.',
+    description: 'PowerShell / Bash interactive execution terminal with preset scripts and telemetry.',
     defaultWidth: 750,
     defaultHeight: 520,
-    defaultX: 80,
-    defaultY: 80,
+    defaultX: 100,
+    defaultY: 90,
     component: TacticalDevTerminalApp,
     isPinned: true
   },
@@ -186,11 +232,11 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'terminal',
     os: 'dev',
     category: 'Version Control',
-    description: 'Visual branches, diffs, and commit controller.',
-    defaultWidth: 680,
-    defaultHeight: 480,
-    defaultX: 130,
-    defaultY: 110,
+    description: 'Visual branches, diffs, GitHub portfolio repositories, and commit controller.',
+    defaultWidth: 720,
+    defaultHeight: 500,
+    defaultX: 140,
+    defaultY: 120,
     component: GitMatrixApp,
     isPinned: true
   },
@@ -200,9 +246,9 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'telemetry',
     os: 'dev',
     category: 'Container Operations',
-    description: 'Inspect live container daemons and ports.',
-    defaultWidth: 700,
-    defaultHeight: 460,
+    description: 'Inspect live container daemons, CPU/RAM telemetry, and stream log outputs.',
+    defaultWidth: 720,
+    defaultHeight: 480,
     defaultX: 180,
     defaultY: 140,
     component: DockerFleetApp,
@@ -214,12 +260,26 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'telemetry',
     os: 'dev',
     category: 'Network Engineering',
-    description: 'Postman-style HTTP/WebSocket request builder.',
-    defaultWidth: 680,
-    defaultHeight: 500,
+    description: 'Postman-style HTTP/WebSocket request builder with headers, params, and response latency.',
+    defaultWidth: 700,
+    defaultHeight: 520,
     defaultX: 220,
     defaultY: 100,
     component: ApiLabApp
+  },
+  {
+    id: 'dev-vault',
+    title: 'Engineering Obsidian Vault',
+    iconName: 'vault',
+    os: 'dev',
+    category: 'Knowledge Base',
+    description: 'Obsidian notes filtered for software architecture, systems, and developer specs.',
+    defaultWidth: 800,
+    defaultHeight: 560,
+    defaultX: 160,
+    defaultY: 80,
+    component: ObsidianVaultApp,
+    isPinned: true
   },
 
   // -------------------------------------------------------------
@@ -231,7 +291,7 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'jarvis',
     os: 'agentic',
     category: 'Primary Executive',
-    description: 'Conversational voice HUD and autonomous directives.',
+    description: 'Conversational voice HUD and autonomous multi-agent directives.',
     defaultWidth: 720,
     defaultHeight: 540,
     defaultX: 90,
@@ -241,15 +301,15 @@ export const ALL_APPS: AppDefinition[] = [
   },
   {
     id: 'agentic-council',
-    title: 'The Agent Council',
+    title: 'The Agent Council Suite',
     iconName: 'agent',
     os: 'agentic',
     category: 'Fleet Orchestration',
-    description: 'Roster of specialized autonomous agents.',
-    defaultWidth: 720,
-    defaultHeight: 520,
+    description: 'Autonomous crew roster: Ares, Socrates, Daedalus, Athena, and JARVIS Prime.',
+    defaultWidth: 760,
+    defaultHeight: 540,
     defaultX: 140,
-    defaultY: 100,
+    defaultY: 90,
     component: AgentCouncilApp,
     isPinned: true
   },
@@ -259,7 +319,7 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'ai',
     os: 'agentic',
     category: 'AI Switchboard',
-    description: 'Gemini 2.5/3.7 + Ollama local model fallback.',
+    description: 'Gemini 2.5 Flash, 3.7 Pro, and Ollama local model switchboard and latency monitor.',
     defaultWidth: 700,
     defaultHeight: 520,
     defaultX: 190,
@@ -273,12 +333,26 @@ export const ALL_APPS: AppDefinition[] = [
     iconName: 'Compass',
     os: 'agentic',
     category: 'Neural Visualization',
-    description: '3D interactive Force Graph of all 123+ vault notes.',
-    defaultWidth: 760,
-    defaultHeight: 540,
-    defaultX: 230,
-    defaultY: 80,
+    description: '3D interactive Force Graph of all 155+ Obsidian vault notes with cluster filtering.',
+    defaultWidth: 780,
+    defaultHeight: 560,
+    defaultX: 220,
+    defaultY: 70,
     component: UniverseGraphApp,
+    isPinned: true
+  },
+  {
+    id: 'agentic-vault',
+    title: 'Master Obsidian Vault',
+    iconName: 'vault',
+    os: 'agentic',
+    category: 'Knowledge Base',
+    description: 'Complete Obsidian knowledge vault editor with live sync and Mermaid rendering.',
+    defaultWidth: 800,
+    defaultHeight: 560,
+    defaultX: 160,
+    defaultY: 80,
+    component: ObsidianVaultApp,
     isPinned: true
   },
 
@@ -287,13 +361,13 @@ export const ALL_APPS: AppDefinition[] = [
   // -------------------------------------------------------------
   {
     id: 'founder-gbrain',
-    title: 'G-Brain & Memory Hub',
+    title: 'G-Brain Epistemic Memory',
     iconName: 'founder',
     os: 'founder',
     category: 'Memory Governance',
-    description: 'Truth lifecycle from signals to durable memories.',
-    defaultWidth: 720,
-    defaultHeight: 500,
+    description: 'Truth lifecycle from real-time signals to durable strategic memories.',
+    defaultWidth: 740,
+    defaultHeight: 520,
     defaultX: 90,
     defaultY: 80,
     component: GbrainMemoryApp,
@@ -301,13 +375,13 @@ export const ALL_APPS: AppDefinition[] = [
   },
   {
     id: 'founder-pipeline',
-    title: 'Engineering Pipeline',
+    title: 'Venture & Engineering Pipeline',
     iconName: 'projects',
     os: 'founder',
     category: 'Project Execution',
-    description: 'Milestone tracker for all active software initiatives.',
-    defaultWidth: 680,
-    defaultHeight: 480,
+    description: 'Kanban milestone tracker for all active software initiatives and roadmaps.',
+    defaultWidth: 720,
+    defaultHeight: 500,
     defaultX: 140,
     defaultY: 110,
     component: ProjectPipelineApp,
@@ -315,15 +389,135 @@ export const ALL_APPS: AppDefinition[] = [
   },
   {
     id: 'founder-finance',
-    title: 'Infrastructure & Budget',
+    title: 'Cloud MRR & Finance Engine',
     iconName: 'founder',
     os: 'founder',
     category: 'Operations',
-    description: 'Cloud hosting, API tokens, and subscription runway.',
-    defaultWidth: 660,
-    defaultHeight: 460,
+    description: 'Cloud hosting runway, token costs, revenue telemetry, and burn rate monitor.',
+    defaultWidth: 680,
+    defaultHeight: 480,
     defaultX: 190,
     defaultY: 130,
     component: FinanceMonitorApp
+  },
+  {
+    id: 'founder-vault',
+    title: 'Executive Obsidian Vault',
+    iconName: 'vault',
+    os: 'founder',
+    category: 'Knowledge Base',
+    description: 'Obsidian notes filtered for strategy, startup roadmap, and executive decisions.',
+    defaultWidth: 800,
+    defaultHeight: 560,
+    defaultX: 160,
+    defaultY: 80,
+    component: ObsidianVaultApp,
+    isPinned: true
   }
 ];
+
+// =============================================================
+// 📁 DESKTOP FOLDERS (Real OS Folder Groupings per Environment)
+// =============================================================
+export const DESKTOP_FOLDERS: DesktopFolderDefinition[] = [
+  // CyberOS Folders
+  {
+    id: 'cyber-recon-folder',
+    title: 'Reconnaissance Suite',
+    os: 'cyber',
+    iconName: 'recon',
+    color: 'red',
+    description: 'Automated crawlers, port scanners, and target matrix intelligence.',
+    appIds: ['cyber-spider', 'cyber-target-matrix', 'cyber-cve-hunter']
+  },
+  {
+    id: 'cyber-exploit-folder',
+    title: 'Exploit & Arsenal',
+    os: 'cyber',
+    iconName: 'Shield',
+    color: 'red',
+    description: 'Payload generators, reverse shell forge, eJPT lab dossiers, and pentest vault.',
+    appIds: ['cyber-payload-forge', 'cyber-ejpt-qa', 'cyber-vault']
+  },
+
+  // DevOS Folders
+  {
+    id: 'dev-studio-folder',
+    title: 'Development Studio',
+    os: 'dev',
+    iconName: 'terminal',
+    color: 'emerald',
+    description: 'Monaco code editor, tactical shell terminal, and Git repository controller.',
+    appIds: ['dev-ide', 'dev-terminal', 'dev-git']
+  },
+  {
+    id: 'dev-infra-folder',
+    title: 'Infrastructure & APIs',
+    os: 'dev',
+    iconName: 'telemetry',
+    color: 'emerald',
+    description: 'Docker fleet containers, REST API lab client, and systems architecture vault.',
+    appIds: ['dev-docker', 'dev-api-lab', 'dev-vault']
+  },
+
+  // StudyOS Folders
+  {
+    id: 'study-mastery-folder',
+    title: 'Academic Mastery',
+    os: 'study',
+    iconName: 'socrates',
+    color: 'purple',
+    description: 'Socrates AI mentor, spaced repetition Leitner flashcards, and document synthesizer.',
+    appIds: ['study-socrates', 'study-flashcards', 'study-synthesizer']
+  },
+  {
+    id: 'study-knowledge-folder',
+    title: 'Knowledge & Studio',
+    os: 'study',
+    iconName: 'notes',
+    color: 'purple',
+    description: 'Distraction-free Markdown study studio and full academic Obsidian vault.',
+    appIds: ['study-studio', 'study-vault']
+  },
+
+  // AgenticOS Folders
+  {
+    id: 'agentic-crew-folder',
+    title: 'Autonomous Crew Operations',
+    os: 'agentic',
+    iconName: 'agent',
+    color: 'cyan',
+    description: 'JARVIS Master Core, Multi-Agent Council suite, and Universal Model switchboard.',
+    appIds: ['agentic-jarvis', 'agentic-council', 'agentic-model-router']
+  },
+  {
+    id: 'agentic-brain-folder',
+    title: 'Neural Brain & Universe',
+    os: 'agentic',
+    iconName: 'Compass',
+    color: 'cyan',
+    description: '3D Knowledge Universe graph of 155+ notes and master Obsidian knowledge vault.',
+    appIds: ['agentic-universe-graph', 'agentic-vault']
+  },
+
+  // FounderOS Folders
+  {
+    id: 'founder-exec-folder',
+    title: 'Executive Operations',
+    os: 'founder',
+    iconName: 'founder',
+    color: 'amber',
+    description: 'G-Brain epistemic memory governor and venture milestone pipeline.',
+    appIds: ['founder-gbrain', 'founder-pipeline']
+  },
+  {
+    id: 'founder-assets-folder',
+    title: 'Financial & Strategic Assets',
+    os: 'founder',
+    iconName: 'projects',
+    color: 'amber',
+    description: 'Cloud MRR runway engine, burn rate monitor, and strategic executive vault.',
+    appIds: ['founder-finance', 'founder-vault']
+  }
+];
+

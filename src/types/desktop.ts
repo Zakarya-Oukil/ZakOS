@@ -13,8 +13,18 @@ export interface AppDefinition {
   defaultHeight: number;
   defaultX?: number;
   defaultY?: number;
-  component: React.ComponentType<{ windowId: string; isActive: boolean; onClose: () => void }>;
+  component: React.ComponentType<{ windowId: string; isActive: boolean; onClose: () => void; initialProps?: any }>;
   isPinned?: boolean;
+}
+
+export interface DesktopFolderDefinition {
+  id: string;
+  title: string;
+  os: OperatingSystemId;
+  iconName: string;
+  color: string;
+  description: string;
+  appIds: string[];
 }
 
 export interface WindowState {
@@ -31,6 +41,7 @@ export interface WindowState {
   prevPosition?: { x: number; y: number };
   prevSize?: { width: number; height: number };
   zIndex: number;
+  initialProps?: any;
 }
 
 export interface OSConfig {
@@ -56,3 +67,4 @@ export interface CrossOsNotification {
   read: boolean;
   actionAppId?: string;
 }
+

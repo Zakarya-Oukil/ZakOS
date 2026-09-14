@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { OperatingSystemId, WindowState, CrossOsNotification } from '../../types/desktop';
-import { ALL_APPS } from './appRegistry';
+import { OperatingSystemId, WindowState, CrossOsNotification, DesktopFolderDefinition } from '../../types/desktop';
+import { ALL_APPS, DESKTOP_FOLDERS } from './appRegistry';
 import { GrubTopBar } from './GrubTopBar';
 import { DynamicWallpaper } from './DynamicWallpaper';
 import { ZakWindow } from './ZakWindow';
 import { DockTaskbar, renderAppIcon } from './DockTaskbar';
+import { DesktopFolderWindow } from './DesktopFolderWindow';
 import { soundEngine } from '../../services/soundEffects';
+import { api } from '../../services/api';
+import { Folder } from 'lucide-react';
 
 export const DesktopWorkspace: React.FC = () => {
   const [activeOs, setActiveOs] = useState<OperatingSystemId>('agentic');
+  const [vaultNotesCount, setVaultNotesCount] = useState<number>(155);
   const [windows, setWindows] = useState<WindowState[]>([
     {
       id: 'init-jarvis',
@@ -39,6 +43,17 @@ export const DesktopWorkspace: React.FC = () => {
     }
   ]);
 
+  // Load vault notes count
+  useEffect(() => {
+    api.getNotes()
+      .then(notes => {
+        if (notes && notes.length > 0) {
+          setVaultNotesCount(notes.length);
+        }
+      })
+      .catch(err => console.log('Vault count error:', err));
+  }, []);
+
   // Bring window to front
   const handleFocusWindow = useCallback((id: string) => {
     soundEngine.playClick();
@@ -51,13 +66,16 @@ export const DesktopWorkspace: React.FC = () => {
     setMaxZIndex(prev => prev + 1);
   }, [maxZIndex]);
 
-  // Launch app or focus if already open
-  const handleLaunchApp = useCallback((appId: string) => {
-    const app = ALL_APPS.find(a => a.id === appId);
-    if (!app) return;
+  // Launch app or folder, or focus if already open
+  const handleLaunchApp = useCallback((targetId: string) => {
+    // Check if it is a Desktop Folder
+    const folderDef = DESKTOP_FOLDERS.find(f => f.id === targetId);
+    const appDef = ALL_APPS.find(a => a.id === targetId);
+
+    if (!folderDef && !appDef) return;
 
     // Check if instance already exists
-    const existing = windows.find(w => w.appId === appId);
+    const existing = windows.find(w => w.appId === targetId);
     if (existing) {
       if (existing.isMinimized) {
         soundEngine.playWindowOpen();
@@ -72,24 +90,42 @@ export const DesktopWorkspace: React.FC = () => {
       return;
     }
 
-    // Spawn new window
+    // Spawn new window for Folder or App
     soundEngine.playWindowOpen();
-    const newWinId = `win-${appId}-${Date.now()}`;
-    const newWindow: WindowState = {
-      id: newWinId,
-      appId: app.id,
-      title: app.title,
-      iconName: app.iconName,
-      os: app.os,
-      isOpen: true,
-      isMinimized: false,
-      isMaximized: false,
-      position: { x: app.defaultX || 120, y: app.defaultY || 80 },
-      size: { width: app.defaultWidth, height: app.defaultHeight },
-      zIndex: maxZIndex + 1
-    };
+    const newWinId = `win-${targetId}-${Date.now()}`;
+    
+    if (folderDef) {
+      const newWindow: WindowState = {
+        id: newWinId,
+        appId: folderDef.id,
+        title: folderDef.title,
+        iconName: folderDef.iconName,
+        os: folderDef.os,
+        isOpen: true,
+        isMinimized: false,
+        isMaximized: false,
+        position: { x: 160, y: 100 },
+        size: { width: 700, height: 480 },
+        zIndex: maxZIndex + 1
+      };
+      setWindows(prev => [...prev, newWindow]);
+    } else if (appDef) {
+      const newWindow: WindowState = {
+        id: newWinId,
+        appId: appDef.id,
+        title: appDef.title,
+        iconName: appDef.iconName,
+        os: appDef.os,
+        isOpen: true,
+        isMinimized: false,
+        isMaximized: false,
+        position: { x: appDef.defaultX || 120, y: appDef.defaultY || 80 },
+        size: { width: appDef.defaultWidth, height: appDef.defaultHeight },
+        zIndex: maxZIndex + 1
+      };
+      setWindows(prev => [...prev, newWindow]);
+    }
 
-    setWindows(prev => [...prev, newWindow]);
     setActiveWindowId(newWinId);
     setMaxZIndex(prev => prev + 1);
   }, [windows, maxZIndex, handleFocusWindow]);
@@ -145,7 +181,8 @@ export const DesktopWorkspace: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Desktop Icons for current OS
+  // Desktop items for current OS
+  const currentOsFolders = DESKTOP_FOLDERS.filter(folder => folder.os === activeOs);
   const currentOsApps = ALL_APPS.filter(app => app.os === activeOs);
 
   const badgeCounts: Record<OperatingSystemId, number> = {
@@ -154,6 +191,17 @@ export const DesktopWorkspace: React.FC = () => {
     dev: 0,
     study: 0,
     founder: 0
+  };
+
+  const handleOpenActiveVault = () => {
+    const vaultMap: Record<OperatingSystemId, string> = {
+      cyber: 'cyber-vault',
+      study: 'study-vault',
+      dev: 'dev-vault',
+      founder: 'founder-vault',
+      agentic: 'agentic-vault'
+    };
+    handleLaunchApp(vaultMap[activeOs] || 'agentic-vault');
   };
 
   return (
@@ -166,8 +214,8 @@ export const DesktopWorkspace: React.FC = () => {
         badgeCounts={badgeCounts}
         activeModel="Gemini 2.5 Flash"
         onOpenModelRouter={() => handleLaunchApp('agentic-model-router')}
-        onOpenVault={() => handleLaunchApp('study-studio')}
-        vaultNotesCount={123}
+        onOpenVault={handleOpenActiveVault}
+        vaultNotesCount={vaultNotesCount}
       />
 
       {/* 2. Main Desktop Area */}
@@ -175,8 +223,30 @@ export const DesktopWorkspace: React.FC = () => {
         {/* Dynamic Wallpaper */}
         <DynamicWallpaper os={activeOs} />
 
-        {/* Desktop Icons Grid (Top-Left of active desktop) */}
+        {/* Desktop Folders & Apps Grid (Top-Left of active desktop) */}
         <div className="absolute top-6 left-6 grid grid-flow-col grid-rows-6 gap-5 z-10 select-none">
+          {/* Desktop Folders First */}
+          {currentOsFolders.map((folder) => (
+            <button
+              key={folder.id}
+              onDoubleClick={() => handleLaunchApp(folder.id)}
+              onClick={() => soundEngine.playClick()}
+              className="flex flex-col items-center gap-1.5 w-24 p-2 rounded-2xl hover:bg-white/10 hover:backdrop-blur-md border border-transparent hover:border-white/10 transition-all group text-center cursor-pointer active:scale-95"
+            >
+              <div className="relative w-12 h-12 rounded-2xl bg-[#080d1a]/90 border border-white/20 flex items-center justify-center text-amber-400 group-hover:text-amber-200 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(245,158,11,0.35)] transition-all">
+                <Folder className="w-6 h-6 fill-amber-500/20" />
+                {/* Mini count badge */}
+                <span className="absolute -top-1 -right-1 px-1.5 py-0.2 bg-black/80 border border-white/20 rounded-full text-[9px] font-mono text-zinc-300">
+                  {folder.appIds.length}
+                </span>
+              </div>
+              <span className="text-[11px] font-semibold text-zinc-100 group-hover:text-white leading-tight line-clamp-2 px-1 rounded drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                {folder.title}
+              </span>
+            </button>
+          ))}
+
+          {/* Standalone Desktop Apps */}
           {currentOsApps.map((app) => (
             <button
               key={app.id}
@@ -196,9 +266,10 @@ export const DesktopWorkspace: React.FC = () => {
 
         {/* 3. Floating Windows (ZakWM) */}
         {windows.map((win) => {
+          const folderDef = DESKTOP_FOLDERS.find(f => f.id === win.appId);
           const appDef = ALL_APPS.find(a => a.id === win.appId);
-          if (!appDef) return null;
-          const AppComponent = appDef.component;
+          if (!folderDef && !appDef) return null;
+
           const isActive = activeWindowId === win.id;
 
           return (
@@ -214,11 +285,21 @@ export const DesktopWorkspace: React.FC = () => {
               onUpdatePosition={handleUpdatePosition}
               onUpdateSize={handleUpdateSize}
             >
-              <AppComponent
-                windowId={win.id}
-                isActive={isActive}
-                onClose={() => handleCloseWindow(win.id)}
-              />
+              {folderDef ? (
+                <DesktopFolderWindow
+                  folder={folderDef}
+                  apps={ALL_APPS}
+                  onLaunchApp={handleLaunchApp}
+                  onClose={() => handleCloseWindow(win.id)}
+                />
+              ) : appDef ? (
+                React.createElement(appDef.component, {
+                  windowId: win.id,
+                  isActive: isActive,
+                  onClose: () => handleCloseWindow(win.id),
+                  initialProps: win.initialProps
+                })
+              ) : null}
             </ZakWindow>
           );
         })}
@@ -236,3 +317,4 @@ export const DesktopWorkspace: React.FC = () => {
     </div>
   );
 };
+
