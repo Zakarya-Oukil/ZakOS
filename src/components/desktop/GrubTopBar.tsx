@@ -11,7 +11,9 @@ import {
   VolumeX, 
   Bell, 
   Sparkles,
-  Wifi
+  Wifi,
+  Zap,
+  Globe
 } from 'lucide-react';
 import { OperatingSystemId, CrossOsNotification } from '../../types/desktop';
 import { soundEngine } from '../../services/soundEffects';
@@ -24,6 +26,8 @@ interface GrubTopBarProps {
   activeModel: string;
   onOpenModelRouter?: () => void;
   onOpenVault?: () => void;
+  onOpenBrainDump?: () => void;
+  onOpenGodsEye?: () => void;
   vaultNotesCount: number;
 }
 
@@ -35,6 +39,8 @@ export const GrubTopBar: React.FC<GrubTopBarProps> = ({
   activeModel,
   onOpenModelRouter,
   onOpenVault,
+  onOpenBrainDump,
+  onOpenGodsEye,
   vaultNotesCount
 }) => {
   const [timeStr, setTimeStr] = useState('');
@@ -159,6 +165,26 @@ export const GrubTopBar: React.FC<GrubTopBarProps> = ({
         >
           <HardDrive className="w-3 h-3 text-purple-400" />
           <span className="text-[11px]">{vaultNotesCount} Notes</span>
+        </button>
+
+        {/* FounderOS Brain Dump Quick Capture */}
+        <button
+          onClick={onOpenBrainDump}
+          title="Quick Brain Dump into Obsidian Vault"
+          className="flex items-center gap-1 px-2 py-0.5 rounded bg-violet-600/20 border border-violet-500/40 text-violet-300 hover:bg-violet-600/30 transition-colors"
+        >
+          <Zap className="w-3 h-3 text-violet-400" />
+          <span className="text-[11px] font-bold">DUMP</span>
+        </button>
+
+        {/* God's Eye 3D GEOINT Quick Launcher */}
+        <button
+          onClick={onOpenGodsEye}
+          title="Launch God's Eye 3D GEOINT Cockpit"
+          className="flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/20 transition-colors"
+        >
+          <Globe className="w-3 h-3 text-cyan-400" />
+          <span className="text-[11px]">GEOINT</span>
         </button>
 
         {/* Notifications Tray */}

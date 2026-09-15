@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutGrid, Bot, Shield, Terminal, BookOpen, Briefcase, Sparkles, Folder, TerminalSquare, Activity, Compass, Cpu, FileText } from 'lucide-react';
+import { LayoutGrid, Bot, Shield, Terminal, BookOpen, Briefcase, Sparkles, Folder, TerminalSquare, Activity, Compass, Cpu, FileText, Globe } from 'lucide-react';
 import { AppDefinition, WindowState, OperatingSystemId } from '../../types/desktop';
 import { soundEngine } from '../../services/soundEffects';
 
@@ -15,6 +15,11 @@ interface DockTaskbarProps {
 // Icon resolver helper
 export const renderAppIcon = (iconName: string, className: string = "w-5 h-5") => {
   switch (iconName) {
+    case 'Globe':
+    case 'globe':
+    case 'geoint':
+    case 'godseye':
+      return <Globe className={className} />;
     case 'Shield':
     case 'spider':
     case 'recon':

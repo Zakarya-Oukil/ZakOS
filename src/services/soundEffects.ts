@@ -124,6 +124,11 @@ class SoundEngine {
       osc.stop(now + 0.15);
     } catch {}
   }
+
+  // System notification chime
+  public playNotification() {
+    this.playCyberPing();
+  }
 }
 
 export const soundEngine = new SoundEngine();

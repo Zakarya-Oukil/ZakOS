@@ -6,6 +6,7 @@ import { DynamicWallpaper } from './DynamicWallpaper';
 import { ZakWindow } from './ZakWindow';
 import { DockTaskbar, renderAppIcon } from './DockTaskbar';
 import { DesktopFolderWindow } from './DesktopFolderWindow';
+import { BrainDumpModal } from '../os_apps/founder/BrainDumpModal';
 import { soundEngine } from '../../services/soundEffects';
 import { api } from '../../services/api';
 import { Folder } from 'lucide-react';
@@ -13,6 +14,7 @@ import { Folder } from 'lucide-react';
 export const DesktopWorkspace: React.FC = () => {
   const [activeOs, setActiveOs] = useState<OperatingSystemId>('agentic');
   const [vaultNotesCount, setVaultNotesCount] = useState<number>(155);
+  const [isBrainDumpOpen, setIsBrainDumpOpen] = useState<boolean>(false);
   const [windows, setWindows] = useState<WindowState[]>([
     {
       id: 'init-jarvis',
@@ -215,6 +217,8 @@ export const DesktopWorkspace: React.FC = () => {
         activeModel="Gemini 2.5 Flash"
         onOpenModelRouter={() => handleLaunchApp('agentic-model-router')}
         onOpenVault={handleOpenActiveVault}
+        onOpenBrainDump={() => setIsBrainDumpOpen(true)}
+        onOpenGodsEye={() => handleLaunchApp('cyber-godseye')}
         vaultNotesCount={vaultNotesCount}
       />
 
@@ -313,6 +317,17 @@ export const DesktopWorkspace: React.FC = () => {
         activeWindowId={activeWindowId}
         onLaunchApp={handleLaunchApp}
         onToggleWindow={handleToggleWindow}
+      />
+
+      {/* 5. FounderOS Brain Dump Quick Capture Modal */}
+      <BrainDumpModal
+        isOpen={isBrainDumpOpen}
+        onClose={() => setIsBrainDumpOpen(false)}
+        onSuccess={() => {
+          api.getNotes().then((n) => {
+            if (n) setVaultNotesCount(n.length);
+          });
+        }}
       />
     </div>
   );

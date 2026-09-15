@@ -408,7 +408,263 @@ app.post('/api/scraper/analyze-item', async (req: Request, res: Response) => {
   }
 });
 
-// 14. Terminal Execution & Background Daemon Server Endpoints
+// ==========================================
+// 13. GEOINT & SPATIAL INTELLIGENCE ENDPOINTS
+// ==========================================
+
+let _cachedAdsbPayload: any = null;
+let _cachedAdsbTime = 0;
+const ADSB_CACHE_TTL = 12000; // 12 seconds cache to prevent upstream rate-limiting
+
+app.get('/api/geoint/adsb', async (req: Request, res: Response) => {
+  const now = Date.now();
+  if (_cachedAdsbPayload && (now - _cachedAdsbTime) < ADSB_CACHE_TTL) {
+    return res.json({ success: true, source: 'cache', count: _cachedAdsbPayload.length, flights: _cachedAdsbPayload });
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
+
+    const response = await fetch('https://api.adsb.lol/v2/mil', {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'ZakOS-GodsEye/2.1 (Intelligence Console)' }
+    });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const data: any = await response.json();
+      const acList = data.ac || [];
+      const normalized = acList
+        .filter((a: any) => typeof a.lat === 'number' && typeof a.lon === 'number' && !isNaN(a.lat) && !isNaN(a.lon))
+        .map((a: any, idx: number) => {
+          const callsign = (a.flight || a.hex || `MIL-${idx}`).trim();
+          const alt = Math.round(Number(a.alt_baro || a.alt_geom || 25000));
+          const speed = Math.round(Number(a.gs || 350));
+          const heading = Math.round(Number(a.track || 0));
+          const squawk = a.squawk ? String(a.squawk) : '1200';
+          const typeDesc = a.t || a.desc || 'MILITARY RECON / PATROL';
+          return {
+            id: a.hex ? `adsb-${a.hex}` : `adsb-${idx}`,
+            callsign,
+            aircraftType: typeDesc,
+            lat: a.lat,
+            lng: a.lon,
+            altitudeFt: alt,
+            groundSpeedKts: speed,
+            heading,
+            squawk,
+            origin: 'AIR DEFENSE SECTOR',
+            destination: 'AIR PATROL ROUTE',
+            isMilitary: true
+          };
+        });
+
+      if (normalized.length > 0) {
+        _cachedAdsbPayload = normalized;
+        _cachedAdsbTime = now;
+        return res.json({ success: true, source: 'live', count: normalized.length, flights: normalized });
+      }
+    }
+  } catch (err: any) {
+    console.warn('[GEOINT ADS-B Fetch Warning]:', err.message);
+  }
+
+  // Fallback: If cache exists (even stale), return it
+  if (_cachedAdsbPayload && _cachedAdsbPayload.length > 0) {
+    return res.json({ success: true, source: 'stale_cache', count: _cachedAdsbPayload.length, flights: _cachedAdsbPayload });
+  }
+
+  // Otherwise return empty array with baseline fallback flag
+  res.json({ success: true, source: 'baseline', count: 0, flights: [] });
+});
+
+let _cachedEarthquakes: any = null;
+let _cachedEarthquakesTime = 0;
+const EARTHQUAKE_CACHE_TTL = 60000; // 60 seconds
+
+app.get('/api/geoint/earthquakes', async (req: Request, res: Response) => {
+  const now = Date.now();
+  if (_cachedEarthquakes && (now - _cachedEarthquakesTime) < EARTHQUAKE_CACHE_TTL) {
+    return res.json({ success: true, source: 'cache', count: _cachedEarthquakes.length, earthquakes: _cachedEarthquakes });
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    const response = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson', {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const geojson: any = await response.json();
+      const features = geojson.features || [];
+      const earthquakes = features.map((f: any) => ({
+        id: f.id || `eq-${Math.random()}`,
+        place: f.properties?.place || 'Unknown Epicenter',
+        mag: Number(f.properties?.mag || 0),
+        time: f.properties?.time || Date.now(),
+        url: f.properties?.url,
+        tsunami: f.properties?.tsunami || 0,
+        alert: f.properties?.alert || 'green',
+        lat: f.geometry?.coordinates?.[1] || 0,
+        lng: f.geometry?.coordinates?.[0] || 0,
+        depthKm: Math.round(Number(f.geometry?.coordinates?.[2] || 10))
+      }));
+
+      _cachedEarthquakes = earthquakes;
+      _cachedEarthquakesTime = now;
+      return res.json({ success: true, source: 'live_usgs', count: earthquakes.length, earthquakes });
+    }
+  } catch (err: any) {
+    console.warn('[USGS Earthquake Error]:', err.message);
+  }
+
+  if (_cachedEarthquakes) {
+    return res.json({ success: true, source: 'stale_cache', count: _cachedEarthquakes.length, earthquakes: _cachedEarthquakes });
+  }
+
+  res.json({ success: true, source: 'empty', count: 0, earthquakes: [] });
+});
+
+// ==========================================
+// 14. CYBER OPERATIONS COMMAND & ADMIN ENDPOINTS
+// ==========================================
+
+interface CyberDaemon {
+  id: string;
+  name: string;
+  service: string;
+  port?: number;
+  status: 'RUNNING' | 'STANDBY' | 'STOPPED' | 'ERROR';
+  uptimeSeconds: number;
+  lastPing: string;
+  description: string;
+}
+
+const CYBER_DAEMONS: CyberDaemon[] = [
+  { id: 'daemon-spider', name: 'Recon Spider Daemon', service: 'spider_engine', port: 4000, status: 'RUNNING', uptimeSeconds: 14200, lastPing: 'JUST NOW', description: 'Continuous target crawler, certificate miner and header auditor' },
+  { id: 'daemon-cve', name: 'Threat Intel CVE Stream', service: 'cve_triage', port: 4000, status: 'RUNNING', uptimeSeconds: 9840, lastPing: 'JUST NOW', description: 'NVD & exploit feed ingestion pipeline with AI CVSS scoring' },
+  { id: 'daemon-geoint', name: 'Spatial ADS-B Telemetry Streamer', service: 'adsb_telemetry', port: 4000, status: 'RUNNING', uptimeSeconds: 5200, lastPing: 'JUST NOW', description: 'Real-time aircraft transponder and orbital satellite propagator' },
+  { id: 'daemon-listener', name: 'Reverse Shell Handler Daemon', service: 'listener_core', port: 4444, status: 'RUNNING', uptimeSeconds: 3100, lastPing: 'JUST NOW', description: 'Multi-threaded reverse TCP and encrypted TTY session manager' },
+  { id: 'daemon-proxy', name: 'Anonymizer & Proxychains Rotator', service: 'proxy_rotator', port: 9050, status: 'STANDBY', uptimeSeconds: 0, lastPing: 'IDLE', description: 'Circuit routing and IP evasion layer for offensive scans' }
+];
+
+interface CyberListener {
+  id: string;
+  name: string;
+  protocol: 'TCP' | 'HTTP' | 'HTTPS' | 'DNS' | 'ENCRYPTED_TTY';
+  port: number;
+  engine: 'netcat' | 'pwncat' | 'msfconsole' | 'socat';
+  status: 'LISTENING' | 'ACTIVE' | 'STANDBY';
+  sessions: number;
+  boundInterface: string;
+  connectedTarget?: string;
+  createdAt: string;
+}
+
+let CYBER_LISTENERS: CyberListener[] = [
+  { id: 'lst-4444', name: 'Pwncat Auto-Pty Handler', protocol: 'ENCRYPTED_TTY', port: 4444, engine: 'pwncat', status: 'ACTIVE', sessions: 1, boundInterface: '0.0.0.0', connectedTarget: '192.168.100.51 (WINSERVER-02)', createdAt: '2026-09-14 14:15:00' },
+  { id: 'lst-9001', name: 'Rlwrap Netcat Raw TTY', protocol: 'TCP', port: 9001, engine: 'netcat', status: 'LISTENING', sessions: 0, boundInterface: '0.0.0.0', createdAt: '2026-09-14 15:30:20' },
+  { id: 'lst-4433', name: 'MSF Multi/Handler (HTTPS)', protocol: 'HTTPS', port: 4433, engine: 'msfconsole', status: 'STANDBY', sessions: 0, boundInterface: '192.168.100.5', createdAt: '2026-09-14 16:00:10' }
+];
+
+const OPSEC_AUDIT_LOGS: Array<{ id: string; time: string; level: 'INFO' | 'WARN' | 'CRITICAL' | 'ALERT'; module: string; message: string }> = [
+  { id: 'log-1', time: new Date(Date.now() - 360000).toLocaleTimeString(), level: 'INFO', module: 'DAEMON', message: 'Cyber daemon subsystem initialized with 4 active services' },
+  { id: 'log-2', time: new Date(Date.now() - 240000).toLocaleTimeString(), level: 'ALERT', module: 'LISTENER', message: 'Inbound Reverse Shell connection received on Port 4444 from 192.168.100.51' },
+  { id: 'log-3', time: new Date(Date.now() - 120000).toLocaleTimeString(), level: 'INFO', module: 'GEOINT', message: 'ADS-B real-time military transponder feed synchronized' },
+  { id: 'log-4', time: new Date(Date.now() - 40000).toLocaleTimeString(), level: 'WARN', module: 'SCANNER', message: 'Target 192.168.100.52 initiated ICMP echo responses with TTL=64 (Linux)' }
+];
+
+app.get('/api/cyber/daemons', (req: Request, res: Response) => {
+  res.json({ success: true, daemons: CYBER_DAEMONS });
+});
+
+app.post('/api/cyber/daemons/toggle', (req: Request, res: Response) => {
+  const id = req.body.id || req.body.daemonId;
+  const action = req.body.action;
+  const target = CYBER_DAEMONS.find(d => d.id === id);
+  if (target) {
+    if (action === 'start') {
+      target.status = 'RUNNING';
+      target.uptimeSeconds = 1;
+    } else if (action === 'stop') {
+      target.status = 'STANDBY';
+    } else if (action === 'restart') {
+      target.status = 'RUNNING';
+      target.uptimeSeconds = 1;
+    } else {
+      target.status = target.status === 'RUNNING' ? 'STANDBY' : 'RUNNING';
+      if (target.status === 'RUNNING') target.uptimeSeconds = 1;
+    }
+    OPSEC_AUDIT_LOGS.unshift({
+      id: `log-${Date.now()}`,
+      time: new Date().toLocaleTimeString(),
+      level: 'INFO',
+      module: 'DAEMON',
+      message: `Daemon ${target.name} state transitioned to ${target.status}`
+    });
+    return res.json({ success: true, daemon: target });
+  }
+  res.status(404).json({ success: false, error: 'Daemon not found' });
+});
+
+app.get('/api/cyber/listeners', (req: Request, res: Response) => {
+  res.json({ success: true, listeners: CYBER_LISTENERS });
+});
+
+app.post('/api/cyber/listeners/create', (req: Request, res: Response) => {
+  const { name, port, engine, protocol } = req.body;
+  if (!port) return res.status(400).json({ success: false, error: 'Missing port' });
+
+  const newListener: CyberListener = {
+    id: `lst-${port}-${Date.now().toString().slice(-4)}`,
+    name: name || `Listener :${port}`,
+    port: Number(port),
+    protocol: protocol || 'TCP',
+    engine: engine || 'netcat',
+    status: 'LISTENING',
+    sessions: 0,
+    boundInterface: '0.0.0.0',
+    createdAt: new Date().toISOString().replace('T', ' ').slice(0, 19)
+  };
+
+  CYBER_LISTENERS.unshift(newListener);
+  OPSEC_AUDIT_LOGS.unshift({
+    id: `log-${Date.now()}`,
+    time: new Date().toLocaleTimeString(),
+    level: 'INFO',
+    module: 'LISTENER',
+    message: `Spawned ${newListener.engine.toUpperCase()} listener on ${newListener.boundInterface}:${newListener.port} (${newListener.protocol})`
+  });
+
+  res.json({ success: true, listener: newListener });
+});
+
+app.delete('/api/cyber/listeners/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const initialLen = CYBER_LISTENERS.length;
+  CYBER_LISTENERS = CYBER_LISTENERS.filter(l => l.id !== id);
+  if (CYBER_LISTENERS.length < initialLen) {
+    OPSEC_AUDIT_LOGS.unshift({
+      id: `log-${Date.now()}`,
+      time: new Date().toLocaleTimeString(),
+      level: 'WARN',
+      module: 'LISTENER',
+      message: `Terminated listener ID ${id}`
+    });
+    return res.json({ success: true, message: 'Listener deleted' });
+  }
+  res.status(404).json({ success: false, error: 'Listener not found' });
+});
+
+app.get('/api/cyber/audit-logs', (req: Request, res: Response) => {
+  res.json({ success: true, logs: OPSEC_AUDIT_LOGS.slice(0, 50) });
+});
+
+// 15. Terminal Execution & Background Daemon Server Endpoints
 app.post('/api/project/terminal/exec', async (req: Request, res: Response) => {
   try {
     const { command, cwd = process.cwd() } = req.body;

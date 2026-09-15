@@ -5,16 +5,19 @@ import { ObsidianVaultApp } from '../os_apps/common/ObsidianVaultApp';
 
 // CyberOS Apps
 import { SpiderReconApp } from '../os_apps/cyber/SpiderReconApp';
+import { GodsEyeApp } from '../os_apps/cyber/GodsEyeApp';
 import { PayloadForgeApp } from '../os_apps/cyber/PayloadForgeApp';
 import { TargetMatrixApp } from '../os_apps/cyber/TargetMatrixApp';
 import { CveHunterApp } from '../os_apps/cyber/CveHunterApp';
 import { EjptAssistantApp } from '../os_apps/cyber/EjptAssistantApp';
+import { CyberAdminApp } from '../os_apps/cyber/CyberAdminApp';
 
 // StudyOS Apps
 import { SocratesTutorApp } from '../os_apps/study/SocratesTutorApp';
 import { FlashcardsApp } from '../os_apps/study/FlashcardsApp';
 import { DocSynthesizerApp } from '../os_apps/study/DocSynthesizerApp';
 import { StudyStudioApp } from '../os_apps/study/StudyStudioApp';
+import { StudentWorkstationApp } from '../os_apps/study/StudentWorkstationApp';
 
 // DevOS Apps
 import { MonacoIdeApp } from '../os_apps/dev/MonacoIdeApp';
@@ -31,6 +34,7 @@ import { UniverseGraphApp } from '../os_apps/agentic/UniverseGraphApp';
 
 // FounderOS Apps
 import { GbrainMemoryApp } from '../os_apps/founder/GbrainMemoryApp';
+import { ProjectsTrackerApp } from '../os_apps/founder/ProjectsTrackerApp';
 import { ProjectPipelineApp } from '../os_apps/founder/ProjectPipelineApp';
 import { FinanceMonitorApp } from '../os_apps/founder/FinanceMonitorApp';
 
@@ -38,6 +42,20 @@ export const ALL_APPS: AppDefinition[] = [
   // -------------------------------------------------------------
   // 🛡️ CYBER_OS APPS (Zak's Spider Suite)
   // -------------------------------------------------------------
+  {
+    id: 'cyber-admin',
+    title: 'Cyber Operations & Admin C2',
+    iconName: 'Shield',
+    os: 'cyber',
+    category: 'Administrative Command',
+    description: 'Master operations hub: background daemons, reverse shell listeners, RoE target scope lock, OPSEC audit trail, and tactical forensics arsenal.',
+    defaultWidth: 840,
+    defaultHeight: 600,
+    defaultX: 60,
+    defaultY: 60,
+    component: CyberAdminApp,
+    isPinned: true
+  },
   {
     id: 'cyber-spider',
     title: "Zak's Spider Recon",
@@ -50,6 +68,20 @@ export const ALL_APPS: AppDefinition[] = [
     defaultX: 80,
     defaultY: 80,
     component: SpiderReconApp,
+    isPinned: true
+  },
+  {
+    id: 'cyber-godseye',
+    title: "God's Eye 3D GEOINT",
+    iconName: 'globe',
+    os: 'cyber',
+    category: 'Tactical Recon & Surveillance',
+    description: 'Cesium 3D Globe with Google Photorealistic mesh, live CCTV viewshed frustums, ADS-B flight radar, satellites, and FLIR/NVG optics.',
+    defaultWidth: 920,
+    defaultHeight: 640,
+    defaultX: 70,
+    defaultY: 50,
+    component: GodsEyeApp,
     isPinned: true
   },
   {
@@ -125,6 +157,20 @@ export const ALL_APPS: AppDefinition[] = [
   // -------------------------------------------------------------
   // 📚 STUDY_OS APPS (Academic & Socrates Mentor)
   // -------------------------------------------------------------
+  {
+    id: 'study-curriculum',
+    title: 'Curriculum & Notion Notepad',
+    iconName: 'study',
+    os: 'study',
+    category: 'Academic Workstation',
+    description: 'Dynamic certification syllabus, editable modules, task milestones, and Notion-style Markdown notepad.',
+    defaultWidth: 900,
+    defaultHeight: 620,
+    defaultX: 70,
+    defaultY: 50,
+    component: StudentWorkstationApp,
+    isPinned: true
+  },
   {
     id: 'study-socrates',
     title: 'Socrates AI Mentor',
@@ -361,30 +407,30 @@ export const ALL_APPS: AppDefinition[] = [
   // -------------------------------------------------------------
   {
     id: 'founder-gbrain',
-    title: 'G-Brain Epistemic Memory',
+    title: 'G-Brain Constellation Core',
     iconName: 'founder',
     os: 'founder',
-    category: 'Memory Governance',
-    description: 'Truth lifecycle from real-time signals to durable strategic memories.',
-    defaultWidth: 740,
-    defaultHeight: 520,
+    category: 'Epistemic Intelligence',
+    description: 'FounderOS-grade knowledge graph constellation, force layout, link communities, and live Obsidian vault distillation.',
+    defaultWidth: 900,
+    defaultHeight: 620,
     defaultX: 90,
-    defaultY: 80,
+    defaultY: 60,
     component: GbrainMemoryApp,
     isPinned: true
   },
   {
     id: 'founder-pipeline',
-    title: 'Venture & Engineering Pipeline',
+    title: 'Workspace Projects Tracker',
     iconName: 'projects',
     os: 'founder',
     category: 'Project Execution',
-    description: 'Kanban milestone tracker for all active software initiatives and roadmaps.',
-    defaultWidth: 720,
-    defaultHeight: 500,
-    defaultX: 140,
-    defaultY: 110,
-    component: ProjectPipelineApp,
+    description: 'Tactile folder-card projects tracker with interactive checklists, Kanban detail view, and Monaco IDE integration.',
+    defaultWidth: 920,
+    defaultHeight: 640,
+    defaultX: 80,
+    defaultY: 50,
+    component: ProjectsTrackerApp,
     isPinned: true
   },
   {
@@ -476,8 +522,8 @@ export const DESKTOP_FOLDERS: DesktopFolderDefinition[] = [
     os: 'study',
     iconName: 'notes',
     color: 'purple',
-    description: 'Distraction-free Markdown study studio and full academic Obsidian vault.',
-    appIds: ['study-studio', 'study-vault']
+    description: 'Dynamic certification syllabus, Notion Markdown notepad, and full academic Obsidian vault.',
+    appIds: ['study-curriculum', 'study-studio', 'study-vault']
   },
 
   // AgenticOS Folders
