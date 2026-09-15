@@ -32,7 +32,7 @@ const BLUEPRINTS: ProjectBlueprint[] = [
       { title: 'Implement PX argument for millisecond-level key TTL expiry', completed: false },
       { title: 'Build RDB snapshot persistence or Append-Only File (AOF)', completed: false },
     ],
-    codeSnippet: `# Minimal RESP Parser Skeleton in Python\nimport socket\n\ndef handle_client(client_socket):\n    buffer = client_socket.recv(1024).decode('utf-8')\n    # Parse RESP Array\n    if buffer.startswith('*'):\n        parts = buffer.strip().split('\\r\\n')\n        command = parts[2].upper()\n        if command == 'PING':\n            client_socket.send(b"+PONG\\r\\n")\n        elif command == 'ECHO':\n            arg = parts[4]\n            client_socket.send(f"${len(arg)}\\r\\n{arg}\\r\\n".encode())\n`,
+    codeSnippet: `# Minimal RESP Parser Skeleton in Python\nimport socket\n\ndef handle_client(client_socket):\n    buffer = client_socket.recv(1024).decode('utf-8')\n    # Parse RESP Array\n    if buffer.startswith('*'):\n        parts = buffer.strip().split('\\r\\n')\n        command = parts[2].upper()\n        if command == 'PING':\n            client_socket.send(b"+PONG\\r\\n")\n        elif command == 'ECHO':\n            arg = parts[4]\n            client_socket.send(f"\\${len(arg)}\\r\\n{arg}\\r\\n".encode())\n`,
     testCommand: 'redis-cli -p 6379 PING && redis-cli -p 6379 SET mykey "hello" && redis-cli -p 6379 GET mykey',
   },
   {
