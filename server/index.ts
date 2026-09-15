@@ -21,6 +21,7 @@ import { projectService } from './projectService';
 import { githubService } from './githubService';
 import { scraperService } from './scraperService';
 import { handleSshWebSocketConnection } from './sshBridge';
+import { jarvisService } from './jarvisService';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -422,6 +423,59 @@ app.post('/api/scraper/analyze-item', async (req: Request, res: Response) => {
     res.json({ success: true, briefing });
   } catch (error: any) {
     console.error('[Item Analysis Error]:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ==========================================
+// 12.5. JARVIS MASTER INTELLIGENCE & HUD API
+// ==========================================
+
+// Get real-time system hardware telemetry
+app.get('/api/jarvis/telemetry', async (req: Request, res: Response) => {
+  try {
+    const report = await jarvisService.getTelemetry();
+    res.json({ success: true, telemetry: report });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Launch Windows PC applications, Obsidian, tools
+app.post('/api/jarvis/exec-app', async (req: Request, res: Response) => {
+  try {
+    const { app: appName, args } = req.body;
+    if (!appName) {
+      return res.status(400).json({ success: false, error: 'Missing app name' });
+    }
+    const result = await jarvisService.executePcApp(appName, args);
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Live atmospheric weather via Open-Meteo
+app.get('/api/jarvis/weather', async (req: Request, res: Response) => {
+  try {
+    const city = req.query.city as string;
+    const weather = await jarvisService.getWeather(city);
+    res.json(weather);
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Fast intent parser for HUD modal actions
+app.post('/api/jarvis/intent', (req: Request, res: Response) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ success: false, error: 'Missing prompt' });
+    }
+    const action = jarvisService.parseIntent(prompt);
+    res.json({ success: true, action });
+  } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
 });
