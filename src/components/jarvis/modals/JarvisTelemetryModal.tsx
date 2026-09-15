@@ -43,17 +43,19 @@ export const JarvisTelemetryModal: React.FC<JarvisTelemetryModalProps> = ({ onCl
 
   return (
     <motion.div
+      drag
+      dragMomentum={false}
       initial={{ opacity: 0, scale: 0.94, y: 15 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.94, y: 15 }}
       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-      className="relative z-40 w-full max-w-xl rounded-2xl border border-white/15 bg-[#07090e]/90 p-5 text-white shadow-2xl backdrop-blur-2xl"
+      className="relative z-40 w-full max-w-xl rounded-2xl border border-white/15 bg-[#07090e]/95 p-5 text-white shadow-2xl backdrop-blur-2xl"
       style={{
         boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(167, 139, 250, 0.15)'
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+      <div className="flex items-center justify-between border-b border-white/10 pb-3 cursor-move select-none">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-500/30 bg-purple-500/10 text-purple-400">
             <Activity className="h-4 w-4 animate-pulse" />

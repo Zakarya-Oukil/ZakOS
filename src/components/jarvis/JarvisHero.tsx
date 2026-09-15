@@ -10,8 +10,6 @@ import {
 import {
   Mic,
   MicOff,
-  Volume2,
-  VolumeX,
   Send,
   Sparkles,
   Activity,
@@ -19,22 +17,27 @@ import {
   Video,
   BookOpen,
   ShieldAlert,
-  ArrowRight,
+  Globe,
+  Monitor,
+  Terminal,
+  Cpu,
+  Radio,
   Maximize2,
   Minimize2,
-  Radio,
-  Sliders
+  X,
+  Volume2
 } from 'lucide-react';
 import { useJarvisVoice } from '../../hooks/useJarvisVoice';
 import { jarvisApi } from '../../services/jarvisApi';
 import { soundEngine } from '../../services/soundEffects';
 
-// HUD Modals
+// Draggable Holographic Spatial HUD Modals
 import { JarvisTelemetryModal } from './modals/JarvisTelemetryModal';
 import { JarvisWeatherModal } from './modals/JarvisWeatherModal';
 import { JarvisYouTubeModal } from './modals/JarvisYouTubeModal';
 import { JarvisVaultModal } from './modals/JarvisVaultModal';
 import { JarvisCyberModal } from './modals/JarvisCyberModal';
+import { JarvisSpiderReconModal } from './modals/JarvisSpiderReconModal';
 
 const SCENE_URL = 'https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode';
 
@@ -50,11 +53,23 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [sceneLoaded, setSceneLoaded] = useState(false);
 
-  // Active Modals
-  const [activeModal, setActiveModal] = useState<
-    'telemetry' | 'weather' | 'youtube' | 'vault' | 'cyber' | null
-  >(null);
-  const [modalPayload, setModalPayload] = useState<any>({});
+  // Active Multi-Window Draggable HUD Modals
+  const [activeModals, setActiveModals] = useState<{
+    telemetry?: boolean;
+    weather?: boolean;
+    youtube?: boolean;
+    vault?: boolean;
+    cyber?: boolean;
+    spider?: boolean;
+  }>({});
+
+  const [modalPayloads, setModalPayloads] = useState<{
+    weatherCity?: string;
+    youtubeQuery?: string;
+    vaultNote?: string;
+    cyberQuery?: string;
+    spiderTarget?: string;
+  }>({});
 
   // Chat / Query State
   const [textInput, setTextInput] = useState('');
@@ -63,7 +78,19 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
     'Systems online and synchronized, Commander Zakarya. I am monitoring hardware telemetry and tactical feeds. How may I assist you today, sir?'
   );
 
-  // Spring mouse cursor glow
+  // Clock
+  const [currentTime, setCurrentTime] = useState<string>('');
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Spring cursor light
   const cursorX = useMotionValue(-500);
   const cursorY = useMotionValue(-500);
 
@@ -87,7 +114,22 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
     cursorY.set(event.clientY - bounds.top);
   }
 
-  // Handle Intent / Action Dispatching
+  const toggleModal = (modalKey: 'telemetry' | 'weather' | 'youtube' | 'vault' | 'cyber' | 'spider') => {
+    soundEngine.playClick();
+    setActiveModals(prev => ({
+      ...prev,
+      [modalKey]: !prev[modalKey]
+    }));
+  };
+
+  const closeModal = (modalKey: 'telemetry' | 'weather' | 'youtube' | 'vault' | 'cyber' | 'spider') => {
+    setActiveModals(prev => ({
+      ...prev,
+      [modalKey]: false
+    }));
+  };
+
+  // Smart Intent & Action Dispatcher with Live Data Grounding
   const dispatchAction = useCallback(
     async (prompt: string) => {
       setIsProcessing(true);
@@ -96,44 +138,88 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
       try {
         // 1. Fast Intent Analysis
         const action = await jarvisApi.parseIntent(prompt);
+        let directSpokenReply = '';
 
-        if (action.type === 'open_telemetry') {
-          setActiveModal('telemetry');
-        } else if (action.type === 'open_weather') {
-          setModalPayload({ city: action.payload?.city || '' });
-          setActiveModal('weather');
-        } else if (action.type === 'open_youtube') {
-          setModalPayload({ query: action.payload?.query || '' });
-          setActiveModal('youtube');
+        if (action.type === 'open_weather') {
+          const cityQuery = action.payload?.city || '';
+          setModalPayloads(p => ({ ...p, weatherCity: cityQuery }));
+          setActiveModals(prev => ({ ...prev, weather: true }));
+
+          // Ground with real weather data
+          try {
+            const weather = await jarvisApi.getWeather(cityQuery || undefined);
+            if (weather && weather.current) {
+              const temp = Math.round(weather.current.temperature_2m ?? 20);
+              const humidity = weather.current.relative_humidity_2m ?? 50;
+              const wind = weather.current.wind_speed_10m ?? 10;
+              directSpokenReply = `Currently in ${weather.city}, the temperature is ${temp}°C, humidity is at ${humidity}% with winds at ${wind} km/h, sir. Atmospheric radar deployed on your HUD.`;
+            }
+          } catch (e) {}
+        } else if (action.type === 'open_telemetry') {
+          setActiveModals(prev => ({ ...prev, telemetry: true }));
+
+          // Ground with real hardware stats
+          try {
+            const telemetry = await jarvisApi.getTelemetry();
+            if (telemetry && telemetry.cpu) {
+              const cpuLoad = telemetry.cpu.currentLoad;
+              const ramUsed = (telemetry.mem.used / (1024 * 1024 * 1024)).toFixed(1);
+              const ramTotal = (telemetry.mem.total / (1024 * 1024 * 1024)).toFixed(1);
+              directSpokenReply = `Host CPU load is running at ${cpuLoad}% across your ${telemetry.cpu.cores} cores, with ${ramUsed} GB of RAM in active use out of ${ramTotal} GB, sir. Hardware thermal margins are optimal.`;
+            }
+          } catch (e) {}
+        } else if (action.type === 'open_spider') {
+          const target = action.payload?.target || '192.168.100.52';
+          setModalPayloads(p => ({ ...p, spiderTarget: target }));
+          setActiveModals(prev => ({ ...prev, spider: true }));
+          directSpokenReply = `Engaging Spider Reconnaissance and OSINT suite for target ${target}, sir. Initializing DNS enumeration, port scanning, and vulnerability discovery.`;
         } else if (action.type === 'open_vault') {
-          setModalPayload({ note: action.payload?.note || '' });
-          setActiveModal('vault');
+          const note = action.payload?.note || '';
+          setModalPayloads(p => ({ ...p, vaultNote: note }));
+          setActiveModals(prev => ({ ...prev, vault: true }));
+          directSpokenReply = `Accessing your Obsidian knowledge vault at C:\\Users\\Zakar\\Documents\\Obsidian\\My_Vault, sir. 156 markdown notes indexed and ready.`;
+        } else if (action.type === 'open_youtube') {
+          const query = action.payload?.query || 'Cybersecurity Red Team';
+          setModalPayloads(p => ({ ...p, youtubeQuery: query }));
+          setActiveModals(prev => ({ ...prev, youtube: true }));
+          directSpokenReply = `Deploying holographic YouTube stream for "${query}", sir.`;
         } else if (action.type === 'open_cyber') {
-          setModalPayload({ query: action.payload?.query || '' });
-          setActiveModal('cyber');
+          setModalPayloads(p => ({ ...p, cyberQuery: action.payload?.query || prompt }));
+          setActiveModals(prev => ({ ...prev, cyber: true }));
+          directSpokenReply = `SecOps tactical radar engaged, sir. Monitoring active network vectors and MITRE attack matrix.`;
         } else if (action.type === 'exec_pc') {
           const appName = action.payload?.app || '';
           await jarvisApi.executePcApp(appName);
+          directSpokenReply = `Dispatched application "${appName}" directly to your Windows system, sir.`;
         }
 
-        // 2. Query JARVIS AI Intelligence Core
-        const responseText = await jarvisApi.askJarvis(prompt);
-        const reply =
-          responseText ||
-          `Very well, sir. Executing your directive: "${prompt}". Operating parameters are optimal.`;
+        // If no direct data reply was synthesized, query the AI Core
+        let reply = directSpokenReply;
+        if (!reply) {
+          try {
+            const aiText = await jarvisApi.askJarvis(prompt);
+            if (aiText && aiText.trim()) {
+              reply = aiText.trim();
+            }
+          } catch (e) {}
+        }
+
+        if (!reply) {
+          reply = `Acknowledged, Commander Zakarya. Executing your tactical directive: "${prompt}". Operating parameters are optimal, sir.`;
+        }
 
         setJarvisDialogue(reply);
         speak(reply);
       } catch (err: any) {
         console.error('Action error:', err);
-        const fallback = `I have received your instruction, sir. Accessing local subsystem directly.`;
+        const fallback = `I have received your directive, sir. Interfacing directly with local subsystem.`;
         setJarvisDialogue(fallback);
         speak(fallback);
       } finally {
         setIsProcessing(false);
       }
     },
-    [] // dependency-free or updated
+    []
   );
 
   // Voice Engine hook
@@ -161,905 +247,365 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
   };
 
   return (
-    <main className="page select-none">
-      <motion.section
-        ref={containerRef}
-        className="hero"
-        onMouseMove={handleMouseMove}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{
-          duration: 0.8,
-          ease: [0.22, 1, 0.36, 1],
+    <main className="relative w-full h-full min-h-screen overflow-hidden bg-[#040711] text-white select-none font-sans">
+      {/* Sci-Fi Ambient Spring Cursor Light */}
+      <motion.div
+        className="cursor-light pointer-events-none absolute -top-[250px] -left-[250px] z-10 h-[500px] w-[500px] rounded-full opacity-60 filter blur-[20px] mix-blend-screen"
+        style={{
+          x: smoothX,
+          y: smoothY,
+          background: 'radial-gradient(circle, rgba(6, 182, 212, 0.16), rgba(168, 85, 247, 0.08) 35%, transparent 70%)'
         }}
+      />
+
+      {/* Cyber Grid Background & Subtle Vignette */}
+      <div 
+        className="absolute inset-0 z-0 opacity-15 pointer-events-none"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px'
+        }}
+      />
+
+      {/* 3D Spline Robot Layer (Dead Center, Matching Image 2) */}
+      <motion.div
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        className="absolute inset-0 z-1 flex items-center justify-center overflow-hidden"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* Spring Cursor Radial Light */}
-        <motion.div
-          className="cursor-light"
+        {!sceneLoaded && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#040711]">
+            <div className="h-9 w-9 rounded-full border-2 border-cyan-500/20 border-t-cyan-400 animate-spin" />
+            <span className="font-mono text-[10px] tracking-widest text-cyan-400/80 uppercase">
+              Initializing J.A.R.V.I.S. Neural Hologram
+            </span>
+          </div>
+        )}
+
+        <Spline
+          scene={SCENE_URL}
+          className="w-full h-full flex items-center justify-center"
           style={{
-            x: smoothX,
-            y: smoothY,
+            transform: 'scale(1.08) translateY(2%)',
+            transformOrigin: 'center center'
           }}
+          onLoad={() => setSceneLoaded(true)}
         />
+      </motion.div>
 
-        <div className="content">
-          {/* Full-Screen Spline 3D Robot Layer */}
-          <motion.div
-            className="scene-area"
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{
-              duration: 1,
-              delay: 0.15,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          >
-            {!sceneLoaded && (
-              <div className="loader-container">
-                <span className="loader" />
-                <p>Loading 3D scene</p>
-              </div>
-            )}
+      {/* Sci-Fi HUD Corner Brackets & Frame (Directly matching Image 2) */}
+      <div className="pointer-events-none absolute inset-4 z-20 flex flex-col justify-between">
+        {/* Top Corners */}
+        <div className="flex justify-between items-start">
+          <div className="flex items-center gap-2 font-mono text-[10px] text-cyan-400/80 tracking-wider">
+            <span className="text-cyan-400 font-bold">┌───</span>
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-cyan-950/40 border border-cyan-500/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+              <span>JARVIS CORE // MK-85</span>
+            </span>
+            <span className="text-zinc-500">SYS: OPTIMAL</span>
+          </div>
 
-            <Spline
-              scene={SCENE_URL}
-              className="spline"
-              onLoad={() => setSceneLoaded(true)}
-            />
-
-            {/* Floating Live Environment Status Badge in Bottom-Right */}
-            <motion.div
-              className="live-label"
-              animate={{
-                y: [0, -5, 0],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            >
-              <span className="live-icon">
-                <span />
-              </span>
-
-              <div>
-                <strong>Live environment</strong>
-                <small>Move your cursor to interact</small>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* Transparent Left Content Layer */}
-          <motion.div
-            className="text-area"
-            initial={{ opacity: 0, x: -35 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{
-              duration: 0.8,
-              delay: 0.15,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          >
-            {/* Top Eyebrow Badge */}
-            <div className="eyebrow">
-              <span />
-              IMMERSIVE DIGITAL EXPERIENCE
-            </div>
-
-            {/* Main Typography */}
-            <h1>
-              Interactive
-              <span className="gradient-text">3D.</span>
-            </h1>
-
-            <p>
-              Bring your interface to life with an interactive
-              three-dimensional experience designed to capture
-              attention and make your product unforgettable.
-            </p>
-
-            {/* Buttons Row */}
-            <div className="buttons">
-              <button
-                onClick={() => {
-                  soundEngine.playClick();
-                  setActiveModal('telemetry');
-                }}
-                className="primary-button"
-              >
-                Explore experience
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M5 12H19M13 6L19 12L13 18" />
-                </svg>
-              </button>
-
-              <button
-                onClick={() => {
-                  soundEngine.playClick();
-                  if (onToggleDesktopWorkspace) {
-                    onToggleDesktopWorkspace();
-                  } else {
-                    setActiveModal('cyber');
-                  }
-                }}
-                className="secondary-button"
-              >
-                {onToggleDesktopWorkspace ? 'ZakOS Workspace' : 'View details'}
-              </button>
-            </div>
-
-            {/* Features Row */}
-            <div className="features">
-              <div>
-                <strong>Realtime</strong>
-                <span>3D rendering</span>
-              </div>
-
-              <i />
-
-              <div>
-                <strong>Interactive</strong>
-                <span>Mouse controls</span>
-              </div>
-            </div>
-
-            {/* JARVIS Live Dialogue Banner & Tactical Voice Bar */}
-            <div className="mt-6 w-full max-w-[530px] rounded-2xl border border-white/10 bg-[#090b12]/80 p-3.5 backdrop-blur-xl pointer-events-auto shadow-2xl">
-              {/* Voice / Mic Indicator Bar */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-2.5 mb-2.5">
-                <div className="flex items-center gap-2.5">
-                  <button
-                    onClick={toggleMute}
-                    title={isMuted ? 'Unmute microphone' : 'Mute microphone'}
-                    className={`relative flex h-8 w-8 items-center justify-center rounded-xl border transition-all ${
-                      isMuted
-                        ? 'border-red-500/40 bg-red-500/15 text-red-400'
-                        : isSpeaking
-                        ? 'border-cyan-400/50 bg-cyan-500/20 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.4)]'
-                        : isListening
-                        ? 'border-emerald-500/50 bg-emerald-500/20 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-                        : 'border-white/15 bg-white/5 text-zinc-300'
-                    }`}
-                  >
-                    {isMuted ? (
-                      <MicOff className="h-4 w-4" />
-                    ) : (
-                      <Mic className="h-4 w-4 animate-pulse" />
-                    )}
-                    {!isMuted && (
-                      <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                      </span>
-                    )}
-                  </button>
-
-                  <div>
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-200">
-                      <span>J.A.R.V.I.S. Core</span>
-                      <span className="rounded bg-purple-500/20 px-1 py-0.2 text-[9px] font-mono text-purple-300">
-                        SecOps AI
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-zinc-400">
-                      {isSpeaking
-                        ? 'Synthesizing voice transmission...'
-                        : isMuted
-                        ? 'Mic Standby (Muted)'
-                        : isListening
-                        ? 'Listening for voice directives...'
-                        : 'Active Standby'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick HUD Shortcuts */}
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setActiveModal('telemetry')}
-                    title="System Telemetry"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 text-zinc-400 hover:border-purple-500/40 hover:text-purple-300"
-                  >
-                    <Activity className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setActiveModal('weather')}
-                    title="Atmospheric Weather"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 text-zinc-400 hover:border-sky-500/40 hover:text-sky-300"
-                  >
-                    <CloudSun className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setActiveModal('youtube')}
-                    title="YouTube Visual Feed"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 text-zinc-400 hover:border-red-500/40 hover:text-red-400"
-                  >
-                    <Video className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setActiveModal('vault')}
-                    title="Obsidian Knowledge Vault"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 text-zinc-400 hover:border-purple-500/40 hover:text-purple-300"
-                  >
-                    <BookOpen className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setActiveModal('cyber')}
-                    title="Tactical Cyber Radar"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 text-zinc-400 hover:border-red-500/40 hover:text-red-400"
-                  >
-                    <ShieldAlert className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Dialogue Box */}
-              <div className="font-mono text-xs leading-relaxed text-zinc-300 bg-black/40 rounded-xl p-2.5 border border-white/5 max-h-24 overflow-y-auto">
-                <span className="text-purple-400 font-semibold mr-1.5">[JARVIS]:</span>
-                {jarvisDialogue}
-                {interimText && (
-                  <div className="text-emerald-400/80 italic text-[11px] mt-1">
-                    "{interimText}"
-                  </div>
-                )}
-              </div>
-
-              {/* Text Input Prompt */}
-              <form onSubmit={handleTextSubmit} className="mt-2.5 flex gap-2">
-                <input
-                  type="text"
-                  value={textInput}
-                  onChange={(e) => setTextInput(e.target.value)}
-                  placeholder="Ask JARVIS (e.g. 'Show CPU load', 'Weather today', 'Open Obsidian')..."
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:border-purple-400/50 focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  disabled={isProcessing}
-                  className="flex items-center justify-center rounded-xl border border-purple-500/40 bg-purple-500/20 px-3 text-purple-200 transition-all hover:bg-purple-500/30 disabled:opacity-50"
-                >
-                  <Send className="h-3.5 w-3.5" />
-                </button>
-              </form>
-            </div>
-          </motion.div>
+          <div className="flex items-center gap-2 font-mono text-[10px] text-cyan-400/80 tracking-wider">
+            <span className="text-zinc-500">DEFCON: 1 // SEC-OPS</span>
+            <span className="px-2 py-0.5 rounded bg-cyan-950/40 border border-cyan-500/30 text-cyan-300">
+              {currentTime || '01:50:00'}
+            </span>
+            <span className="text-cyan-400 font-bold">───┐</span>
+          </div>
         </div>
 
-        {/* Spatial Floating Modals (Rendered without obscuring the 3D Robot) */}
-        <AnimatePresence>
-          {activeModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm pointer-events-auto">
-              <div className="relative">
-                {activeModal === 'telemetry' && (
-                  <JarvisTelemetryModal onClose={() => setActiveModal(null)} />
+        {/* Bottom Corners */}
+        <div className="flex justify-between items-end">
+          <div className="flex items-center gap-2 font-mono text-[10px] text-cyan-400/80 tracking-wider">
+            <span className="text-cyan-400 font-bold">└───</span>
+            <span className="text-zinc-400">HOST: WINDOWS 11 // 12-CORE CPU</span>
+            <span className="text-zinc-600">// LATENCY: 2ms</span>
+          </div>
+
+          <div className="flex items-center gap-2 font-mono text-[10px] text-cyan-400/80 tracking-wider">
+            <span className="text-zinc-400">ENCRYPTION: AES-256-GCM</span>
+            <span className="text-cyan-400 font-bold">───┘</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Floating Holographic Control Deck */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 rounded-2xl border border-cyan-500/30 bg-[#060a14]/85 px-3 py-1.5 backdrop-blur-xl shadow-2xl">
+        {/* Quick Launch Holographic Action Buttons */}
+        <button
+          onClick={() => toggleModal('spider')}
+          className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 font-mono text-xs transition-all ${
+            activeModals.spider
+              ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400 font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)]'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+          }`}
+          title="Spider Reconnaissance & Vulnerability Scanner"
+        >
+          <Globe className="h-3.5 w-3.5 text-cyan-400" />
+          <span>SPIDER RECON</span>
+        </button>
+
+        <button
+          onClick={() => toggleModal('telemetry')}
+          className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 font-mono text-xs transition-all ${
+            activeModals.telemetry
+              ? 'bg-purple-500/30 text-purple-200 border border-purple-400 font-bold shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+          }`}
+          title="Hardware Telemetry Diagnostic"
+        >
+          <Activity className="h-3.5 w-3.5 text-purple-400" />
+          <span>TELEMETRY</span>
+        </button>
+
+        <button
+          onClick={() => toggleModal('weather')}
+          className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 font-mono text-xs transition-all ${
+            activeModals.weather
+              ? 'bg-sky-500/30 text-sky-200 border border-sky-400 font-bold shadow-[0_0_15px_rgba(56,189,248,0.4)]'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+          }`}
+          title="Live Atmospheric Weather Radar"
+        >
+          <CloudSun className="h-3.5 w-3.5 text-sky-400" />
+          <span>WEATHER</span>
+        </button>
+
+        <button
+          onClick={() => toggleModal('vault')}
+          className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 font-mono text-xs transition-all ${
+            activeModals.vault
+              ? 'bg-purple-500/30 text-purple-200 border border-purple-400 font-bold shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+          }`}
+          title="Obsidian Knowledge Vault"
+        >
+          <BookOpen className="h-3.5 w-3.5 text-purple-400" />
+          <span>VAULT</span>
+        </button>
+
+        <button
+          onClick={() => toggleModal('youtube')}
+          className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 font-mono text-xs transition-all ${
+            activeModals.youtube
+              ? 'bg-red-500/30 text-red-200 border border-red-400 font-bold shadow-[0_0_15px_rgba(239,68,68,0.4)]'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+          }`}
+          title="Tactical YouTube Feed"
+        >
+          <Video className="h-3.5 w-3.5 text-red-400" />
+          <span>YOUTUBE</span>
+        </button>
+
+        <button
+          onClick={() => toggleModal('cyber')}
+          className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 font-mono text-xs transition-all ${
+            activeModals.cyber
+              ? 'bg-red-500/30 text-red-200 border border-red-400 font-bold shadow-[0_0_15px_rgba(239,68,68,0.4)]'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+          }`}
+          title="SecOps Tactical Radar"
+        >
+          <ShieldAlert className="h-3.5 w-3.5 text-red-400" />
+          <span>CYBER C2</span>
+        </button>
+
+        <div className="h-4 w-px bg-white/10 mx-1" />
+
+        {/* Audio Frequency Waveform Visualizer */}
+        <div className="flex items-center gap-0.5 px-2">
+          {[40, 75, 100, 60, 85, 45, 90, 30].map((h, i) => (
+            <span
+              key={i}
+              className={`w-1 rounded-full transition-all duration-200 ${
+                isSpeaking
+                  ? 'bg-cyan-400 animate-pulse'
+                  : isListening
+                  ? 'bg-emerald-400 animate-bounce'
+                  : 'bg-cyan-500/30'
+              }`}
+              style={{
+                height: `${(isSpeaking || isListening ? (h * 0.22) : 4)}px`,
+                animationDelay: `${i * 0.1}s`
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Center-Bottom Cyber Command Prompt Deck */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 w-full max-w-2xl px-4 pointer-events-auto">
+        <div className="rounded-2xl border border-cyan-500/30 bg-[#060a14]/90 p-3.5 backdrop-blur-2xl shadow-2xl">
+          {/* Header row: Mic + JARVIS Status */}
+          <div className="flex items-center justify-between border-b border-white/10 pb-2.5 mb-2.5">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={toggleMute}
+                title={isMuted ? 'Unmute microphone' : 'Mute microphone'}
+                className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition-all ${
+                  isMuted
+                    ? 'border-red-500/40 bg-red-500/15 text-red-400'
+                    : isSpeaking
+                    ? 'border-cyan-400/60 bg-cyan-500/25 text-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.5)]'
+                    : isListening
+                    ? 'border-emerald-400/60 bg-emerald-500/25 text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,0.5)]'
+                    : 'border-cyan-500/20 bg-white/5 text-zinc-300'
+                }`}
+              >
+                {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4 animate-pulse" />}
+                {!isMuted && (
+                  <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                  </span>
                 )}
-                {activeModal === 'weather' && (
-                  <JarvisWeatherModal
-                    initialCity={modalPayload?.city}
-                    onClose={() => setActiveModal(null)}
-                  />
-                )}
-                {activeModal === 'youtube' && (
-                  <JarvisYouTubeModal
-                    initialQuery={modalPayload?.query}
-                    onClose={() => setActiveModal(null)}
-                  />
-                )}
-                {activeModal === 'vault' && (
-                  <JarvisVaultModal
-                    initialNoteQuery={modalPayload?.note}
-                    onClose={() => setActiveModal(null)}
-                  />
-                )}
-                {activeModal === 'cyber' && (
-                  <JarvisCyberModal
-                    initialTarget={modalPayload?.query}
-                    onClose={() => setActiveModal(null)}
-                    onOpenApp={onOpenApp}
-                  />
-                )}
+              </button>
+
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold text-white font-mono">
+                  <span>J.A.R.V.I.S. TACTICAL CORE</span>
+                  <span className="rounded bg-cyan-500/20 px-1.5 py-0.2 text-[9px] font-mono text-cyan-300 border border-cyan-500/30">
+                    VOICE ONLINE
+                  </span>
+                </div>
+                <div className="text-[10px] text-cyan-400/80 font-mono">
+                  {isSpeaking
+                    ? 'Transmitting tactical synthesis...'
+                    : isMuted
+                    ? 'Microphone Standby (Muted)'
+                    : isListening
+                    ? 'Monitoring voice directives...'
+                    : 'Tactical Standby'}
+                </div>
               </div>
             </div>
-          )}
-        </AnimatePresence>
-      </motion.section>
 
-      {/* Hero Styles matching exact prompt requirements */}
-      <style>{`
-        * {
-          box-sizing: border-box;
-        }
-
-        html,
-        body,
-        #root {
-          width: 100%;
-          height: 100%;
-          min-height: 100%;
-          margin: 0;
-        }
-
-        body {
-          overflow: hidden;
-          background: #050506;
-          font-family:
-            Inter,
-            ui-sans-serif,
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            "Segoe UI",
-            sans-serif;
-        }
-
-        button {
-          font: inherit;
-        }
-
-        .page {
-          width: 100%;
-          height: 100vh;
-          height: 100svh;
-          height: 100dvh;
-          margin: 0;
-          padding: 0;
-          overflow: hidden;
-          color: white;
-          background: #050506;
-        }
-
-        .hero {
-          position: relative;
-          isolation: isolate;
-          width: 100%;
-          height: 100%;
-          min-height: 0;
-          overflow: hidden;
-          background: #050506;
-        }
-
-        .cursor-light {
-          position: absolute;
-          top: -250px;
-          left: -250px;
-          z-index: 20;
-          width: 500px;
-          height: 500px;
-          pointer-events: none;
-          border-radius: 50%;
-          opacity: 0.65;
-          filter: blur(16px);
-          mix-blend-mode: screen;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.12),
-            rgba(135, 101, 255, 0.07) 30%,
-            transparent 70%
-          );
-        }
-
-        .content {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          min-height: 0;
-          overflow: hidden;
-          background: #050506;
-        }
-
-        .scene-area {
-          position: absolute;
-          inset: 0;
-          z-index: 2;
-          width: 100%;
-          height: 100%;
-          min-width: 0;
-          min-height: 0;
-          overflow: visible;
-          background: #050506;
-        }
-
-        .spline {
-          position: absolute !important;
-          inset: 0;
-          width: 100% !important;
-          height: 100% !important;
-          background: #050506;
-          transform: translateX(15%) scale(1.08);
-          transform-origin: center center;
-        }
-
-        .spline canvas {
-          width: 100% !important;
-          height: 100% !important;
-          background: #050506 !important;
-        }
-
-        .text-area {
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          left: 0;
-          z-index: 10;
-          display: flex;
-          width: 50%;
-          min-width: 0;
-          min-height: 0;
-          flex-direction: column;
-          justify-content: center;
-          padding:
-            clamp(30px, 6vh, 70px)
-            clamp(40px, 7vw, 120px);
-          padding-right: 20px;
-          pointer-events: none;
-          background: transparent;
-        }
-
-        .text-area button,
-        .text-area input,
-        .text-area form {
-          pointer-events: auto;
-        }
-
-        .eyebrow {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          width: fit-content;
-          margin-bottom: clamp(15px, 2.6vh, 25px);
-          padding: 8px 13px;
-          color: rgba(255, 255, 255, 0.65);
-          font-size: 10px;
-          font-weight: 650;
-          letter-spacing: 0.17em;
-          text-transform: uppercase;
-          border: 1px solid rgba(255, 255, 255, 0.11);
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.035);
-          backdrop-filter: blur(14px);
-        }
-
-        .eyebrow > span {
-          width: 6px;
-          height: 6px;
-          flex-shrink: 0;
-          border-radius: 50%;
-          background: #a78bfa;
-          box-shadow:
-            0 0 10px #a78bfa,
-            0 0 20px rgba(167, 139, 250, 0.7);
-        }
-
-        h1 {
-          max-width: 620px;
-          margin: 0;
-          color: #f5f5f7;
-          font-size: clamp(58px, min(7vw, 13vh), 108px);
-          font-weight: 590;
-          line-height: 0.88;
-          letter-spacing: -0.075em;
-        }
-
-        .gradient-text {
-          display: block;
-          padding-bottom: clamp(5px, 1.2vh, 12px);
-          color: transparent;
-          background: linear-gradient(
-            135deg,
-            #ffffff,
-            #b8a5ff 48%,
-            #7565ff
-          );
-          background-clip: text;
-          -webkit-background-clip: text;
-        }
-
-        .text-area > p {
-          max-width: 530px;
-          margin: clamp(15px, 2.8vh, 26px) 0 0;
-          color: rgba(255, 255, 255, 0.5);
-          font-size: clamp(13px, 1.3vw, 17px);
-          line-height: 1.7;
-        }
-
-        .buttons {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-top: clamp(18px, 3.5vh, 33px);
-        }
-
-        .primary-button,
-        .secondary-button {
-          height: clamp(45px, 6vh, 52px);
-          padding: 0 21px;
-          cursor: pointer;
-          border-radius: 999px;
-          transition:
-            transform 220ms ease,
-            background 220ms ease,
-            border-color 220ms ease,
-            box-shadow 220ms ease;
-        }
-
-        .primary-button {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          color: #090909;
-          font-size: 14px;
-          font-weight: 650;
-          border: 0;
-          background: #ffffff;
-          box-shadow: 0 12px 30px rgba(255, 255, 255, 0.13);
-        }
-
-        .primary-button svg {
-          width: 18px;
-          height: 18px;
-          fill: none;
-          stroke: currentColor;
-          stroke-width: 1.8;
-          stroke-linecap: round;
-          stroke-linejoin: round;
-          transition: transform 220ms ease;
-        }
-
-        .primary-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 18px 38px rgba(255, 255, 255, 0.19);
-        }
-
-        .primary-button:hover svg {
-          transform: translateX(3px);
-        }
-
-        .secondary-button {
-          color: rgba(255, 255, 255, 0.72);
-          font-size: 14px;
-          font-weight: 550;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          background: rgba(255, 255, 255, 0.035);
-          backdrop-filter: blur(14px);
-        }
-
-        .secondary-button:hover {
-          transform: translateY(-2px);
-          color: white;
-          border-color: rgba(255, 255, 255, 0.23);
-          background: rgba(255, 255, 255, 0.07);
-        }
-
-        .features {
-          display: flex;
-          align-items: center;
-          gap: 25px;
-          margin-top: clamp(20px, 4.5vh, 44px);
-        }
-
-        .features div {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .features strong {
-          color: rgba(255, 255, 255, 0.88);
-          font-size: 12px;
-          font-weight: 600;
-        }
-
-        .features span {
-          color: rgba(255, 255, 255, 0.31);
-          font-size: 11px;
-        }
-
-        .features i {
-          width: 1px;
-          height: 28px;
-          background: rgba(255, 255, 255, 0.12);
-        }
-
-        .loader-container {
-          position: absolute;
-          inset: 0;
-          z-index: 3;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 13px;
-          color: rgba(255, 255, 255, 0.4);
-          font-size: 10px;
-          letter-spacing: 0.13em;
-          text-transform: uppercase;
-          background: #050506;
-        }
-
-        .loader-container p {
-          margin: 0;
-        }
-
-        .loader {
-          width: 34px;
-          height: 34px;
-          border: 2px solid rgba(255, 255, 255, 0.12);
-          border-top-color: white;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-        }
-
-        .live-label {
-          position: absolute;
-          right: clamp(18px, 2.5vw, 35px);
-          bottom: max(
-            clamp(20px, 3.5vh, 35px),
-            env(safe-area-inset-bottom)
-          );
-          z-index: 30;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          max-width: calc(100% - 36px);
-          padding: 12px 14px;
-          pointer-events: none;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 16px;
-          background: rgba(8, 8, 10, 0.72);
-          box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
-          backdrop-filter: blur(18px);
-        }
-
-        .live-icon {
-          display: grid;
-          place-items: center;
-          width: 31px;
-          height: 31px;
-          flex-shrink: 0;
-          border: 1px solid rgba(158, 130, 255, 0.2);
-          border-radius: 10px;
-          background: rgba(139, 107, 255, 0.14);
-        }
-
-        .live-icon span {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: #a78bfa;
-          box-shadow:
-            0 0 10px #a78bfa,
-            0 0 20px rgba(167, 139, 250, 0.8);
-        }
-
-        .live-label > div {
-          display: flex;
-          min-width: 0;
-          flex-direction: column;
-          gap: 3px;
-        }
-
-        .live-label strong {
-          color: rgba(255, 255, 255, 0.88);
-          font-size: 11px;
-          font-weight: 600;
-          white-space: nowrap;
-        }
-
-        .live-label small {
-          color: rgba(255, 255, 255, 0.38);
-          font-size: 9px;
-          white-space: nowrap;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        @media (min-width: 901px) and (max-height: 760px) {
-          .text-area {
-            padding-top: 28px;
-            padding-bottom: 28px;
-          }
-
-          .eyebrow {
-            margin-bottom: 14px;
-            padding: 7px 12px;
-          }
-
-          h1 {
-            font-size: clamp(55px, 11.5vh, 82px);
-          }
-
-          .text-area > p {
-            margin-top: 14px;
-            font-size: 14px;
-            line-height: 1.55;
-          }
-
-          .buttons {
-            margin-top: 18px;
-          }
-
-          .primary-button,
-          .secondary-button {
-            height: 44px;
-          }
-
-          .features {
-            margin-top: 20px;
-          }
-
-          .live-label {
-            bottom: 20px;
-            padding: 10px 12px;
-          }
-        }
-
-        @media (min-width: 901px) and (max-height: 650px) {
-          .text-area {
-            padding-top: 20px;
-            padding-bottom: 20px;
-          }
-
-          .eyebrow {
-            margin-bottom: 11px;
-            font-size: 8px;
-          }
-
-          h1 {
-            font-size: clamp(50px, 11vh, 70px);
-          }
-
-          .text-area > p {
-            max-width: 480px;
-            margin-top: 10px;
-            font-size: 13px;
-            line-height: 1.45;
-          }
-
-          .buttons {
-            margin-top: 14px;
-          }
-
-          .primary-button,
-          .secondary-button {
-            height: 40px;
-            font-size: 12px;
-          }
-
-          .features {
-            margin-top: 14px;
-          }
-
-          .features i {
-            height: 22px;
-          }
-
-          .live-label {
-            right: 18px;
-            bottom: 16px;
-            padding: 9px 11px;
-          }
-
-          .live-icon {
-            width: 27px;
-            height: 27px;
-          }
-        }
-
-        @media (max-width: 900px) {
-          body {
-            overflow-y: auto;
-          }
-
-          .page {
-            min-height: 100vh;
-            height: auto;
-            overflow: visible;
-          }
-
-          .hero {
-            min-height: 100vh;
-            height: auto;
-            overflow: hidden;
-          }
-
-          .content {
-            display: grid;
-            grid-template-columns: 1fr;
-            grid-template-rows: auto minmax(460px, 1fr);
-            min-height: 100vh;
-            overflow: visible;
-          }
-
-          .text-area {
-            position: relative;
-            inset: auto;
-            width: 100%;
-            height: auto;
-            padding: 75px 35px 20px;
-          }
-
-          .scene-area {
-            position: relative;
-            inset: auto;
-            width: 100%;
-            min-height: 460px;
-            overflow: hidden;
-          }
-
-          .spline {
-            transform: none;
-          }
-
-          h1 {
-            font-size: clamp(58px, 14vw, 86px);
-          }
-        }
-
-        @media (max-width: 580px) {
-          .content {
-            grid-template-rows: auto minmax(410px, 1fr);
-          }
-
-          .text-area {
-            padding: 58px 22px 5px;
-          }
-
-          .eyebrow {
-            margin-bottom: 19px;
-            font-size: 8px;
-          }
-
-          h1 {
-            font-size: clamp(53px, 17vw, 72px);
-          }
-
-          .text-area > p {
-            margin-top: 19px;
-            font-size: 14px;
-            line-height: 1.65;
-          }
-
-          .buttons {
-            flex-direction: column;
-            align-items: stretch;
-            margin-top: 26px;
-          }
-
-          .primary-button,
-          .secondary-button {
-            width: 100%;
-          }
-
-          .features {
-            display: none;
-          }
-
-          .scene-area {
-            min-height: 410px;
-          }
-
-          .live-label {
-            right: 18px;
-            bottom: 18px;
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          *,
-          *::before,
-          *::after {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-          }
-        }
-      `}</style>
+            {/* Switch to Legacy Desktop */}
+            {onToggleDesktopWorkspace && (
+              <button
+                onClick={onToggleDesktopWorkspace}
+                className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-mono text-zinc-300 hover:bg-white/10 hover:text-white transition-colors"
+                title="Switch to ZakOS Multi-Window Desktop"
+              >
+                <Monitor className="h-3 w-3 text-cyan-400" />
+                <span>ZakOS Desktop</span>
+              </button>
+            )}
+          </div>
+
+          {/* Dialogue Display Box */}
+          <div className="font-mono text-xs leading-relaxed text-zinc-200 bg-black/50 rounded-xl p-3 border border-white/5 max-h-24 overflow-y-auto">
+            <span className="text-cyan-400 font-bold mr-2">[JARVIS]:</span>
+            {jarvisDialogue}
+            {interimText && (
+              <div className="text-emerald-400/90 italic text-[11px] mt-1 flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+                <span>"{interimText}"</span>
+              </div>
+            )}
+          </div>
+
+          {/* Input & Execution Bar */}
+          <form onSubmit={handleTextSubmit} className="mt-2.5 flex gap-2">
+            <input
+              type="text"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              placeholder="Ask JARVIS (e.g., 'Scan target 192.168.100.52', 'Show CPU load', 'Weather in London', 'Open Obsidian')..."
+              className="w-full rounded-xl border border-cyan-500/30 bg-black/50 px-3.5 py-2 font-mono text-xs text-cyan-100 placeholder-zinc-500 focus:border-cyan-400 focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={isProcessing}
+              className="flex items-center justify-center rounded-xl border border-cyan-400/50 bg-cyan-500/25 px-4 text-cyan-200 transition-all hover:bg-cyan-500/40 disabled:opacity-50"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </form>
+
+          {/* Quick Prompt Suggestions */}
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-400">
+            <span className="text-zinc-500 uppercase">Directives:</span>
+            {[
+              'Scan target 192.168.100.52',
+              'Show CPU telemetry',
+              'Weather today',
+              'Open Obsidian vault',
+              'Open Wireshark'
+            ].map((q, i) => (
+              <button
+                key={i}
+                onClick={() => dispatchAction(q)}
+                className="rounded border border-white/5 bg-white/[0.03] px-2 py-0.5 text-zinc-400 hover:border-cyan-500/30 hover:text-cyan-300 transition-colors"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Draggable Holographic Spatial Windows Layer (Non-Blocking, Moveable Anywhere) */}
+      <AnimatePresence>
+        {activeModals.spider && (
+          <div className="fixed top-16 left-24 z-50 pointer-events-auto">
+            <JarvisSpiderReconModal
+              initialTarget={modalPayloads.spiderTarget}
+              onClose={() => closeModal('spider')}
+            />
+          </div>
+        )}
+
+        {activeModals.telemetry && (
+          <div className="fixed top-20 left-12 z-50 pointer-events-auto">
+            <JarvisTelemetryModal onClose={() => closeModal('telemetry')} />
+          </div>
+        )}
+
+        {activeModals.weather && (
+          <div className="fixed top-20 right-12 z-50 pointer-events-auto">
+            <JarvisWeatherModal
+              initialCity={modalPayloads.weatherCity}
+              onClose={() => closeModal('weather')}
+            />
+          </div>
+        )}
+
+        {activeModals.vault && (
+          <div className="fixed bottom-24 left-16 z-50 pointer-events-auto">
+            <JarvisVaultModal
+              initialNoteQuery={modalPayloads.vaultNote}
+              onClose={() => closeModal('vault')}
+            />
+          </div>
+        )}
+
+        {activeModals.youtube && (
+          <div className="fixed bottom-24 right-16 z-50 pointer-events-auto">
+            <JarvisYouTubeModal
+              initialQuery={modalPayloads.youtubeQuery}
+              onClose={() => closeModal('youtube')}
+            />
+          </div>
+        )}
+
+        {activeModals.cyber && (
+          <div className="fixed top-28 left-1/4 z-50 pointer-events-auto">
+            <JarvisCyberModal
+              initialTarget={modalPayloads.cyberQuery}
+              onClose={() => closeModal('cyber')}
+              onOpenApp={onOpenApp}
+            />
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   );
 };

@@ -71,7 +71,7 @@ export interface WeatherData {
 }
 
 export interface JarvisActionResponse {
-  type: 'open_telemetry' | 'open_weather' | 'open_youtube' | 'open_vault' | 'open_cyber' | 'exec_pc' | 'none';
+  type: 'open_telemetry' | 'open_weather' | 'open_youtube' | 'open_vault' | 'open_cyber' | 'open_spider' | 'exec_pc' | 'none';
   payload?: any;
 }
 

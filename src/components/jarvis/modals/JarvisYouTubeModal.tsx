@@ -36,6 +36,8 @@ export const JarvisYouTubeModal: React.FC<JarvisYouTubeModalProps> = ({
 
   return (
     <motion.div
+      drag
+      dragMomentum={false}
       initial={{ opacity: 0, scale: 0.94, y: 15 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.94, y: 15 }}
@@ -46,7 +48,7 @@ export const JarvisYouTubeModal: React.FC<JarvisYouTubeModalProps> = ({
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+      <div className="flex items-center justify-between border-b border-white/10 pb-3 cursor-move select-none">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/10 text-red-400">
             <Video className="h-4 w-4" />

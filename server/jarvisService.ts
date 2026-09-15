@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 
 export interface JarvisAction {
-  type: 'open_telemetry' | 'open_weather' | 'open_youtube' | 'open_vault' | 'open_cyber' | 'exec_pc' | 'none';
+  type: 'open_telemetry' | 'open_weather' | 'open_youtube' | 'open_vault' | 'open_cyber' | 'open_spider' | 'exec_pc' | 'none';
   payload?: any;
 }
 
@@ -288,16 +288,30 @@ class JarvisService {
       return { type: 'open_vault', payload: { note } };
     }
 
-    // 5. Cybersecurity / Pentest / SOC / Nmap / CVE
+    // 5. Spider Recon & OSINT Target Scanner
+    if (
+      p.includes('spider') ||
+      p.includes('recon') ||
+      p.includes('scan target') ||
+      p.includes('scan a target') ||
+      p.includes('osint') ||
+      p.includes('pentest lab') ||
+      p.includes('subdomain')
+    ) {
+      // Extract IP or domain from prompt if present
+      const ipMatch = prompt.match(/\b(?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2})?\b/);
+      const urlMatch = prompt.match(/(?:https?:\/\/)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+      const target = ipMatch ? ipMatch[0] : (urlMatch ? urlMatch[0] : '192.168.100.52');
+      return { type: 'open_spider', payload: { target } };
+    }
+
+    // 5.5. Cybersecurity / CVE / Nmap / SecOps Radar
     if (
       p.includes('cve') ||
-      p.includes('scan') ||
-      p.includes('pentest') ||
       p.includes('soc') ||
       p.includes('nmap') ||
       p.includes('exploit') ||
       p.includes('wireshark') ||
-      p.includes('recon') ||
       p.includes('security')
     ) {
       return { type: 'open_cyber', payload: { query: prompt } };
