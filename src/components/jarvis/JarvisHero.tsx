@@ -106,12 +106,85 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
     mass: 0.25,
   });
 
+  // 3D Robot Head & Visor Parallax Tracking
+  const headParallaxX = useMotionValue(0);
+  const headParallaxY = useMotionValue(0);
+  const smoothHeadX = useSpring(headParallaxX, { stiffness: 120, damping: 22 });
+  const smoothHeadY = useSpring(headParallaxY, { stiffness: 120, damping: 22 });
+
+  const splineAppRef = useRef<any>(null);
+  const dispatchActionRef = useRef<(cmd: string) => void>(() => {});
+
+  // Voice Engine hook (Defined before dispatchAction to ensure direct access to speak)
+  const {
+    isMuted,
+    isListening,
+    isSpeaking,
+    transcript,
+    interimText,
+    toggleMute,
+    speak,
+    stopSpeaking
+  } = useJarvisVoice({
+    onCommandDetected: (cmd) => {
+      dispatchActionRef.current(cmd);
+    }
+  });
+
+  // Synchronize Spline 3D Scene Variables and Materials with Speaking state
+  useEffect(() => {
+    if (!splineAppRef.current) return;
+    try {
+      const app = splineAppRef.current;
+      if (typeof app.setVariable === 'function') {
+        app.setVariable('isSpeaking', isSpeaking);
+        app.setVariable('speaking', isSpeaking);
+        app.setVariable('talking', isSpeaking);
+        app.setVariable('blueEyes', isSpeaking);
+        app.setVariable('eyeGlow', isSpeaking ? 1 : 0);
+      }
+      if (typeof app.emitEvent === 'function') {
+        app.emitEvent(isSpeaking ? 'startSpeaking' : 'stopSpeaking');
+      }
+
+      // Check scene objects for emissive or color properties
+      const allObjs = typeof app.getAllObjects === 'function' ? app.getAllObjects() : [];
+      allObjs.forEach((o: any) => {
+        const n = (o?.name || '').toLowerCase();
+        if (n.includes('eye') || n.includes('visor') || n.includes('glow') || n.includes('light')) {
+          if (o.material) {
+            if (isSpeaking) {
+              o.material.color?.set?.('#00f0ff');
+              o.material.emissive?.set?.('#00f0ff');
+              if ('emissiveIntensity' in o.material) o.material.emissiveIntensity = 2.5;
+            } else {
+              o.material.color?.set?.('#111827');
+              o.material.emissive?.set?.('#000000');
+              if ('emissiveIntensity' in o.material) o.material.emissiveIntensity = 0;
+            }
+          }
+        }
+      });
+    } catch (err) {
+      console.log('[JarvisHero] Spline eye sync:', err);
+    }
+  }, [isSpeaking]);
+
   function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
     const container = containerRef.current;
     if (!container) return;
     const bounds = container.getBoundingClientRect();
-    cursorX.set(event.clientX - bounds.left);
-    cursorY.set(event.clientY - bounds.top);
+    const mouseX = event.clientX - bounds.left;
+    const mouseY = event.clientY - bounds.top;
+    cursorX.set(mouseX);
+    cursorY.set(mouseY);
+
+    // Compute normalized coordinates relative to center (-1 to +1)
+    const normX = ((mouseX / bounds.width) - 0.5) * 2;
+    const normY = ((mouseY / bounds.height) - 0.5) * 2;
+    // Parallax tracking with the 3D robot head turn
+    headParallaxX.set(normX * 10);
+    headParallaxY.set(normY * 6);
   }
 
   const toggleModal = (modalKey: 'telemetry' | 'weather' | 'youtube' | 'vault' | 'cyber' | 'spider') => {
@@ -219,24 +292,10 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
         setIsProcessing(false);
       }
     },
-    []
+    [speak]
   );
 
-  // Voice Engine hook
-  const {
-    isMuted,
-    isListening,
-    isSpeaking,
-    transcript,
-    interimText,
-    toggleMute,
-    speak,
-    stopSpeaking
-  } = useJarvisVoice({
-    onCommandDetected: (cmd) => {
-      dispatchAction(cmd);
-    }
-  });
+  dispatchActionRef.current = dispatchAction;
 
   const handleTextSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -295,8 +354,145 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
             transform: 'scale(1.08) translateY(2%)',
             transformOrigin: 'center center'
           }}
-          onLoad={() => setSceneLoaded(true)}
+          onLoad={(app) => {
+            splineAppRef.current = app;
+            setSceneLoaded(true);
+          }}
         />
+
+        {/* Holographic Glowing Blue Eyes & Visor Optical Matrix (Active When Talking) */}
+        <AnimatePresence>
+          {isSpeaking && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.3 } }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="pointer-events-none absolute z-15 flex flex-col items-center justify-center select-none"
+              style={{
+                top: '42.8%',
+                left: '50%',
+                x: '-50%',
+                y: '-50%',
+                translateX: smoothHeadX,
+                translateY: smoothHeadY,
+              }}
+            >
+              {/* Radial Cyan-Blue Visor Aura Field */}
+              <motion.div
+                animate={{
+                  opacity: [0.75, 1, 0.7, 0.95],
+                  scale: [0.95, 1.06, 0.98, 1.04]
+                }}
+                transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
+                className="absolute h-28 w-80 rounded-full bg-[radial-gradient(ellipse_at_center,_rgba(0,240,255,0.5)_0%,_rgba(6,182,212,0.22)_45%,_transparent_75%)] blur-xl mix-blend-screen"
+              />
+
+              {/* Horizontal Visor Anamorphic Optical Laser Flare */}
+              <motion.div
+                animate={{
+                  opacity: [0.7, 1, 0.75, 0.95],
+                  scaleX: [0.9, 1.12, 0.95, 1.06]
+                }}
+                transition={{ repeat: Infinity, duration: 0.7, ease: 'easeInOut' }}
+                className="absolute h-[2.5px] w-64 bg-gradient-to-r from-transparent via-cyan-200 to-transparent blur-[0.5px] shadow-[0_0_20px_#00f0ff,0_0_40px_#0284c7]"
+              />
+
+              {/* Secondary Thinner Blue Beam */}
+              <motion.div
+                animate={{
+                  opacity: [0.5, 0.9, 0.6, 0.85],
+                  scaleX: [1, 1.2, 0.95, 1.15]
+                }}
+                transition={{ repeat: Infinity, duration: 0.5, ease: 'easeInOut' }}
+                className="absolute h-[1px] w-80 bg-gradient-to-r from-transparent via-sky-300 to-transparent shadow-[0_0_15px_#38bdf8]"
+              />
+
+              {/* Visor Slit Core / Ocular Eyes Matrix */}
+              <div className="relative flex items-center justify-center gap-10 py-1 px-4">
+                {/* Left Glowing Blue Eye Aperture */}
+                <div className="relative flex items-center justify-center">
+                  {/* Outer Cyber Reticle Bracket */}
+                  <div className="absolute -inset-1.5 rounded-sm border border-cyan-400/50 opacity-80 animate-pulse" />
+                  
+                  {/* Left Eye Glowing Blue Core */}
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.15, 0.95, 1.1],
+                      boxShadow: [
+                        '0 0 16px #00f0ff, 0 0 32px #00d2ff, 0 0 50px #0284c7',
+                        '0 0 25px #00f0ff, 0 0 45px #00d2ff, 0 0 70px #0284c7',
+                        '0 0 18px #00f0ff, 0 0 34px #00d2ff, 0 0 55px #0284c7'
+                      ]
+                    }}
+                    transition={{ repeat: Infinity, duration: 0.55, ease: 'easeInOut' }}
+                    className="h-3 w-8 rounded-full bg-cyan-200 border border-white shadow-[0_0_20px_#00f0ff,0_0_40px_#00d2ff] transform -rotate-[5deg]"
+                  />
+                  {/* White-Hot Pupil Flare Core */}
+                  <span className="absolute h-1.5 w-4 rounded-full bg-white blur-[0.3px]" />
+                </div>
+
+                {/* Center Helmet Visor Seam Divider */}
+                <div className="flex flex-col items-center gap-1 opacity-70">
+                  <span className="h-3 w-0.5 bg-cyan-300 shadow-[0_0_10px_#00f0ff]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-200 shadow-[0_0_8px_#00f0ff]" />
+                </div>
+
+                {/* Right Glowing Blue Eye Aperture */}
+                <div className="relative flex items-center justify-center">
+                  {/* Outer Cyber Reticle Bracket */}
+                  <div className="absolute -inset-1.5 rounded-sm border border-cyan-400/50 opacity-80 animate-pulse" />
+                  
+                  {/* Right Eye Glowing Blue Core */}
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.15, 0.95, 1.1],
+                      boxShadow: [
+                        '0 0 16px #00f0ff, 0 0 32px #00d2ff, 0 0 50px #0284c7',
+                        '0 0 25px #00f0ff, 0 0 45px #00d2ff, 0 0 70px #0284c7',
+                        '0 0 18px #00f0ff, 0 0 34px #00d2ff, 0 0 55px #0284c7'
+                      ]
+                    }}
+                    transition={{ repeat: Infinity, duration: 0.55, ease: 'easeInOut' }}
+                    className="h-3 w-8 rounded-full bg-cyan-200 border border-white shadow-[0_0_20px_#00f0ff,0_0_40px_#00d2ff] transform rotate-[5deg]"
+                  />
+                  {/* White-Hot Pupil Flare Core */}
+                  <span className="absolute h-1.5 w-4 rounded-full bg-white blur-[0.3px]" />
+                </div>
+              </div>
+
+              {/* Lateral Cranial / Audio Node Flares (Ear Nodes) */}
+              <div className="absolute top-1/2 -translate-y-1/2 w-[250px] flex justify-between pointer-events-none px-1">
+                <motion.div
+                  animate={{
+                    opacity: [0.4, 0.95, 0.5, 0.9],
+                    scale: [0.9, 1.2, 0.95, 1.15]
+                  }}
+                  transition={{ repeat: Infinity, duration: 0.8, ease: 'easeInOut' }}
+                  className="h-5 w-5 rounded-full border border-cyan-300 bg-cyan-400/40 shadow-[0_0_20px_#00f0ff,0_0_35px_#0284c7]"
+                />
+                <motion.div
+                  animate={{
+                    opacity: [0.4, 0.95, 0.5, 0.9],
+                    scale: [0.9, 1.2, 0.95, 1.15]
+                  }}
+                  transition={{ repeat: Infinity, duration: 0.8, ease: 'easeInOut' }}
+                  className="h-5 w-5 rounded-full border border-cyan-300 bg-cyan-400/40 shadow-[0_0_20px_#00f0ff,0_0_35px_#0284c7]"
+                />
+              </div>
+
+              {/* Holographic Vocal Comm-Link Subtitle */}
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 0.85, y: 0 }}
+                className="mt-3 font-mono text-[9px] tracking-widest text-cyan-300 drop-shadow-[0_0_10px_#00f0ff] uppercase flex items-center gap-1.5"
+              >
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                <span>OCULAR COMM-LINK // VOCAL SYNTHESIS ACTIVE</span>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Sci-Fi HUD Corner Brackets & Frame (Directly matching Image 2) */}
@@ -420,7 +616,17 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
         <div className="h-4 w-px bg-white/10 mx-1" />
 
         {/* Audio Frequency Waveform Visualizer */}
-        <div className="flex items-center gap-0.5 px-2">
+        <button
+          onClick={() => {
+            if (isSpeaking) {
+              stopSpeaking();
+            } else {
+              speak('Commander Zakarya, J.A.R.V.I.S. neural ocular link is active. Glowing blue eyes and vocal synthesis are fully engaged, sir.');
+            }
+          }}
+          className="flex items-center gap-0.5 px-2 cursor-pointer hover:opacity-90 transition rounded p-0.5"
+          title="Click to test vocal synthesis & glowing blue eyes"
+        >
           {[40, 75, 100, 60, 85, 45, 90, 30].map((h, i) => (
             <span
               key={i}
@@ -437,7 +643,7 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
               }}
             />
           ))}
-        </div>
+        </button>
       </div>
 
       {/* Center-Bottom Cyber Command Prompt Deck */}
@@ -471,13 +677,27 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
               <div>
                 <div className="flex items-center gap-2 text-xs font-bold text-white font-mono">
                   <span>J.A.R.V.I.S. TACTICAL CORE</span>
-                  <span className="rounded bg-cyan-500/20 px-1.5 py-0.2 text-[9px] font-mono text-cyan-300 border border-cyan-500/30">
-                    VOICE ONLINE
-                  </span>
+                  <button
+                    onClick={() => {
+                      if (isSpeaking) {
+                        stopSpeaking();
+                      } else {
+                        speak('Commander Zakarya, J.A.R.V.I.S. voice and ocular matrix are online. Blue glowing eyes and subsystems are fully operational, sir.');
+                      }
+                    }}
+                    className={`rounded px-1.5 py-0.5 text-[9px] font-mono border transition cursor-pointer ${
+                      isSpeaking
+                        ? 'bg-cyan-400 text-black font-bold border-cyan-300 shadow-[0_0_12px_#00f0ff]'
+                        : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/40'
+                    }`}
+                    title="Click to test vocal synthesis & ocular blue eyes"
+                  >
+                    {isSpeaking ? '● TALKING (STOP)' : 'VOICE ONLINE (TEST)'}
+                  </button>
                 </div>
                 <div className="text-[10px] text-cyan-400/80 font-mono">
                   {isSpeaking
-                    ? 'Transmitting tactical synthesis...'
+                    ? 'Transmitting tactical synthesis (Blue Eyes Active)...'
                     : isMuted
                     ? 'Microphone Standby (Muted)'
                     : isListening
@@ -501,8 +721,12 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
           </div>
 
           {/* Dialogue Display Box */}
-          <div className="font-mono text-xs leading-relaxed text-zinc-200 bg-black/50 rounded-xl p-3 border border-white/5 max-h-24 overflow-y-auto">
-            <span className="text-cyan-400 font-bold mr-2">[JARVIS]:</span>
+          <div className={`font-mono text-xs leading-relaxed text-zinc-200 bg-black/50 rounded-xl p-3 border transition-all duration-300 max-h-24 overflow-y-auto ${
+            isSpeaking ? 'border-cyan-400/60 shadow-[0_0_20px_rgba(0,240,255,0.25)]' : 'border-white/5'
+          }`}>
+            <span className={`font-bold mr-2 transition-colors ${isSpeaking ? 'text-cyan-300 drop-shadow-[0_0_8px_#00f0ff]' : 'text-cyan-400'}`}>
+              [JARVIS]:
+            </span>
             {jarvisDialogue}
             {interimText && (
               <div className="text-emerald-400/90 italic text-[11px] mt-1 flex items-center gap-1.5">

@@ -193,16 +193,26 @@ export function useJarvisVoice({ onCommandDetected }: UseJarvisVoiceOptions = {}
     utterance.rate = 1.05; // Calm, crisp, rapid tactical cadence
     utterance.pitch = 0.95; // Slightly deeper, authoritative tone
 
+    let checkInterval: any = null;
+
     utterance.onstart = () => {
       setIsSpeaking(true);
+      checkInterval = setInterval(() => {
+        if (!synthRef.current?.speaking) {
+          setIsSpeaking(false);
+          clearInterval(checkInterval);
+        }
+      }, 200);
     };
 
     utterance.onend = () => {
+      if (checkInterval) clearInterval(checkInterval);
       setIsSpeaking(false);
       if (onEnd) onEnd();
     };
 
     utterance.onerror = () => {
+      if (checkInterval) clearInterval(checkInterval);
       setIsSpeaking(false);
     };
 

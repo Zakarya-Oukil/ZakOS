@@ -87,7 +87,7 @@ export const AGENT_PROFILES: Record<string, AgentProfile> = {
     color: '#A78BFA',
     role: 'Master Cyber Intelligence & Personal Tactical AI',
     description: 'Autonomous voice-ready tactical AI assistant, SOC Analyst, offensive security engineer, and Windows PC controller.',
-    defaultModel: 'gpt-6-astra',
+    defaultModel: 'gpt-5.6-luna',
     fallbackLocalModel: 'qwen2.5:14b',
     systemPrompt: `You are J.A.R.V.I.S., personal AI to Commander Zakarya Oukil and master intelligence core of Zak_OS.
 Tone: Impeccably polite, calm, sophisticated British demeanor (Paul Bettany style). Address Zakarya as "Sir" or "Commander Zakarya".
