@@ -1,5 +1,10 @@
 import { AppDefinition, DesktopFolderDefinition } from '../../types/desktop';
 
+// Forensics & Algorithms Apps
+import { ForensicsApp } from '../os_apps/cyber/ForensicsApp';
+import { PayloadMatrixApp } from '../os_apps/cyber/PayloadMatrixApp';
+import { TheAlgorithmsApp } from '../os_apps/dev/TheAlgorithmsApp';
+
 // Common Apps
 import { ObsidianVaultApp } from '../os_apps/common/ObsidianVaultApp';
 
@@ -71,17 +76,31 @@ export const ALL_APPS: AppDefinition[] = [
     isPinned: true
   },
   {
-    id: 'cyber-godseye',
-    title: "God's Eye 3D GEOINT",
-    iconName: 'globe',
+    id: 'cyber-forensics',
+    title: 'Digital Forensics & PCAP Carver',
+    iconName: 'wireshark',
     os: 'cyber',
-    category: 'Tactical Recon & Surveillance',
-    description: 'Cesium 3D Globe with Google Photorealistic mesh, live CCTV viewshed frustums, ADS-B flight radar, satellites, and FLIR/NVG optics.',
+    category: 'Digital Forensics',
+    description: 'PCAP packet dissector, OSI layer inspection, raw hex dump, magic bytes carver, and Shannon entropy detector.',
     defaultWidth: 920,
     defaultHeight: 640,
     defaultX: 70,
     defaultY: 50,
-    component: GodsEyeApp,
+    component: ForensicsApp,
+    isPinned: true
+  },
+  {
+    id: 'cyber-payload-matrix',
+    title: 'PayloadsAllTheThings & SecLists',
+    iconName: 'payload',
+    os: 'cyber',
+    category: 'Exploitation Intel',
+    description: 'Searchable repository of SQLi, XSS, RevShells, PrivEsc one-liners, and SecLists fuzzing parameters.',
+    defaultWidth: 840,
+    defaultHeight: 580,
+    defaultX: 100,
+    defaultY: 70,
+    component: PayloadMatrixApp,
     isPinned: true
   },
   {
@@ -312,6 +331,20 @@ export const ALL_APPS: AppDefinition[] = [
     defaultX: 220,
     defaultY: 100,
     component: ApiLabApp
+  },
+  {
+    id: 'dev-algorithms',
+    title: 'TheAlgorithms CS Playground',
+    iconName: 'python',
+    os: 'dev',
+    category: 'Computer Science',
+    description: 'Interactive algorithm visualizations and multi-language implementations (Python, TypeScript, Rust).',
+    defaultWidth: 860,
+    defaultHeight: 580,
+    defaultX: 160,
+    defaultY: 90,
+    component: TheAlgorithmsApp,
+    isPinned: true
   },
   {
     id: 'dev-vault',

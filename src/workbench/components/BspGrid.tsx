@@ -3,6 +3,7 @@ import { BspTree, DividerInfo, LayoutRect, PaneDefinition, SplitDirection } from
 import { ProfileThemeTokens } from '../types/profileTypes';
 import { calculateLayout } from '../bsp/bspEngine';
 import { BspDivider } from './BspDivider';
+import { AppLogo } from '../../components/common/AppLogo';
 
 interface BspGridProps {
   tree: BspTree;
@@ -100,12 +101,28 @@ export const BspGrid: React.FC<BspGridProps> = ({
               }}
             >
               <div className="flex items-center gap-2 truncate">
-                <span
-                  style={{ color: theme.accentPrimary }}
-                  className="font-mono text-xs"
-                >
-                  {pane.glyph || theme.glyph}
-                </span>
+                <AppLogo
+                  name={
+                    pane.type === 'SSH_TERMINAL'
+                      ? 'terminal'
+                      : pane.type === 'FORENSICS_LAB'
+                      ? 'wireshark'
+                      : pane.type === 'PAYLOAD_MATRIX'
+                      ? 'payload'
+                      : pane.type === 'THE_ALGORITHMS'
+                      ? 'python'
+                      : pane.type === 'BUILD_X'
+                      ? 'redis'
+                      : pane.type === 'SYSTEM_DESIGN'
+                      ? 'sysdesign'
+                      : pane.type === 'API_LAB'
+                      ? 'postman'
+                      : pane.type === 'CYBER_C2'
+                      ? 'kali'
+                      : 'notion'
+                  }
+                  className="w-3.5 h-3.5"
+                />
                 <span className="truncate tracking-wide uppercase text-[10px]">
                   {pane.title}
                 </span>

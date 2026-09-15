@@ -1,6 +1,7 @@
 import React from 'react';
 import { ContextProfileId, ProfileThemeTokens, CONTEXT_PROFILES } from '../types/profileTypes';
 import { PaneContentType } from '../types/bspTypes';
+import { AppLogo } from '../../components/common/AppLogo';
 
 interface IntentRailProps {
   currentProfile: ContextProfileId;
@@ -28,7 +29,7 @@ export const IntentRail: React.FC<IntentRailProps> = ({
       }}
     >
       {/* Top: ZakOS Core Logo & Profile Selectors */}
-      <div className="flex flex-col items-center gap-4 w-full">
+      <div className="flex flex-col items-center gap-3 w-full">
         {/* Master Glyph / Brand */}
         <div
           onClick={onOpenCommandPalette}
@@ -71,51 +72,78 @@ export const IntentRail: React.FC<IntentRailProps> = ({
           })}
         </div>
 
-        {/* Tool Launcher Shortcuts */}
-        <div className="flex flex-col items-center gap-2 w-full px-1 pt-3 border-t border-dashed" style={{ borderColor: theme.borderPrimary }}>
+        {/* Tool Launcher Shortcuts with Authentic Brand Logos */}
+        <div className="flex flex-col items-center gap-2.5 w-full px-1 pt-3 border-t border-dashed overflow-y-auto max-h-[50vh]" style={{ borderColor: theme.borderPrimary }}>
+          {/* 1. SSH Terminal */}
           <button
             onClick={() => onOpenTool('SSH_TERMINAL', 'SSH Lab Terminal', '❯_')}
-            className="w-8 h-8 rounded-xs flex items-center justify-center text-xs hover:text-white transition-colors cursor-pointer border border-transparent hover:border-neutral-700"
-            style={{ color: theme.accentSecondary }}
-            title="Launch SSH Terminal"
+            className="w-8 h-8 rounded-sm flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
+            title="Native Web SSH Terminal Lab (Alt+V / Alt+S)"
           >
-            ❯_
+            <AppLogo name="terminal" className="w-5 h-5" />
           </button>
 
+          {/* 2. Digital Forensics Lab */}
+          <button
+            onClick={() => onOpenTool('FORENSICS_LAB', 'Forensics & PCAP Lab', '🦈')}
+            className="w-8 h-8 rounded-sm flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
+            title="Digital Forensics & PCAP Packet Dissector"
+          >
+            <AppLogo name="wireshark" className="w-5 h-5" />
+          </button>
+
+          {/* 3. Payloads Forge */}
+          <button
+            onClick={() => onOpenTool('PAYLOAD_MATRIX', 'Payloads & SecLists Forge', '⚡')}
+            className="w-8 h-8 rounded-sm flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
+            title="PayloadsAllTheThings & SecLists Knowledge Engine"
+          >
+            <AppLogo name="payload" className="w-5 h-5" />
+          </button>
+
+          {/* 4. Study / Notion Workstation */}
           <button
             onClick={() => onOpenTool('STUDY_NOTION', 'Course & Study Studio', '0x')}
-            className="w-8 h-8 rounded-xs flex items-center justify-center text-xs hover:text-white transition-colors cursor-pointer border border-transparent hover:border-neutral-700"
-            style={{ color: '#38bdf8' }}
-            title="Open Study / Notion Workstation"
+            className="w-8 h-8 rounded-sm flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
+            title="Study & Notion Workstation (Editable Markdown)"
           >
-            0x
+            <AppLogo name="notion" className="w-5 h-5" />
           </button>
 
+          {/* 5. TheAlgorithms CS Playground */}
+          <button
+            onClick={() => onOpenTool('THE_ALGORITHMS', 'TheAlgorithms & CS Visualizer', '🐍')}
+            className="w-8 h-8 rounded-sm flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
+            title="TheAlgorithms & CS Interactive Sandbox"
+          >
+            <AppLogo name="python" className="w-5 h-5" />
+          </button>
+
+          {/* 6. Build-Your-Own-X */}
           <button
             onClick={() => onOpenTool('BUILD_X', 'Build-Your-Own-X Lab', '⎇')}
-            className="w-8 h-8 rounded-xs flex items-center justify-center text-xs hover:text-white transition-colors cursor-pointer border border-transparent hover:border-neutral-700"
-            style={{ color: '#f97316' }}
-            title="Build Your Own X Blueprint"
+            className="w-8 h-8 rounded-sm flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
+            title="Build-Your-Own-X Systems Blueprints"
           >
-            ⎇
+            <AppLogo name="redis" className="w-5 h-5" />
           </button>
 
+          {/* 7. System Design Primer */}
           <button
             onClick={() => onOpenTool('SYSTEM_DESIGN', 'System Design Studio', '∑')}
-            className="w-8 h-8 rounded-xs flex items-center justify-center text-xs hover:text-white transition-colors cursor-pointer border border-transparent hover:border-neutral-700"
-            style={{ color: '#a855f7' }}
+            className="w-8 h-8 rounded-sm flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
             title="System Design Architecture Studio"
           >
-            ∑
+            <AppLogo name="sysdesign" className="w-5 h-5" />
           </button>
 
+          {/* 8. API Lab & Directory */}
           <button
             onClick={() => onOpenTool('API_LAB', 'Live API Directory', '⚡')}
-            className="w-8 h-8 rounded-xs flex items-center justify-center text-xs hover:text-white transition-colors cursor-pointer border border-transparent hover:border-neutral-700"
-            style={{ color: '#eab308' }}
-            title="Public APIs & ApiLab"
+            className="w-8 h-8 rounded-sm flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
+            title="Public APIs Directory & ApiLab"
           >
-            ⚡
+            <AppLogo name="postman" className="w-5 h-5" />
           </button>
         </div>
       </div>

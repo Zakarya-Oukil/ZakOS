@@ -40,7 +40,10 @@ export type PaneContentType =
   | 'API_LAB'
   | 'BUILD_X'
   | 'SYSTEM_DESIGN'
-  | 'ROADMAP_MATRIX';
+  | 'ROADMAP_MATRIX'
+  | 'FORENSICS_LAB'
+  | 'PAYLOAD_MATRIX'
+  | 'THE_ALGORITHMS';
 
 export interface PaneDefinition {
   id: string;

@@ -21,6 +21,9 @@ import { StudyNotionPane } from './panes/StudyNotionPane';
 import { BuildYourOwnXPane } from './panes/BuildYourOwnXPane';
 import { SystemDesignPane } from './panes/SystemDesignPane';
 import { ApiLabPane } from './panes/ApiLabPane';
+import { ForensicsLabPane } from './panes/ForensicsLabPane';
+import { PayloadMatrixPane } from './panes/PayloadMatrixPane';
+import { TheAlgorithmsPane } from './panes/TheAlgorithmsPane';
 import { CyberAdminApp } from '../components/os_apps/cyber/CyberAdminApp';
 
 interface WorkbenchRootProps {
@@ -291,6 +294,27 @@ export const WorkbenchRoot: React.FC<WorkbenchRootProps> = ({ onToggleLegacyMode
         glyph: '🛡️',
         action: () => handleOpenTool('CYBER_C2', 'Cyber Admin C2 Hub', '🛡️'),
       },
+      {
+        id: 'launch-forensics',
+        category: 'TOOLS',
+        title: 'Launch Digital Forensics Lab & PCAP Carver',
+        glyph: '🦈',
+        action: () => handleOpenTool('FORENSICS_LAB', 'Forensics & PCAP Lab', '🦈'),
+      },
+      {
+        id: 'launch-payloads',
+        category: 'TOOLS',
+        title: 'Launch PayloadsAllTheThings & SecLists Forge',
+        glyph: '⚡',
+        action: () => handleOpenTool('PAYLOAD_MATRIX', 'Payloads & SecLists Forge', '⚡'),
+      },
+      {
+        id: 'launch-algorithms',
+        category: 'TOOLS',
+        title: 'Launch TheAlgorithms CS Playground',
+        glyph: '🐍',
+        action: () => handleOpenTool('THE_ALGORITHMS', 'TheAlgorithms & CS Visualizer', '🐍'),
+      },
     ],
     [handleSplit, handleClosePane, handleToggleMaximize, handleOpenTool]
   );
@@ -309,6 +333,12 @@ export const WorkbenchRoot: React.FC<WorkbenchRootProps> = ({ onToggleLegacyMode
           return <SystemDesignPane theme={theme} />;
         case 'API_LAB':
           return <ApiLabPane theme={theme} />;
+        case 'FORENSICS_LAB':
+          return <ForensicsLabPane theme={theme} />;
+        case 'PAYLOAD_MATRIX':
+          return <PayloadMatrixPane theme={theme} />;
+        case 'THE_ALGORITHMS':
+          return <TheAlgorithmsPane theme={theme} />;
         case 'CYBER_C2':
           return <CyberAdminApp windowId={pane.id} isActive={true} onClose={() => handleClosePane(pane.id)} />;
         default:

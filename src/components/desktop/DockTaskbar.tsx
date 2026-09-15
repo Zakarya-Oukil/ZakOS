@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { LayoutGrid, Bot, Shield, Terminal, BookOpen, Briefcase, Sparkles, Folder, TerminalSquare, Activity, Compass, Cpu, FileText, Globe } from 'lucide-react';
+import { LayoutGrid, Cpu } from 'lucide-react';
 import { AppDefinition, WindowState, OperatingSystemId } from '../../types/desktop';
 import { soundEngine } from '../../services/soundEffects';
+import { AppLogo } from '../common/AppLogo';
 
 interface DockTaskbarProps {
   activeOs: OperatingSystemId;
@@ -12,50 +13,9 @@ interface DockTaskbarProps {
   onToggleWindow: (windowId: string) => void;
 }
 
-// Icon resolver helper
+// Icon resolver helper using authentic brand SVGs
 export const renderAppIcon = (iconName: string, className: string = "w-5 h-5") => {
-  switch (iconName) {
-    case 'Globe':
-    case 'globe':
-    case 'geoint':
-    case 'godseye':
-      return <Globe className={className} />;
-    case 'Shield':
-    case 'spider':
-    case 'recon':
-      return <Shield className={className} />;
-    case 'Terminal':
-    case 'terminal':
-      return <Terminal className={className} />;
-    case 'BookOpen':
-    case 'study':
-    case 'socrates':
-      return <BookOpen className={className} />;
-    case 'Bot':
-    case 'agent':
-    case 'jarvis':
-      return <Bot className={className} />;
-    case 'Briefcase':
-    case 'founder':
-    case 'projects':
-      return <Briefcase className={className} />;
-    case 'Sparkles':
-    case 'ai':
-      return <Sparkles className={className} />;
-    case 'Folder':
-    case 'vault':
-      return <Folder className={className} />;
-    case 'Activity':
-    case 'telemetry':
-      return <Activity className={className} />;
-    case 'Compass':
-      return <Compass className={className} />;
-    case 'FileText':
-    case 'notes':
-      return <FileText className={className} />;
-    default:
-      return <Cpu className={className} />;
-  }
+  return <AppLogo name={iconName} className={className} />;
 };
 
 export const DockTaskbar: React.FC<DockTaskbarProps> = ({
