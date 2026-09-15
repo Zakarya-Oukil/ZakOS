@@ -32,7 +32,7 @@ const BLUEPRINTS: ProjectBlueprint[] = [
       { title: 'Implement PX argument for millisecond-level key TTL expiry', completed: false },
       { title: 'Build RDB snapshot persistence or Append-Only File (AOF)', completed: false },
     ],
-    codeSnippet: `# Minimal RESP Parser Skeleton in Python\nimport socket\n\ndef handle_client(client_socket):\n    buffer = client_socket.recv(1024).decode('utf-8')\n    # Parse RESP Array\n    if buffer.startswith('*'):\n        parts = buffer.strip().split('\\r\\n')\n        command = parts[2].upper()\n        if command == 'PING':\n            client_socket.send(b"+PONG\\r\\n")\n        elif command == 'ECHO':\n            arg = parts[4]\n            client_socket.send(f"\\${len(arg)}\\r\\n{arg}\\r\\n".encode())\n`,
+    codeSnippet: '# Minimal RESP Parser Skeleton in Python\nimport socket\n\ndef handle_client(client_socket):\n    buffer = client_socket.recv(1024).decode("utf-8")\n    # Parse RESP Array\n    if buffer.startswith("*"):\n        parts = buffer.strip().split("\\r\\n")\n        command = parts[2].upper()\n        if command == "PING":\n            client_socket.send(b"+PONG\\r\\n")\n        elif command == "ECHO":\n            arg = parts[4]\n            client_socket.send(f"${len(arg)}\\r\\n{arg}\\r\\n".encode())\n',
     testCommand: 'redis-cli -p 6379 PING && redis-cli -p 6379 SET mykey "hello" && redis-cli -p 6379 GET mykey',
   },
   {
@@ -48,7 +48,7 @@ const BLUEPRINTS: ProjectBlueprint[] = [
       { title: 'Implement "git ls-tree <sha>" (parse tree objects and directory entries)', completed: false },
       { title: 'Implement "git write-tree" and "git commit-tree"', completed: false },
     ],
-    codeSnippet: `# Git Blob Object Generation (Python)\nimport hashlib\nimport zlib\n\ndef hash_object(data: bytes) -> str:\n    header = f"blob {len(data)}\\0".encode()\n    store = header + data\n    sha1 = hashlib.sha1(store).hexdigest()\n    compressed = zlib.compress(store)\n    # Write to .git/objects/xx/yyyy...\n    return sha1\n`,
+    codeSnippet: '# Git Blob Object Generation (Python)\nimport hashlib\nimport zlib\n\ndef hash_object(data: bytes) -> str:\n    header = f"blob {len(data)}\\0".encode()\n    store = header + data\n    sha1 = hashlib.sha1(store).hexdigest()\n    compressed = zlib.compress(store)\n    # Write to .git/objects/xx/yyyy...\n    return sha1\n',
     testCommand: 'python3 mygit.py init && python3 mygit.py hash-object -w sample.txt',
   },
   {
@@ -64,7 +64,7 @@ const BLUEPRINTS: ProjectBlueprint[] = [
       { title: 'Mount fresh procfs at /proc to isolate ps/top output', completed: false },
       { title: 'Attach cgroups v2 controller to restrict memory to 64MB', completed: false },
     ],
-    codeSnippet: `// Linux Container Process Isolation in Go\npackage main\nimport (\n    "os"\n    "os/exec"\n    "syscall"\n)\n\nfunc main() {\n    cmd := exec.Command("/bin/sh")\n    cmd.Stdin = os.Stdin\n    cmd.Stdout = os.Stdout\n    cmd.Stderr = os.Stderr\n    cmd.SysProcAttr = &syscall.SysProcAttr{\n        Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,\n    }\n    cmd.Run()\n}\n`,
+    codeSnippet: '// Linux Container Process Isolation in Go\npackage main\nimport (\n    "os"\n    "os/exec"\n    "syscall"\n)\n\nfunc main() {\n    cmd := exec.Command("/bin/sh")\n    cmd.Stdin = os.Stdin\n    cmd.Stdout = os.Stdout\n    cmd.Stderr = os.Stderr\n    cmd.SysProcAttr = &syscall.SysProcAttr{\n        Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,\n    }\n    cmd.Run()\n}\n',
     testCommand: 'go run mydocker.go run /bin/sh -c "hostname container01 && ps aux"',
   },
 ];
