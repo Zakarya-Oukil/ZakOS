@@ -38,6 +38,7 @@ import { JarvisYouTubeModal } from './modals/JarvisYouTubeModal';
 import { JarvisVaultModal } from './modals/JarvisVaultModal';
 import { JarvisCyberModal } from './modals/JarvisCyberModal';
 import { JarvisSpiderReconModal } from './modals/JarvisSpiderReconModal';
+import { JarvisParticleRobot } from './JarvisParticleRobot';
 
 const SCENE_URL = 'https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode';
 
@@ -52,6 +53,7 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [sceneLoaded, setSceneLoaded] = useState(false);
+  const [avatarMode, setAvatarMode] = useState<'particles' | 'solid'>('particles');
 
   // Active Multi-Window Draggable HUD Modals
   const [activeModals, setActiveModals] = useState<{
@@ -62,6 +64,8 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
     cyber?: boolean;
     spider?: boolean;
   }>({});
+
+  const isAnyModalOpen = Object.values(activeModals).some(Boolean);
 
   const [modalPayloads, setModalPayloads] = useState<{
     weatherCity?: string;
@@ -329,15 +333,22 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
         }}
       />
 
-      {/* 3D Spline Robot Layer (Dead Center, Matching Image 2) */}
-      <motion.div
-        ref={containerRef}
-        onMouseMove={handleMouseMove}
-        className="absolute inset-0 z-1 flex items-center justify-center overflow-hidden"
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-      >
+      {/* 3D J.A.R.V.I.S. Core Layer: High-Density Nanotech Hologram (55K Dots) or Solid MK-85 */}
+      {avatarMode === 'particles' ? (
+        <JarvisParticleRobot
+          isSpeaking={isSpeaking}
+          isListening={isListening}
+          isModalOpen={isAnyModalOpen}
+        />
+      ) : (
+        <motion.div
+          ref={containerRef}
+          onMouseMove={handleMouseMove}
+          className="absolute inset-0 z-1 flex items-center justify-center overflow-hidden"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
         {!sceneLoaded && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#040711]">
             <div className="h-9 w-9 rounded-full border-2 border-cyan-500/20 border-t-cyan-400 animate-spin" />
@@ -494,6 +505,7 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
           )}
         </AnimatePresence>
       </motion.div>
+      )}
 
       {/* Sci-Fi HUD Corner Brackets & Frame (Directly matching Image 2) */}
       <div className="pointer-events-none absolute inset-4 z-20 flex flex-col justify-between">
@@ -503,7 +515,7 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
             <span className="text-cyan-400 font-bold">┌───</span>
             <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-cyan-950/40 border border-cyan-500/30">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-              <span>JARVIS CORE // MK-85</span>
+              <span>JARVIS CORE // {avatarMode === 'particles' ? '55K NANOTECH' : 'MK-85 SOLID'}</span>
             </span>
             <span className="text-zinc-500">SYS: OPTIMAL</span>
           </div>
@@ -611,6 +623,25 @@ export const JarvisHero: React.FC<JarvisHeroProps> = ({
         >
           <ShieldAlert className="h-3.5 w-3.5 text-red-400" />
           <span>CYBER C2</span>
+        </button>
+
+        <div className="h-4 w-px bg-white/10 mx-1" />
+
+        {/* Avatar Matrix Switcher (Dots vs Solid) */}
+        <button
+          onClick={() => {
+            soundEngine.playClick();
+            setAvatarMode(m => (m === 'particles' ? 'solid' : 'particles'));
+          }}
+          className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 font-mono text-xs transition-all border ${
+            avatarMode === 'particles'
+              ? 'bg-cyan-500/25 text-cyan-200 border-cyan-400 font-bold shadow-[0_0_15px_rgba(0,240,255,0.4)]'
+              : 'bg-zinc-800/80 text-zinc-300 border-white/20 hover:border-cyan-400 hover:text-white'
+          }`}
+          title="Toggle between 55,000-Point Nanotech Hologram and Solid 3D MK-85"
+        >
+          <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+          <span>{avatarMode === 'particles' ? '◈ 55K DOTS' : '⬡ SOLID BOT'}</span>
         </button>
 
         <div className="h-4 w-px bg-white/10 mx-1" />

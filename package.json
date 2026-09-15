@@ -18,6 +18,7 @@
     "@splinetool/runtime": "^2.0.52",
     "@types/gsap": "^1.20.2",
     "@types/ssh2": "^1.15.6",
+    "@types/three": "^0.186.0",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",
     "cesium": "^1.145.0",
@@ -40,6 +41,7 @@
     "ssh2": "^1.17.0",
     "systeminformation": "^5.33.10",
     "tailwind-merge": "^3.0.2",
+    "three": "^0.186.0",
     "topojson-client": "^3.1.0",
     "ws": "^8.18.0"
   },
