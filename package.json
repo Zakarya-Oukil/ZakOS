@@ -15,6 +15,9 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@types/gsap": "^1.20.2",
+    "@types/ssh2": "^1.15.6",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
     "cesium": "^1.145.0",
     "clsx": "^2.1.1",
     "cobe": "^2.0.1",
@@ -32,6 +35,7 @@
     "mermaid": "^11.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "ssh2": "^1.17.0",
     "tailwind-merge": "^3.0.2",
     "topojson-client": "^3.1.0",
     "ws": "^8.18.0"

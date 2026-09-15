@@ -20,6 +20,7 @@ import {
 import { projectService } from './projectService';
 import { githubService } from './githubService';
 import { scraperService } from './scraperService';
+import { handleSshWebSocketConnection } from './sshBridge';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -33,9 +34,26 @@ const wss = new WebSocketServer({ server });
 // Active WebSocket clients set
 const clients = new Set<WebSocket>();
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
   clients.add(ws);
-  console.log(`[WS] Client connected. Active clients: ${clients.size}`);
+  const url = req.url || '';
+  console.log(`[WS] Client connected (path: ${url}). Active clients: ${clients.size}`);
+
+  // Route directly to SSH bridge if connecting to /ws/ssh
+  if (url.startsWith('/ws/ssh')) {
+    handleSshWebSocketConnection(ws);
+  }
+
+  // Also support messages on default socket
+  ws.on('message', (data) => {
+    try {
+      const parsed = JSON.parse(data.toString());
+      if (parsed.type?.startsWith('ssh:')) {
+        // Forwarded to SSH bridge handler
+        handleSshWebSocketConnection(ws);
+      }
+    } catch (e) {}
+  });
 
   // Send initial sync event
   ws.send(JSON.stringify({ type: 'connected', time: new Date().toISOString() }));
