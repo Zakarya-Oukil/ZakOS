@@ -3,6 +3,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { cx } from '../../ui/cx';
 import { StatusDot, type Status } from '../../ui';
 import type { SessionInfo } from './api';
+import type { ProjectInfo } from '../../lib/projectsApi';
 import { ago, basename } from './format';
 
 interface SessionListProps {
@@ -12,7 +13,8 @@ interface SessionListProps {
   error: string | null;
   activeId: string | undefined;
   disabledReason?: string;
-  onCreate: (cwd: string) => Promise<void>;
+  projects: ProjectInfo[];
+  onCreate: (cwd: string, title?: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
@@ -21,9 +23,19 @@ function statusOf(s: SessionInfo): Status {
   return s.status === 'error' ? 'error' : 'idle';
 }
 
-export function SessionList({ agent, sessions, loading, error, activeId, disabledReason, onCreate, onDelete }: SessionListProps) {
+export function SessionList({ agent, sessions, loading, error, activeId, disabledReason, projects, onCreate, onDelete }: SessionListProps) {
   const [creating, setCreating] = useState(false);
   const [cwd, setCwd] = useState('');
+  const [choice, setChoice] = useState<string>(() => {
+    try {
+      return window.localStorage.getItem('zakos_last_project') ?? '';
+    } catch {
+      return '';
+    }
+  });
+  const usable = projects.filter((p) => p.exists);
+  const picked = usable.find((p) => p.id === choice) ?? usable[0];
+  const useOther = choice === '__other' || usable.length === 0;
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -33,7 +45,15 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
     setBusy(true);
     setFormError(null);
     try {
-      await onCreate(cwd.trim());
+      if (useOther) await onCreate(cwd.trim());
+      else if (picked) {
+        try {
+          window.localStorage.setItem('zakos_last_project', picked.id);
+        } catch {
+          /* storage blocked */
+        }
+        await onCreate(picked.path, picked.name);
+      }
       setCreating(false);
       setCwd('');
     } catch (err) {
@@ -62,7 +82,18 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
           <span className="min-w-0 flex-1 truncate text-sm text-os-text">{s.title}</span>
         </span>
         <span className="mt-0.5 block truncate pl-4 text-xs text-os-muted">
-          {ago(s.updated)} in <span className="font-os-mono">{basename(s.cwd)}</span>
+          {ago(s.updated)} in{' '}
+          {(() => {
+            const proj = projects.find((p) => p.path.toLowerCase() === s.cwd.toLowerCase());
+            return proj ? (
+              <span className="inline-flex items-baseline gap-1">
+                <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: proj.color }} aria-hidden />
+                {proj.name}
+              </span>
+            ) : (
+              <span className="font-os-mono">{basename(s.cwd)}</span>
+            );
+          })()}
         </span>
       </a>
       {confirmId === s.id ? (
@@ -114,18 +145,42 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
           </button>
         ) : (
           <form onSubmit={submit} className="grid gap-2">
-            <label htmlFor="new-session-cwd" className="text-xs text-os-muted">
-              Working folder
-            </label>
-            <input
-              id="new-session-cwd"
-              value={cwd}
-              onChange={(e) => setCwd(e.target.value)}
-              placeholder="Blank uses the Zak OS folder"
-              autoFocus
-              spellCheck={false}
-              className="h-8 rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 font-os-mono text-xs text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
-            />
+            {usable.length > 0 && (
+              <>
+                <label htmlFor="new-session-project" className="text-xs text-os-muted">
+                  Project
+                </label>
+                <select
+                  id="new-session-project"
+                  value={useOther ? '__other' : (picked?.id ?? '')}
+                  onChange={(e) => setChoice(e.target.value)}
+                  className="h-8 rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+                >
+                  {usable.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                  <option value="__other">Another folder</option>
+                </select>
+              </>
+            )}
+            {useOther && (
+              <>
+                <label htmlFor="new-session-cwd" className="text-xs text-os-muted">
+                  Working folder
+                </label>
+                <input
+                  id="new-session-cwd"
+                  value={cwd}
+                  onChange={(e) => setCwd(e.target.value)}
+                  placeholder="Blank uses the Zak OS folder"
+                  autoFocus
+                  spellCheck={false}
+                  className="h-8 rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 font-os-mono text-xs text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+                />
+              </>
+            )}
             {formError && (
               <p role="alert" className="text-xs text-os-danger">
                 {formError}

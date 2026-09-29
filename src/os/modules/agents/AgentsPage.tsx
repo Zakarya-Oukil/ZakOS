@@ -1,10 +1,11 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, PanelRight } from 'lucide-react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { IconButton, StatusDot, Tabs, type TabItem } from '../../ui';
 import { cx } from '../../ui/cx';
 import { agentsApi } from './api';
+import { projectsApi, type ProjectInfo } from '../../lib/projectsApi';
 import { Conversation } from './Conversation';
 import { useAgents, useSession, useSessions } from './hooks';
 import { RightRail } from './RightRail';
@@ -24,6 +25,11 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
   const list = useSessions(agentId);
   const current = useSession(sessionId);
   const [railOpen, setRailOpen] = useState(true);
+  const [projects, setProjects] = useState<ProjectInfo[]>([]);
+
+  useEffect(() => {
+    projectsApi.list().then(setProjects).catch(() => setProjects([]));
+  }, []);
 
   const agent = agents.find((a) => a.id === agentId);
   const agentLabel = agent?.label ?? FALLBACK_AGENTS.find((a) => a.id === agentId)?.label ?? agentId;
@@ -46,8 +52,8 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
   const runningCount = list.sessions.filter((s) => s.running || s.status === 'running').length;
 
   const create = useCallback(
-    async (cwd: string) => {
-      const s = await agentsApi.create(agentId, cwd || undefined);
+    async (cwd: string, title?: string) => {
+      const s = await agentsApi.create(agentId, cwd || undefined, title);
       list.refresh();
       navigate('agents', agentId, s.id);
     },
@@ -120,6 +126,7 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
             error={list.error ?? agentsError}
             activeId={sessionId}
             disabledReason={unavailable}
+            projects={projects}
             onCreate={create}
             onDelete={remove}
           />

@@ -79,7 +79,13 @@ function runJob(job: Job, command: string, args: string[], cwd: string, onSucces
       }
     } else {
       job.state = 'error';
-      job.error = job.log.trim().split('\n').slice(-3).join('\n') || `Exited with code ${code}`;
+      // Tidy tool output into something readable: drop carriage returns and the "[graphify watch]" tag.
+      const lines = job.log
+        .replace(/\r/g, '\n')
+        .split('\n')
+        .map((l) => l.replace(/^\[graphify watch\]\s*/, '').trim())
+        .filter(Boolean);
+      job.error = lines.slice(-2).join('\n') || `Exited with code ${code}`;
     }
   });
 }

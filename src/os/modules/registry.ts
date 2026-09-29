@@ -1,5 +1,5 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import { Bot, Brain, GitBranch, Settings, SquareTerminal, type LucideIcon } from 'lucide-react';
+import { Bot, Brain, FolderGit2, GitBranch, Settings, SquareTerminal, type LucideIcon } from 'lucide-react';
 
 export interface OsModule {
   id: string;
@@ -24,14 +24,21 @@ export const MODULES: OsModule[] = [
     icon: Bot,
     required: true,
     component: lazy(() => import('./agents/AgentsPage')),
-    description: 'Real Claude Code and Hermes sessions you can resume, stop and delete.',
+    description: 'Real Claude Code, Hermes and Antigravity sessions you can resume, stop and delete.',
+  },
+  {
+    id: 'projects',
+    label: 'Projects',
+    icon: FolderGit2,
+    component: lazy(() => import('./projects/ProjectsPage')),
+    description: 'Add folders or clone from GitHub, and build a graph for each project.',
   },
   {
     id: 'brain',
     label: 'Brain',
     icon: Brain,
-    component: lazy(() => import('./BrainPage')),
-    description: '3D neural-galaxy view of the Obsidian vault.',
+    component: lazy(() => import('./brain/BrainPage')),
+    description: '3D galaxy of the Obsidian vault, with each project as its own star.',
   },
   {
     id: 'workflows',
