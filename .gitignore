@@ -55,3 +55,4 @@ data/*.db*
 
 # playwright mcp scratch
 .playwright-mcp/
+data/
