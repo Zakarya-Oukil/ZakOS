@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { ArrowUp, ChevronRight, Square } from 'lucide-react';
 import { cx } from '../../ui/cx';
-import { Kbd, StatusDot } from '../../ui';
+import { Kbd, Markdown, StatusDot } from '../../ui';
 import { usePrefersReducedMotion } from '../../theme/motion';
 import { summarizeInput, type Item } from './items';
 
@@ -46,7 +46,7 @@ function ItemView({ item }: { item: Item }) {
         </div>
       );
     case 'text':
-      return <div className="max-w-[75ch] whitespace-pre-wrap break-words text-[15px] leading-relaxed text-os-text">{item.text}</div>;
+      return <Markdown text={item.text} />;
     case 'tool':
       return <ToolCard item={item} />;
     case 'error':

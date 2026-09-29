@@ -1,8 +1,9 @@
 import type { AgentAdapter } from './types';
 import { claudeAdapter } from './claude';
 import { hermesAdapter } from './hermes';
+import { antigravityAdapter } from './antigravity';
 
-const adapters: AgentAdapter[] = [claudeAdapter, hermesAdapter];
+const adapters: AgentAdapter[] = [claudeAdapter, hermesAdapter, antigravityAdapter];
 
 export function listAdapters(): AgentAdapter[] {
   return adapters;

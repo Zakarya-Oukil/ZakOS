@@ -23,6 +23,8 @@ import { scraperService } from './scraperService';
 import { handleSshWebSocketConnection } from './sshBridge';
 import { jarvisService } from './jarvisService';
 import { mountAgentRoutes } from './agents/routes';
+import { handlePtyConnection } from './terminal/pty';
+import { mountOsSettingsRoutes } from './osSettings';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -37,6 +39,11 @@ const wss = new WebSocketServer({ server });
 const clients = new Set<WebSocket>();
 
 wss.on('connection', (ws, req) => {
+  // Terminal sockets carry raw shell traffic: keep them out of the JSON broadcast set.
+  if ((req.url || '').startsWith('/ws/pty')) {
+    handlePtyConnection(ws, req);
+    return;
+  }
   clients.add(ws);
   const url = req.url || '';
   console.log(`[WS] Client connected (path: ${url}). Active clients: ${clients.size}`);
@@ -85,6 +92,7 @@ projectService.setBroadcastCallback(broadcast);
 
 // Agent bridge: real CLI agent sessions (Claude Code, Hermes)
 mountAgentRoutes(app, broadcast);
+mountOsSettingsRoutes(app);
 
 // ==========================================
 // REST API ROUTES

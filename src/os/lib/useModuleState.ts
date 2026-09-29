@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { MODULES } from '../modules/registry';
 
 const KEY = 'zakos_os_disabled_modules';
@@ -13,9 +13,35 @@ function read(): string[] {
   }
 }
 
-/** Which modules are switched off. Stored per browser; required modules are never disabled. */
+function cache(list: string[]) {
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(list));
+  } catch {
+    /* storage blocked: the server copy still holds it */
+  }
+}
+
+/**
+ * Which modules are switched off. The server copy is the source of truth; localStorage is only
+ * an instant first paint. Required modules are never disabled.
+ */
 export function useModuleState() {
   const [disabled, setDisabled] = useState<string[]>(read);
+
+  useEffect(() => {
+    fetch('/api/os/modules')
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d.disabled)) {
+          const clean = d.disabled.filter((id: unknown): id is string => typeof id === 'string' && !MODULES.find((m) => m.id === id)?.required);
+          setDisabled(clean);
+          cache(clean);
+        }
+      })
+      .catch(() => {
+        /* server unreachable: keep the cached list */
+      });
+  }, []);
 
   const isEnabled = useCallback((id: string) => !disabled.includes(id), [disabled]);
 
@@ -23,11 +49,14 @@ export function useModuleState() {
     if (MODULES.find((m) => m.id === id)?.required) return;
     setDisabled((prev) => {
       const next = enabled ? prev.filter((x) => x !== id) : [...new Set([...prev, id])];
-      try {
-        window.localStorage.setItem(KEY, JSON.stringify(next));
-      } catch {
-        /* storage blocked: the toggle still works for this session */
-      }
+      cache(next);
+      fetch('/api/os/modules', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ disabled: next }),
+      }).catch(() => {
+        /* the local cache still applies; the next successful change re-syncs */
+      });
       return next;
     });
   }, []);

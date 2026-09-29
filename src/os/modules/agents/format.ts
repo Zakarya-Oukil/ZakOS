@@ -15,5 +15,7 @@ export function basename(path: string): string {
 }
 
 export function resumeCommand(agent: string, cliSessionId: string): string {
-  return agent === 'hermes' ? `hermes chat --resume ${cliSessionId}` : `claude --resume ${cliSessionId}`;
+  if (agent === 'hermes') return `hermes chat --resume ${cliSessionId}`;
+  if (agent === 'antigravity') return `agy --conversation ${cliSessionId}`;
+  return `claude --resume ${cliSessionId}`;
 }

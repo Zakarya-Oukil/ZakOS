@@ -13,6 +13,7 @@ import { SessionList } from './SessionList';
 const FALLBACK_AGENTS = [
   { id: 'claude', label: 'Claude Code' },
   { id: 'hermes', label: 'Hermes' },
+  { id: 'antigravity', label: 'Antigravity' },
 ];
 
 export default function AgentsPage({ route, navigate }: ModuleProps) {
