@@ -138,13 +138,13 @@ export function CommandPalette({ commands, open: openProp, onOpenChange }: Comma
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command..."
-            className="h-11 flex-1 bg-transparent font-os-mono text-sm text-os-text placeholder:text-os-muted focus:outline-none"
+            className="h-11 flex-1 bg-transparent font-os-sans text-sm text-os-text placeholder:text-os-muted focus:outline-none"
           />
           <Kbd>Esc</Kbd>
         </div>
         <ul id={LIST_ID} role="listbox" className="max-h-72 overflow-y-auto p-1">
           {results.length === 0 && (
-            <li className="px-3 py-6 text-center font-os-mono text-xs text-os-muted">No matches</li>
+            <li className="px-3 py-6 text-center font-os-sans text-xs text-os-muted">No matches</li>
           )}
           {results.map((c, i) => (
             <li
@@ -160,7 +160,7 @@ export function CommandPalette({ commands, open: openProp, onOpenChange }: Comma
               )}
             >
               <span>{c.label}</span>
-              {c.hint && <span className="font-os-mono text-[11px] text-os-muted">{c.hint}</span>}
+              {c.hint && <span className="font-os-sans text-[12px] text-os-muted">{c.hint}</span>}
             </li>
           ))}
         </ul>

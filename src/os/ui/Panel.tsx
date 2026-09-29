@@ -19,7 +19,7 @@ export function Panel({ title, header, padded = true, className, children, ...re
     >
       {(title || header) && (
         <div className="flex h-9 items-center justify-between gap-3 border-b border-os-line px-3">
-          {title && <h2 className="font-os-mono text-[11px] uppercase tracking-[0.12em] text-os-muted">{title}</h2>}
+          {title && <h2 className="font-os-sans text-[13px] font-medium text-os-muted">{title}</h2>}
           {header && <div className="flex items-center gap-2">{header}</div>}
         </div>
       )}

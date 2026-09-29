@@ -52,3 +52,6 @@ pnpm-debug.log*
 
 # agent bridge db
 data/*.db*
+
+# playwright mcp scratch
+.playwright-mcp/

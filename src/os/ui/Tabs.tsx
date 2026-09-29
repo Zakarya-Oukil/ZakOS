@@ -60,7 +60,7 @@ export function Tabs({ tabs, value, onChange, className, 'aria-label': ariaLabel
             disabled={t.disabled}
             onClick={() => onChange(t.id)}
             className={cx(
-              'relative h-9 px-3 font-os-mono text-xs transition-colors',
+              'relative h-9 shrink-0 whitespace-nowrap px-3 font-os-sans text-[13px] transition-colors',
               'focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_1px_var(--os-cyan)]',
               'disabled:opacity-40',
               selected ? 'text-os-text' : 'text-os-muted hover:text-os-text',
