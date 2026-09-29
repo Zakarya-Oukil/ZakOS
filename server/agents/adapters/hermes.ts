@@ -4,6 +4,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import type { AgentAdapter, AgentEvent, AgentRunOptions } from './types';
 import { spawnLines } from './proc';
+import { getSettings } from '../settings';
 
 const HERMES_BIN =
   process.env.HERMES_BIN || path.join(os.homedir(), 'AppData', 'Local', 'hermes', 'bin', 'hermes.exe');
@@ -28,6 +29,8 @@ export const hermesAdapter: AgentAdapter = {
     fs.writeFileSync(queryFile, opts.prompt, 'utf8');
 
     const args = ['chat', '--query-file', queryFile, '-Q', '--oneshot'];
+    const { hermesModel } = getSettings();
+    if (hermesModel) args.push('-m', hermesModel);
     if (opts.resume && opts.cliSessionId) args.push('--resume', opts.cliSessionId);
 
     const proc = spawnLines(HERMES_BIN, args, { cwd: opts.cwd, signal: opts.signal });

@@ -11,11 +11,13 @@ const LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i;
 const MAX_INPUT = 64 * 1024;
 
 /**
+ * Local-only guard shared by every endpoint that runs commands or touches arbitrary folders.
+ *
  * A shell over WebSocket is remote code execution for whoever can open it, and the API server
  * listens on every interface. So this endpoint accepts only loopback peers, and only pages
  * served from a localhost origin (which stops other websites from driving it via the browser).
  */
-export function isTrustedPtyRequest(req: IncomingMessage): boolean {
+export function isTrustedLocalRequest(req: IncomingMessage): boolean {
   const peer = req.socket.remoteAddress ?? '';
   if (!LOOPBACK.has(peer)) return false;
   const origin = req.headers.origin;
@@ -29,7 +31,7 @@ function shellCommand(): { file: string; args: string[] } {
 }
 
 export function handlePtyConnection(ws: WebSocket, req: IncomingMessage): void {
-  if (!isTrustedPtyRequest(req)) {
+  if (!isTrustedLocalRequest(req)) {
     ws.close(1008, 'Forbidden');
     return;
   }

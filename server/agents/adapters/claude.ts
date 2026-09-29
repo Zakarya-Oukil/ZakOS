@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { AgentAdapter, AgentEvent, AgentRunOptions } from './types';
 import { spawnLines } from './proc';
+import { getSettings } from '../settings';
 
 const execFileAsync = promisify(execFile);
 
@@ -9,7 +10,7 @@ const execFileAsync = promisify(execFile);
 type PermissionMode = 'acceptEdits' | 'default';
 
 function permissionMode(): PermissionMode {
-  return process.env.AGENT_PERMISSION_MODE === 'default' ? 'default' : 'acceptEdits';
+  return getSettings().permissionMode;
 }
 
 function stringifyResult(content: unknown): string {

@@ -6,6 +6,7 @@ import { getAdapter, listAdapters } from './adapters';
 import { restoreCheckpoint } from './checkpoint';
 import { isRunning, SessionBusyError, sendMessage, stop, type Broadcast } from './runner';
 import * as store from './store';
+import { getSettings, updateSettings } from './settings';
 
 const REPO_ROOT = process.cwd();
 
@@ -25,6 +26,18 @@ export function mountAgentRoutes(app: Express, broadcast: Broadcast) {
       listAdapters().map(async (a) => ({ id: a.id, label: a.label, ...(await a.detect()) }))
     );
     res.json({ success: true, agents });
+  });
+
+  app.get('/api/agents/settings', (_req: Request, res: Response) => {
+    res.json({ success: true, settings: getSettings() });
+  });
+
+  app.put('/api/agents/settings', (req: Request, res: Response) => {
+    try {
+      res.json({ success: true, settings: updateSettings({ permissionMode: req.body?.permissionMode, hermesModel: req.body?.hermesModel }) });
+    } catch (err) {
+      fail(res, 400, err instanceof Error ? err.message : String(err));
+    }
   });
 
   app.get('/api/agents/sessions', (req: Request, res: Response) => {

@@ -25,6 +25,7 @@ import { jarvisService } from './jarvisService';
 import { mountAgentRoutes } from './agents/routes';
 import { handlePtyConnection } from './terminal/pty';
 import { mountOsSettingsRoutes } from './osSettings';
+import { mountProjectRoutes } from './projects/routes';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -93,6 +94,7 @@ projectService.setBroadcastCallback(broadcast);
 // Agent bridge: real CLI agent sessions (Claude Code, Hermes)
 mountAgentRoutes(app, broadcast);
 mountOsSettingsRoutes(app);
+mountProjectRoutes(app);
 
 // ==========================================
 // REST API ROUTES

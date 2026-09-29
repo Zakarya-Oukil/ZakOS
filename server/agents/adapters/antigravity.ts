@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { AgentAdapter, AgentEvent, AgentRunOptions } from './types';
 import { spawnLines } from './proc';
+import { getSettings } from '../settings';
 
 const execFileAsync = promisify(execFile);
 
@@ -12,7 +13,7 @@ const BIN = process.env.AGY_BIN || 'agy';
  * `acceptEdits` auto-approves file edits only. There is deliberately no bypass mode.
  */
 function modeArgs(): string[] {
-  return process.env.AGENT_PERMISSION_MODE === 'default' ? [] : ['--mode', 'accept-edits'];
+  return getSettings().permissionMode === 'default' ? [] : ['--mode', 'accept-edits'];
 }
 
 /** Map one NDJSON line from `agy --output-format stream-json` to normalized events. */
