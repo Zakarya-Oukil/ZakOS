@@ -18,7 +18,7 @@ import {
   GeointLayerType,
   TargetIpMarker,
   HighlightedBoundary
-} from '@/types/geoint';
+} from '@/legacy/types/geoint';
 import { calculateViewshedFootprint } from './CctvViewshedManager';
 
 export type TilesetEngineMode = 'SATELLITE' | 'OSM_3D' | 'GOOGLE_3D';

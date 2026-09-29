@@ -4,7 +4,7 @@ import {
   Wind, Shield, AlertTriangle, Activity, 
   Eye, Zap, RefreshCw, Gauge, Plane
 } from 'lucide-react';
-import { GeointFlight } from '@/types/geoint';
+import { GeointFlight } from '@/legacy/types/geoint';
 
 export type CockpitCameraAngle = 'FIRST_PERSON' | 'CHASE' | 'DOWNWARD_RECON';
 

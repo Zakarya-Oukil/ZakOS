@@ -18,14 +18,14 @@ import {
   GeointLayerType,
   TargetIpMarker,
   HighlightedBoundary
-} from '@/types/geoint';
+} from '@/legacy/types/geoint';
 import { 
   BASELINE_CCTV_CAMERAS, 
   BASELINE_FLIGHTS, 
   BASELINE_SATELLITES, 
   BASELINE_SUBSEA_CABLES, 
   BASELINE_VESSELS 
-} from '@/data/geointData';
+} from '@/legacy/data/geointData';
 import { TacticalOpticsShader, TacticalOpticMode } from './TacticalOpticsShader';
 import { CctvViewshedManager, calculateViewshedFootprint } from './CctvViewshedManager';
 import { CockpitRideAlong, CockpitCameraAngle } from './CockpitRideAlong';

@@ -5,7 +5,7 @@ import {
   ShieldCheck, Crosshair, ExternalLink, RefreshCw, Eye,
   Navigation, Globe, Video, Activity, Sparkles, Check
 } from 'lucide-react';
-import { GeointCctvCamera } from '@/types/geoint';
+import { GeointCctvCamera } from '@/legacy/types/geoint';
 import { calculateBlindSpotCoverage } from './CctvViewshedManager';
 import Hls from 'hls.js';
 

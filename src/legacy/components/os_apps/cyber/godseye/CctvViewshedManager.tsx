@@ -6,7 +6,7 @@ import {
   CheckCircle2, Sparkles, Video, HardDriveDownload,
   Wifi, ShieldCheck, Activity, Terminal
 } from 'lucide-react';
-import { GeointCctvCamera } from '@/types/geoint';
+import { GeointCctvCamera } from '@/legacy/types/geoint';
 
 export interface CctvViewshedManagerProps {
   cameras: GeointCctvCamera[];
