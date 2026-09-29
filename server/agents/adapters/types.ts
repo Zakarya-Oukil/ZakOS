@@ -1,0 +1,22 @@
+export type AgentEvent =
+  | { type: 'text'; delta: string }
+  | { type: 'tool_use'; id: string; name: string; input: unknown }
+  | { type: 'tool_result'; id: string; output: string; isError: boolean }
+  | { type: 'status'; state: string }
+  | { type: 'done'; cliSessionId?: string }
+  | { type: 'error'; message: string };
+
+export interface AgentRunOptions {
+  prompt: string;
+  cwd: string;
+  cliSessionId?: string;
+  resume: boolean;
+  signal: AbortSignal;
+}
+
+export interface AgentAdapter {
+  id: string;
+  label: string;
+  detect(): Promise<{ available: boolean; reason?: string; version?: string }>;
+  run(opts: AgentRunOptions): AsyncIterable<AgentEvent>;
+}

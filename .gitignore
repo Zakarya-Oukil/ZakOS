@@ -49,3 +49,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .system_generated/
+
+# agent bridge db
+data/*.db*

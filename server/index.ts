@@ -22,6 +22,7 @@ import { githubService } from './githubService';
 import { scraperService } from './scraperService';
 import { handleSshWebSocketConnection } from './sshBridge';
 import { jarvisService } from './jarvisService';
+import { mountAgentRoutes } from './agents/routes';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -81,6 +82,9 @@ function broadcast(data: any) {
 
 // Connect project service to live WebSocket broadcast
 projectService.setBroadcastCallback(broadcast);
+
+// Agent bridge: real CLI agent sessions (Claude Code, Hermes)
+mountAgentRoutes(app, broadcast);
 
 // ==========================================
 // REST API ROUTES
