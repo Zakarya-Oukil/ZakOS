@@ -1,0 +1,43 @@
+/* Agentic OS design tokens. Only defines new variables; no element rules. */
+:root {
+  --os-bg: #0b0d10;
+  --os-surface: #12151a;
+  --os-surface-2: #171b21;
+  --os-line: #1e232b;
+  --os-cyan: #5fe3f0;
+  --os-amber: #f2b544;
+  --os-text: #e6eaf0;
+  --os-muted: #8a93a3;
+  --os-danger: #ff6b6b;
+
+  --os-radius-sm: 4px;
+  --os-radius: 6px;
+  --os-radius-lg: 10px;
+
+  --os-space-1: 4px;
+  --os-space-2: 8px;
+  --os-space-3: 12px;
+  --os-space-4: 16px;
+  --os-space-5: 24px;
+  --os-space-6: 32px;
+
+  --os-shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.02) inset, 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --os-glow-cyan: 0 0 12px -2px rgba(95, 227, 240, 0.35);
+  --os-glow-cyan-strong: 0 0 0 1px rgba(95, 227, 240, 0.5), 0 0 16px -2px rgba(95, 227, 240, 0.4);
+  --os-glow-amber: 0 0 10px -2px rgba(242, 181, 68, 0.35);
+  --os-focus-ring: 0 0 0 2px var(--os-bg), 0 0 0 4px var(--os-cyan);
+
+  --os-font-sans: 'Space Grotesk', system-ui, sans-serif;
+  --os-font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+
+@keyframes os-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(95, 227, 240, 0.55); }
+  50% { box-shadow: 0 0 0 5px rgba(95, 227, 240, 0); }
+}
+
+.os-live-dot { animation: os-pulse 1.8s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .os-live-dot { animation: none; }
+}

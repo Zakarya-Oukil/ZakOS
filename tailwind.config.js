@@ -54,6 +54,18 @@ export default {
           red: '#EF4444',
           lime: '#D4FF00',
         },
+        // Agentic OS shell (src/os) - values mirror src/os/theme/tokens.css
+        os: {
+          bg: 'var(--os-bg)',
+          surface: 'var(--os-surface)',
+          'surface-2': 'var(--os-surface-2)',
+          line: 'var(--os-line)',
+          cyan: 'var(--os-cyan)',
+          amber: 'var(--os-amber)',
+          text: 'var(--os-text)',
+          muted: 'var(--os-muted)',
+          danger: 'var(--os-danger)',
+        },
         // Vault 6 Taxonomy Branches
         branch: {
           nucleus: '#FFD700',      // Master Root Gold
@@ -118,6 +130,9 @@ export default {
       fontFamily: {
         mono: ['"Fira Code"', '"JetBrains Mono"', 'Consolas', 'monospace'],
         sans: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
+        // Agentic OS shell fonts (separate keys so src/legacy typography is unchanged)
+        'os-sans': ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        'os-mono': ['"JetBrains Mono"', 'ui-monospace', 'Consolas', 'monospace'],
       }
     },
   },
