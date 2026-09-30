@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Broadcast } from '../agents/runner';
 import { isTrustedLocalRequest } from '../terminal/pty';
+import { getAdapter } from '../agents/adapters';
 import { approveRun, deleteRun, getRun, listRuns, startRun, stopRun } from './engine';
 
 /** Runs start agents that edit files, so these routes are local-only like the terminal. */
@@ -30,7 +31,7 @@ export function mountWorkflowRoutes(app: Express, broadcast: Broadcast) {
     res.json({ success: true, run });
   });
 
-  app.post('/api/workflows', (req: Request, res: Response) => {
+  app.post('/api/workflows', async (req: Request, res: Response) => {
     const goal = str(req.body?.goal);
     if (!goal) return fail(res, 400, 'goal is required');
     const rawCwd = req.body?.cwd;
@@ -43,8 +44,19 @@ export function mountWorkflowRoutes(app: Express, broadcast: Broadcast) {
       /* missing or unreadable */
     }
     if (!isDir) return fail(res, 400, 'cwd does not exist or is not a directory');
+    // Every role must name a real, installed agent; a typo or missing CLI fails here, not mid-run.
+    const agents: Record<string, string> = {};
+    for (const role of ['orchestrator', 'worker', 'reviewer']) {
+      const id = str(req.body?.agents?.[role]);
+      if (!id) continue;
+      const adapter = getAdapter(id);
+      if (!adapter) return fail(res, 400, `Unknown agent for ${role}: ${id}`);
+      const status = await adapter.detect();
+      if (!status.available) return fail(res, 400, `${adapter.label} is not available (${status.reason ?? 'not installed'})`);
+      agents[role] = id;
+    }
     try {
-      const run = startRun(goal.slice(0, 4000), cwd, str(req.body?.projectId)?.slice(0, 64), { approval: req.body?.approval !== false }, broadcast);
+      const run = startRun(goal.slice(0, 4000), cwd, str(req.body?.projectId)?.slice(0, 64), { approval: req.body?.approval !== false, agents: agents as never }, broadcast);
       res.status(201).json({ success: true, run });
     } catch (err) {
       fail(res, 500, err instanceof Error ? err.message : String(err));

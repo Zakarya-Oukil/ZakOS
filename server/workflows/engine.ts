@@ -17,12 +17,24 @@ export interface Task {
   error?: string;
 }
 
+export type Role = 'orchestrator' | 'worker' | 'reviewer';
+
 export interface RunOptions {
   /** Pause after the plan so the owner can edit and approve the tasks. */
   approval: boolean;
+  /** Which agent adapter plays each role. */
+  agents: Record<Role, string>;
 }
 
-export const DEFAULT_OPTIONS: RunOptions = { approval: true };
+export const DEFAULT_OPTIONS: RunOptions = {
+  approval: true,
+  agents: { orchestrator: 'claude', worker: 'claude', reviewer: 'claude' },
+};
+
+/** Merges a partial option set over the defaults, including the nested agents map. */
+export function withDefaults(o: Partial<RunOptions> | undefined): RunOptions {
+  return { ...DEFAULT_OPTIONS, ...o, agents: { ...DEFAULT_OPTIONS.agents, ...o?.agents } };
+}
 
 export interface Run {
   id: string;
@@ -43,7 +55,6 @@ export interface Run {
   error?: string;
 }
 
-const AGENT = 'claude';
 const MAX_TASKS = 5;
 const CONCURRENCY = 3;
 const RESULT_LIMIT = 6000;
@@ -61,7 +72,7 @@ try {
   const saved = JSON.parse(fs.readFileSync(FILE, 'utf8')) as Run[];
   for (const r of saved) {
     // A restart leaves no live child processes, so anything mid-flight is over.
-    r.options = { ...DEFAULT_OPTIONS, ...r.options };
+    r.options = withDefaults(r.options);
     if (['planning', 'awaiting_approval', 'running', 'reviewing', 'reporting'].includes(r.status)) {
       r.status = 'stopped';
       r.error = 'Server restarted during the run';
@@ -149,8 +160,8 @@ function runTurn(sessionId: string, prompt: string, broadcast: Broadcast): Promi
   });
 }
 
-function newSession(title: string, cwd: string): string {
-  return sessions.createSession(randomUUID(), AGENT, title.slice(0, 120), cwd).id;
+function newSession(agent: string, title: string, cwd: string): string {
+  return sessions.createSession(randomUUID(), agent, title.slice(0, 120), cwd).id;
 }
 
 /** Pulls the first balanced JSON object out of free text (agents often wrap it in prose or fences). */
@@ -217,7 +228,7 @@ ${clip(run.review ?? '(none)')}`;
 
 export function startRun(goal: string, cwd: string, projectId: string | undefined, options: Partial<RunOptions>, broadcast: Broadcast): Run {
   const now = Date.now();
-  const run: Run = { id: randomUUID(), options: { ...DEFAULT_OPTIONS, ...options }, goal, cwd, projectId, status: 'planning', created: now, updated: now, tasks: [] };
+  const run: Run = { id: randomUUID(), options: withDefaults(options), goal, cwd, projectId, status: 'planning', created: now, updated: now, tasks: [] };
   runs.set(run.id, run);
   persist();
   void execute(run, broadcast);
@@ -262,7 +273,7 @@ async function execute(run: Run, broadcast: Broadcast) {
 
   try {
     // 1. Plan
-    run.orchestratorSessionId = newSession(`Workflow: ${run.goal}`, run.cwd);
+    run.orchestratorSessionId = newSession(run.options.agents.orchestrator, `Workflow: ${run.goal}`, run.cwd);
     update();
     const plan = await runTurn(run.orchestratorSessionId, planPrompt(run.goal), broadcast);
     if (halted()) throw new Error('Stopped');
@@ -290,7 +301,7 @@ async function execute(run: Run, broadcast: Broadcast) {
     const queue = [...tasks];
     const worker = async () => {
       for (let task = queue.shift(); task && !halted(); task = queue.shift()) {
-        task.sessionId = newSession(`Task: ${task.title}`, run.cwd);
+        task.sessionId = newSession(run.options.agents.worker, `Task: ${task.title}`, run.cwd);
         task.state = 'running';
         update();
         try {
@@ -312,7 +323,7 @@ async function execute(run: Run, broadcast: Broadcast) {
 
     // 3. Review
     update({ status: 'reviewing' });
-    run.reviewerSessionId = newSession(`Review: ${run.goal}`, run.cwd);
+    run.reviewerSessionId = newSession(run.options.agents.reviewer, `Review: ${run.goal}`, run.cwd);
     update();
     const review = await runTurn(run.reviewerSessionId, reviewPrompt(run), broadcast);
     if (halted()) throw new Error('Stopped');

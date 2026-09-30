@@ -6,10 +6,10 @@ import { agentsSocket } from '../../lib/agentsSocket';
 import { projectsApi, timeAgo, type ProjectInfo } from '../../lib/projectsApi';
 import { Markdown, Panel, StatusDot } from '../../ui';
 import { cx } from '../../ui/cx';
-import { useSession } from '../agents/hooks';
+import { useAgents, useSession } from '../agents/hooks';
 import { Pipeline } from './Pipeline';
 import { TaskBoard } from './TaskBoard';
-import { isActive, workflowsApi, type WorkflowRun, type WorkflowTask } from './api';
+import { isActive, workflowsApi, type Role, type WorkflowRun, type WorkflowTask } from './api';
 
 const STATUS_LABEL: Record<WorkflowRun['status'], string> = {
   planning: 'Planning',
@@ -218,6 +218,8 @@ function RunView({ run, onChanged }: { run: WorkflowRun; onChanged: () => void }
 function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (run: WorkflowRun) => void }) {
   const [goal, setGoal] = useState('');
   const [projectId, setProjectId] = useState('');
+  const { agents } = useAgents();
+  const [roles, setRoles] = useState<Record<Role, string>>({ orchestrator: 'claude', worker: 'claude', reviewer: 'claude' });
   const [approval, setApproval] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -229,7 +231,7 @@ function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (
     setBusy(true);
     setError(null);
     try {
-      onStarted(await workflowsApi.start(goal.trim(), project?.path ?? '', project?.id, approval));
+      onStarted(await workflowsApi.start(goal.trim(), project?.path ?? '', project?.id, { approval, agents: roles }));
       setGoal('');
     } catch (err) {
       setError((err as Error).message);
@@ -258,6 +260,25 @@ function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (
           </option>
         ))}
       </select>
+      <fieldset className="grid gap-1.5">
+        <legend className="mb-1 text-xs text-os-muted">Agent for each role</legend>
+        {(['orchestrator', 'worker', 'reviewer'] as Role[]).map((role) => (
+          <label key={role} className="flex items-center justify-between gap-2 text-sm text-os-text">
+            <span className="capitalize">{role}</span>
+            <select
+              value={roles[role]}
+              onChange={(e) => setRoles((r) => ({ ...r, [role]: e.target.value }))}
+              className={cx(field, 'h-8 w-40')}
+            >
+              {(agents.length ? agents : [{ id: 'claude', label: 'Claude Code', available: true }]).map((a) => (
+                <option key={a.id} value={a.id} disabled={!a.available}>
+                  {a.label}{a.available ? '' : ' (unavailable)'}
+                </option>
+              ))}
+            </select>
+          </label>
+        ))}
+      </fieldset>
       <label className="flex items-center gap-2 text-sm text-os-text">
         <input type="checkbox" checked={approval} onChange={(e) => setApproval(e.target.checked)} />
         Ask me to approve the plan first
