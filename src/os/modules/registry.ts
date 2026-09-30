@@ -1,5 +1,5 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import { Bot, Brain, FolderGit2, GitBranch, ScrollText, Settings, SquareTerminal, type LucideIcon } from 'lucide-react';
+import { Bot, Brain, FolderGit2, GitBranch, ScrollText, ShieldCheck, Settings, SquareTerminal, type LucideIcon } from 'lucide-react';
 
 export interface OsModule {
   id: string;
@@ -46,6 +46,13 @@ export const MODULES: OsModule[] = [
     icon: GitBranch,
     component: lazy(() => import('./workflows/WorkflowsPage')),
     description: 'Orchestrator, sub-agents and reviewer working on a task.',
+  },
+  {
+    id: 'approvals',
+    label: 'Approvals',
+    icon: ShieldCheck,
+    component: lazy(() => import('./approvals/ApprovalsPage')),
+    description: 'Actions agents were refused permission for, waiting for your yes or no.',
   },
   {
     id: 'audit',

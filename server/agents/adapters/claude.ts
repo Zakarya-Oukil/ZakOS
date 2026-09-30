@@ -63,6 +63,12 @@ function* mapLine(raw: string, seenTools: Set<string>): Generator<AgentEvent> {
       break;
     }
     case 'result': {
+      if (Array.isArray(msg.permission_denials) && msg.permission_denials.length > 0) {
+        yield {
+          type: 'permission_denied',
+          denials: msg.permission_denials.map((d: any) => ({ tool: String(d.tool_name), input: d.tool_input && typeof d.tool_input === 'object' ? d.tool_input : {} })),
+        };
+      }
       if (msg.is_error) {
         yield { type: 'error', message: stringifyResult(msg.result) || `Run failed (${msg.subtype ?? 'error'})` };
       }
@@ -94,6 +100,7 @@ export const claudeAdapter: AgentAdapter = {
       '--include-partial-messages',
       '--permission-mode', MODE[opts.trust],
     ];
+    for (const rule of opts.allowedTools ?? []) args.push('--allowedTools', rule);
     if (opts.cliSessionId) args.push(opts.resume ? '--resume' : '--session-id', opts.cliSessionId);
 
     // Prompt goes over stdin so it can never be parsed as a flag.

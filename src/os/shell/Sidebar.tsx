@@ -3,6 +3,7 @@ import { cx } from '../ui/cx';
 import { IconButton, StatusDot } from '../ui';
 import type { OsModule } from '../modules/registry';
 import { NotificationsMenu } from './NotificationsMenu';
+import { useApprovalsApi } from '../modules/approvals/api';
 
 interface SidebarProps {
   modules: OsModule[];
@@ -17,6 +18,7 @@ const linkBase =
   'focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
 export function Sidebar({ modules, activeId, collapsed, onToggle, connected }: SidebarProps) {
+  const { pending } = useApprovalsApi();
   return (
     <nav
       aria-label="Modules"
@@ -57,6 +59,11 @@ export function Sidebar({ modules, activeId, collapsed, onToggle, connected }: S
                 <Icon size={17} strokeWidth={1.75} className={active ? 'text-os-cyan' : undefined} aria-hidden />
                 {!collapsed && <span className="hidden truncate md:inline">{m.label}</span>}
                 <span className={collapsed ? 'sr-only' : 'sr-only md:hidden'}>{m.label}</span>
+                {m.id === 'approvals' && pending > 0 && (
+                  <span className="ml-auto rounded-full bg-os-amber px-1.5 text-[10px] font-medium leading-4 text-os-bg" aria-label={`${pending} waiting`}>
+                    {pending}
+                  </span>
+                )}
               </a>
             </li>
           );

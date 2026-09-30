@@ -7,6 +7,8 @@ import { audit } from '../audit';
 import * as store from './store';
 import { trustForPath } from '../projects/store';
 import { isTrust } from './settings';
+import { addApprovals } from './approvals';
+import { notify } from '../notifications';
 
 export type Broadcast = (data: unknown) => void;
 
@@ -33,7 +35,7 @@ function emit(broadcast: Broadcast, sessionId: string, event: AgentEvent | { typ
  * Start one agent turn. Resolves once the run has been accepted; the actual
  * streaming continues in the background and is delivered over the WebSocket.
  */
-export async function sendMessage(sessionId: string, prompt: string, broadcast: Broadcast): Promise<void> {
+export async function sendMessage(sessionId: string, prompt: string, broadcast: Broadcast, grant: { allowedTools?: string[] } = {}): Promise<void> {
   const session = store.getSession(sessionId);
   if (!session) throw new Error('Session not found');
   if (active.has(sessionId)) throw new SessionBusyError('Session already has a run in progress');
@@ -67,6 +69,7 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
         trust: isTrust(session.trust) ? session.trust : trustForPath(session.cwd),
         cliSessionId,
         resume,
+        allowedTools: grant.allowedTools,
         signal: ctl.signal,
       })) {
         if (event.type === 'error') {
@@ -74,6 +77,14 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
           audit('error', session.agent, event.message, { sessionId, project });
         }
         if (event.type === 'tool_use') audit('tool', session.agent, `${event.name} ${JSON.stringify(event.input)}`, { sessionId, project });
+        if (event.type === 'permission_denied') {
+          const added = addApprovals(sessionId, session.cwd, event.denials);
+          if (added.length) {
+            audit('permission-denied', session.agent, added.map((a) => a.summary).join('; '), { sessionId, project });
+            broadcast({ channel: 'approvals' });
+            notify(`Approval needed: ${project}`, added[0].summary, broadcast, { module: 'approvals', route: [] }, { native: false });
+          }
+        }
         if (event.type === 'done' && event.cliSessionId) store.setCliSessionId(sessionId, event.cliSessionId);
         // Text deltas are high-volume; persist them merged when the run ends.
         if (event.type === 'text') {

@@ -3,10 +3,17 @@ export type AgentEvent =
   | { type: 'tool_use'; id: string; name: string; input: unknown }
   | { type: 'tool_result'; id: string; output: string; isError: boolean }
   | { type: 'status'; state: string }
+  | { type: 'permission_denied'; denials: Denial[] }
   | { type: 'done'; cliSessionId?: string }
   | { type: 'error'; message: string };
 
 import type { Trust } from '../settings';
+
+/** An action the CLI refused because it needed a permission the session did not have. */
+export interface Denial {
+  tool: string;
+  input: Record<string, unknown>;
+}
 
 export interface AgentRunOptions {
   prompt: string;
@@ -15,6 +22,8 @@ export interface AgentRunOptions {
   cwd: string;
   cliSessionId?: string;
   resume: boolean;
+  /** Claude permission rules granted for this turn only, e.g. `Bash(npm test)`. */
+  allowedTools?: string[];
   signal: AbortSignal;
 }
 

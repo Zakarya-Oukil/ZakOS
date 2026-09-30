@@ -28,6 +28,7 @@ import { mountOsSettingsRoutes } from './osSettings';
 import { mountProjectRoutes } from './projects/routes';
 import { mountWorkflowRoutes } from './workflows/routes';
 import { mountAuditRoutes } from './audit';
+import { mountApprovalRoutes } from './agents/approvalRoutes';
 import { mountScheduleRoutes } from './automations/routes';
 import { startScheduler } from './automations/scheduler';
 
@@ -101,6 +102,7 @@ mountOsSettingsRoutes(app);
 mountProjectRoutes(app);
 mountWorkflowRoutes(app, broadcast);
 mountAuditRoutes(app);
+mountApprovalRoutes(app, broadcast);
 mountScheduleRoutes(app);
 startScheduler(broadcast);
 

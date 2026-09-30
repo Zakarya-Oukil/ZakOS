@@ -7,6 +7,7 @@ import { restoreCheckpoint } from './checkpoint';
 import { isRunning, SessionBusyError, sendMessage, stop, type Broadcast } from './runner';
 import { audit } from '../audit';
 import * as store from './store';
+import { dropForSession } from './approvals';
 import { getSettings, updateSettings } from './settings';
 
 const REPO_ROOT = process.cwd();
@@ -81,6 +82,7 @@ export function mountAgentRoutes(app: Express, broadcast: Broadcast) {
     stop(pid(req));
     audit('session-delete', 'owner', `Deleted session ${store.getSession(pid(req))?.title ?? pid(req)}`, { sessionId: pid(req) });
     store.deleteSession(pid(req));
+    dropForSession(pid(req));
     res.json({ success: true });
   });
 
