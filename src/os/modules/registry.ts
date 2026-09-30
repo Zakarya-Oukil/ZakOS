@@ -1,5 +1,5 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import { Bot, Brain, FolderGit2, GitBranch, GitCommitHorizontal, House, Sparkles, Timer, ScrollText, ShieldCheck, Settings, SquareTerminal, type LucideIcon } from 'lucide-react';
+import { Bot, Brain, FolderGit2, GitBranch, GitCommitHorizontal, House, Rocket, Sparkles, Timer, ScrollText, ShieldCheck, Settings, SquareTerminal, type LucideIcon } from 'lucide-react';
 
 export interface OsModule {
   id: string;
@@ -89,6 +89,13 @@ export const MODULES: OsModule[] = [
     icon: GitCommitHorizontal,
     component: lazy(() => import('./git/GitPage')),
     description: 'Status, stage, commit, history and branches for each project.',
+  },
+  {
+    id: 'dev',
+    label: 'Dev',
+    icon: Rocket,
+    component: lazy(() => import('./dev/DevPage')),
+    description: 'Run a project and preview it here, and check its health.',
   },
   {
     id: 'terminal',
