@@ -3,6 +3,7 @@ import type { Broadcast } from '../agents/runner';
 import { isTrustedLocalRequest } from '../terminal/pty';
 import { approveRun, deleteRun, getRun, listRuns, stopRun } from './engine';
 import { launchRun, parseLaunch, toBody } from './launch';
+import { listNotifications, markAllRead } from '../notifications';
 import { createTemplate, deleteTemplate, getTemplate, listTemplates, markTemplateRun, updateTemplate } from './templates';
 
 /** Runs start agents that edit files, so these routes are local-only like the terminal. */
@@ -21,6 +22,16 @@ const pid = (req: Request) => String(req.params.id);
 export function mountWorkflowRoutes(app: Express, broadcast: Broadcast) {
   app.use('/api/workflows', localOnly);
   app.use('/api/workflow-templates', localOnly);
+  app.use('/api/notifications', localOnly);
+
+  app.get('/api/notifications', (_req: Request, res: Response) => {
+    res.json({ success: true, notifications: listNotifications() });
+  });
+
+  app.post('/api/notifications/read', (_req: Request, res: Response) => {
+    markAllRead();
+    res.json({ success: true });
+  });
 
   // ---- runs ---------------------------------------------------------------------------------
 

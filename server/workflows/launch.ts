@@ -57,6 +57,12 @@ export async function parseLaunch(body: Record<string, any> | undefined): Promis
         approval: body?.approval !== false,
         worktrees: body?.worktrees !== false,
         agents: agents as RunOptions['agents'],
+        outcomes: {
+          obsidian: body?.outcomes?.obsidian ?? DEFAULT_OPTIONS.outcomes.obsidian,
+          pr: body?.outcomes?.pr === true,
+          notify: body?.outcomes?.notify ?? DEFAULT_OPTIONS.outcomes.notify,
+          graphify: body?.outcomes?.graphify === true,
+        },
       }),
     },
   };
@@ -75,6 +81,7 @@ export function toBody(input: LaunchInput): Record<string, unknown> {
     approval: input.options.approval,
     worktrees: input.options.worktrees,
     agents: input.options.agents,
+    outcomes: input.options.outcomes,
   };
 }
 

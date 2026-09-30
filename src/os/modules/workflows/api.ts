@@ -1,5 +1,11 @@
 export type RunStatus = 'planning' | 'awaiting_approval' | 'running' | 'reviewing' | 'reporting' | 'done' | 'error' | 'stopped';
 export type Role = 'orchestrator' | 'worker' | 'reviewer';
+export type OutcomeKey = 'obsidian' | 'pr' | 'notify' | 'graphify';
+export type Outcomes = Record<OutcomeKey, boolean>;
+export interface OutcomeResult {
+  state: 'done' | 'error' | 'skipped';
+  detail: string;
+}
 export type TaskState = 'queued' | 'running' | 'done' | 'error';
 
 export interface WorkflowTask {
@@ -18,7 +24,8 @@ export interface WorkflowTask {
 
 export interface WorkflowRun {
   id: string;
-  options: { approval: boolean; agents: Record<Role, string>; worktrees: boolean };
+  options: { approval: boolean; agents: Record<Role, string>; worktrees: boolean; outcomes: Outcomes };
+  outcomes?: Partial<Record<OutcomeKey, OutcomeResult>>;
   goal: string;
   cwd: string;
   projectId?: string;
@@ -48,7 +55,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 export const workflowsApi = {
   list: () => call<{ runs: WorkflowRun[] }>('/api/workflows').then((r) => r.runs),
   get: (id: string) => call<{ run: WorkflowRun }>(`/api/workflows/${id}`).then((r) => r.run),
-  start: (goal: string, cwd: string, projectId: string | undefined, opts: { approval: boolean; agents: Record<Role, string>; worktrees: boolean }) =>
+  start: (goal: string, cwd: string, projectId: string | undefined, opts: { approval: boolean; agents: Record<Role, string>; worktrees: boolean; outcomes: Outcomes }) =>
     call<{ run: WorkflowRun }>('/api/workflows', { method: 'POST', body: JSON.stringify({ goal, cwd, projectId, ...opts }) }).then((r) => r.run),
   approve: (id: string, tasks?: Array<{ title: string; prompt: string }>) =>
     call<unknown>(`/api/workflows/${id}/approve`, { method: 'POST', body: JSON.stringify({ tasks }) }),

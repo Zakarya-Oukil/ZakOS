@@ -9,7 +9,14 @@ import { cx } from '../../ui/cx';
 import { useAgents, useSession } from '../agents/hooks';
 import { Pipeline } from './Pipeline';
 import { TaskBoard } from './TaskBoard';
-import { isActive, templatesApi, workflowsApi, type Role, type WorkflowRun, type WorkflowTask, type WorkflowTemplate } from './api';
+import { isActive, templatesApi, workflowsApi, type Outcomes, type OutcomeKey, type Role, type WorkflowRun, type WorkflowTask, type WorkflowTemplate } from './api';
+
+const OUTCOME_LABELS: Record<OutcomeKey, string> = {
+  obsidian: 'Write the report to Obsidian',
+  graphify: 'Update the project graph',
+  pr: 'Open a pull request (pushes the branch)',
+  notify: 'Notify me',
+};
 
 const STATUS_LABEL: Record<WorkflowRun['status'], string> = {
   planning: 'Planning',
@@ -206,6 +213,24 @@ function RunView({ run, onChanged }: { run: WorkflowRun; onChanged: () => void }
         </Panel>
       )}
 
+      {run.outcomes && Object.keys(run.outcomes).length > 0 && (
+        <Panel title="Outcomes">
+          <ul className="grid gap-1.5 text-sm">
+            {(Object.entries(run.outcomes) as Array<[OutcomeKey, NonNullable<WorkflowRun['outcomes']>[OutcomeKey]]>).map(([k, r]) => (
+              <li key={k} className="flex items-start gap-2">
+                <span className={cx('mt-0.5', r?.state === 'error' ? 'text-os-danger' : 'text-os-cyan')} aria-label={r?.state}>
+                  {r?.state === 'error' ? <X size={14} aria-hidden /> : <Check size={14} aria-hidden />}
+                </span>
+                <span className="min-w-0 break-words">
+                  <span className="text-os-text">{OUTCOME_LABELS[k]}</span>
+                  <span className={cx('block text-xs', r?.state === 'error' ? 'text-os-danger' : 'text-os-muted')}>{r?.detail}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
+
       {(run.report || run.status === 'reporting') && (
         <Panel title="Final report">
           {run.report ? <Markdown text={run.report} /> : <p className="text-sm text-os-muted">Writing the report…</p>}
@@ -222,12 +247,13 @@ function NewRun({ projects, onStarted, onTemplatesChanged }: { projects: Project
   const [roles, setRoles] = useState<Record<Role, string>>({ orchestrator: 'claude', worker: 'claude', reviewer: 'claude' });
   const [approval, setApproval] = useState(true);
   const [worktrees, setWorktrees] = useState(true);
+  const [outcomes, setOutcomes] = useState<Outcomes>({ obsidian: true, notify: true, graphify: false, pr: false });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const project = projects.find((p) => p.id === projectId);
   const [tplName, setTplName] = useState('');
   const [saved, setSaved] = useState(false);
-  const opts = { approval, agents: roles, worktrees };
+  const opts = { approval, agents: roles, worktrees, outcomes };
 
   const saveTemplate = async () => {
     if (!goal.trim() || !tplName.trim()) return;
@@ -248,7 +274,7 @@ function NewRun({ projects, onStarted, onTemplatesChanged }: { projects: Project
     setBusy(true);
     setError(null);
     try {
-      onStarted(await workflowsApi.start(goal.trim(), project?.path ?? '', project?.id, { approval, agents: roles, worktrees }));
+      onStarted(await workflowsApi.start(goal.trim(), project?.path ?? '', project?.id, { approval, agents: roles, worktrees, outcomes }));
       setGoal('');
     } catch (err) {
       setError((err as Error).message);
@@ -308,6 +334,15 @@ function NewRun({ projects, onStarted, onTemplatesChanged }: { projects: Project
       <button type="submit" className={btn} disabled={busy || !goal.trim()}>
         <Play size={14} aria-hidden /> Start workflow
       </button>
+      <fieldset className="grid gap-1">
+        <legend className="mb-1 text-xs text-os-muted">When the run finishes</legend>
+        {(Object.keys(OUTCOME_LABELS) as OutcomeKey[]).map((k) => (
+          <label key={k} className="flex items-center gap-2 text-sm text-os-text">
+            <input type="checkbox" checked={outcomes[k]} onChange={(e) => setOutcomes((o) => ({ ...o, [k]: e.target.checked }))} />
+            {OUTCOME_LABELS[k]}
+          </label>
+        ))}
+      </fieldset>
       <div className="flex gap-2">
         <input
           aria-label="Template name"

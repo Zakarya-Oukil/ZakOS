@@ -2,6 +2,7 @@ import { ChevronsLeft, ChevronsRight, History } from 'lucide-react';
 import { cx } from '../ui/cx';
 import { IconButton, StatusDot } from '../ui';
 import type { OsModule } from '../modules/registry';
+import { NotificationsMenu } from './NotificationsMenu';
 
 interface SidebarProps {
   modules: OsModule[];
@@ -63,6 +64,7 @@ export function Sidebar({ modules, activeId, collapsed, onToggle, connected }: S
       </ul>
 
       <div className="flex flex-col gap-1 border-t border-os-line p-1.5">
+        <NotificationsMenu collapsed={collapsed} />
         <a
           href="#/legacy"
           title={collapsed ? 'Legacy UI' : undefined}

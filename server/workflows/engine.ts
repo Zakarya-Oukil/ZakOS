@@ -3,7 +3,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sendMessage, stop as stopSession, type Broadcast } from '../agents/runner';
 import * as sessions from '../agents/store';
+import * as projectStore from '../projects/store';
 import { trustForPath } from '../projects/store';
+import { notify } from '../notifications';
+import { runOutcomes, type OutcomeKey, type OutcomeOptions, type OutcomeResult } from './outcomes';
 import { commitWorktree, createWorktree, isGitRepo, mergeBranch, removeWorktree, type Worktree } from './worktree';
 
 export type RunStatus = 'planning' | 'awaiting_approval' | 'running' | 'reviewing' | 'reporting' | 'done' | 'error' | 'stopped';
@@ -33,17 +36,20 @@ export interface RunOptions {
   agents: Record<Role, string>;
   /** Give every worker its own git worktree and branch, merged back afterwards (git repos only). */
   worktrees: boolean;
+  /** What happens after the report: each is opt-in, and a failure in one never blocks the others. */
+  outcomes: OutcomeOptions;
 }
 
 export const DEFAULT_OPTIONS: RunOptions = {
   approval: true,
   worktrees: true,
+  outcomes: { obsidian: true, pr: false, notify: true, graphify: false },
   agents: { orchestrator: 'claude', worker: 'claude', reviewer: 'claude' },
 };
 
 /** Merges a partial option set over the defaults, including the nested agents map. */
 export function withDefaults(o: Partial<RunOptions> | undefined): RunOptions {
-  return { ...DEFAULT_OPTIONS, ...o, agents: { ...DEFAULT_OPTIONS.agents, ...o?.agents } };
+  return { ...DEFAULT_OPTIONS, ...o, agents: { ...DEFAULT_OPTIONS.agents, ...o?.agents }, outcomes: { ...DEFAULT_OPTIONS.outcomes, ...o?.outcomes } };
 }
 
 export interface Run {
@@ -64,6 +70,7 @@ export interface Run {
   review?: string;
   verdict?: 'pass' | 'needs_work';
   report?: string;
+  outcomes?: Partial<Record<OutcomeKey, OutcomeResult>>;
   error?: string;
 }
 
@@ -345,6 +352,7 @@ async function execute(run: Run, broadcast: Broadcast) {
     // Approval gate: nothing edits files until the owner has seen and accepted the plan.
     if (run.options.approval) {
       update({ summary, tasks, status: 'awaiting_approval' });
+      if (run.options.outcomes.notify) notify('Plan ready for approval', run.goal, broadcast, { module: 'workflows', route: [run.id] });
       const approved = await new Promise<Task[] | null>((resolve) => gates.set(run.id, resolve));
       gates.delete(run.id);
       if (approved === null || halted()) throw new Error('Stopped');
@@ -407,6 +415,10 @@ async function execute(run: Run, broadcast: Broadcast) {
     const report = await runTurn(run.orchestratorSessionId, reportPrompt(run), broadcast);
     if (halted()) throw new Error('Stopped');
     update({ report: report.text || report.error, status: 'done' });
+
+    // 5. Outcomes: report to the vault, graph refresh, pull request, notification
+    const projectName = (run.projectId && projectStore.getProject(run.projectId)?.name) || path.basename(run.cwd) || 'Project';
+    update({ outcomes: await runOutcomes(run, projectName, broadcast) });
   } catch (err) {
     const wasStopped = halted();
     for (const t of run.tasks) {
@@ -416,6 +428,7 @@ async function execute(run: Run, broadcast: Broadcast) {
       }
     }
     await abandonWorktrees(run);
+    if (!wasStopped && run.options.outcomes.notify) notify('Workflow failed', err instanceof Error ? err.message : String(err), broadcast, { module: 'workflows', route: [run.id] });
     update({ status: wasStopped ? 'stopped' : 'error', error: wasStopped ? undefined : err instanceof Error ? err.message : String(err) });
   } finally {
     stopped.delete(run.id);
