@@ -1,10 +1,9 @@
 import type { Express, NextFunction, Request, Response } from 'express';
-import fs from 'node:fs';
-import path from 'node:path';
 import type { Broadcast } from '../agents/runner';
 import { isTrustedLocalRequest } from '../terminal/pty';
-import { getAdapter } from '../agents/adapters';
-import { approveRun, deleteRun, getRun, listRuns, startRun, stopRun } from './engine';
+import { approveRun, deleteRun, getRun, listRuns, stopRun } from './engine';
+import { launchRun, parseLaunch, toBody } from './launch';
+import { createTemplate, deleteTemplate, getTemplate, listTemplates, markTemplateRun, updateTemplate } from './templates';
 
 /** Runs start agents that edit files, so these routes are local-only like the terminal. */
 function localOnly(req: Request, res: Response, next: NextFunction) {
@@ -17,69 +16,89 @@ function localOnly(req: Request, res: Response, next: NextFunction) {
 
 const fail = (res: Response, status: number, error: string) => res.status(status).json({ success: false, error });
 const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
+const pid = (req: Request) => String(req.params.id);
 
 export function mountWorkflowRoutes(app: Express, broadcast: Broadcast) {
   app.use('/api/workflows', localOnly);
+  app.use('/api/workflow-templates', localOnly);
+
+  // ---- runs ---------------------------------------------------------------------------------
 
   app.get('/api/workflows', (_req: Request, res: Response) => {
     res.json({ success: true, runs: listRuns() });
   });
 
   app.get('/api/workflows/:id', (req: Request, res: Response) => {
-    const run = getRun(String(req.params.id));
+    const run = getRun(pid(req));
     if (!run) return fail(res, 404, 'Run not found');
     res.json({ success: true, run });
   });
 
   app.post('/api/workflows', async (req: Request, res: Response) => {
-    const goal = str(req.body?.goal);
-    if (!goal) return fail(res, 400, 'goal is required');
-    const rawCwd = req.body?.cwd;
-    if (rawCwd !== undefined && rawCwd !== '' && typeof rawCwd !== 'string') return fail(res, 400, 'cwd must be a string');
-    const cwd = path.resolve(str(rawCwd) ?? process.cwd());
-    let isDir = false;
+    const parsed = await parseLaunch(req.body);
+    if (!parsed.ok) return fail(res, parsed.status, parsed.error);
     try {
-      isDir = fs.statSync(cwd).isDirectory();
-    } catch {
-      /* missing or unreadable */
-    }
-    if (!isDir) return fail(res, 400, 'cwd does not exist or is not a directory');
-    // Every role must name a real, installed agent; a typo or missing CLI fails here, not mid-run.
-    const agents: Record<string, string> = {};
-    for (const role of ['orchestrator', 'worker', 'reviewer']) {
-      const id = str(req.body?.agents?.[role]);
-      if (!id) continue;
-      const adapter = getAdapter(id);
-      if (!adapter) return fail(res, 400, `Unknown agent for ${role}: ${id}`);
-      const status = await adapter.detect();
-      if (!status.available) return fail(res, 400, `${adapter.label} is not available (${status.reason ?? 'not installed'})`);
-      agents[role] = id;
-    }
-    try {
-      const run = startRun(goal.slice(0, 4000), cwd, str(req.body?.projectId)?.slice(0, 64), { approval: req.body?.approval !== false, agents: agents as never, worktrees: req.body?.worktrees !== false }, broadcast);
-      res.status(201).json({ success: true, run });
+      res.status(201).json({ success: true, run: launchRun(parsed.input, broadcast) });
     } catch (err) {
       fail(res, 500, err instanceof Error ? err.message : String(err));
     }
   });
 
   app.post('/api/workflows/:id/approve', (req: Request, res: Response) => {
-    if (!getRun(String(req.params.id))) return fail(res, 404, 'Run not found');
+    if (!getRun(pid(req))) return fail(res, 404, 'Run not found');
     const edits = Array.isArray(req.body?.tasks) ? req.body.tasks : undefined;
-    const result = approveRun(String(req.params.id), edits);
+    const result = approveRun(pid(req), edits);
     if (!result.ok) return fail(res, 409, result.error);
     res.json({ success: true });
   });
 
   app.post('/api/workflows/:id/stop', (req: Request, res: Response) => {
-    if (!getRun(String(req.params.id))) return fail(res, 404, 'Run not found');
-    res.json({ success: true, stopped: stopRun(String(req.params.id)) });
+    if (!getRun(pid(req))) return fail(res, 404, 'Run not found');
+    res.json({ success: true, stopped: stopRun(pid(req)) });
   });
 
   app.delete('/api/workflows/:id', (req: Request, res: Response) => {
-    const id = String(req.params.id);
-    if (!getRun(id)) return fail(res, 404, 'Run not found');
-    if (!deleteRun(id)) return fail(res, 409, 'Stop the run before deleting it');
+    if (!getRun(pid(req))) return fail(res, 404, 'Run not found');
+    if (!deleteRun(pid(req))) return fail(res, 409, 'Stop the run before deleting it');
     res.json({ success: true });
+  });
+
+  // ---- templates ----------------------------------------------------------------------------
+
+  app.get('/api/workflow-templates', (_req: Request, res: Response) => {
+    res.json({ success: true, templates: listTemplates() });
+  });
+
+  app.post('/api/workflow-templates', async (req: Request, res: Response) => {
+    const name = str(req.body?.name);
+    if (!name) return fail(res, 400, 'name is required');
+    const parsed = await parseLaunch(req.body);
+    if (!parsed.ok) return fail(res, parsed.status, parsed.error);
+    res.status(201).json({ success: true, template: createTemplate(name, parsed.input) });
+  });
+
+  app.patch('/api/workflow-templates/:id', async (req: Request, res: Response) => {
+    const current = getTemplate(pid(req));
+    if (!current) return fail(res, 404, 'Template not found');
+    // Fields left out keep their stored value, so a rename does not need the whole form.
+    const parsed = await parseLaunch({ ...toBody(current.input), ...req.body });
+    if (!parsed.ok) return fail(res, parsed.status, parsed.error);
+    res.json({ success: true, template: updateTemplate(pid(req), { name: str(req.body?.name), input: parsed.input }) });
+  });
+
+  app.delete('/api/workflow-templates/:id', (req: Request, res: Response) => {
+    if (!deleteTemplate(pid(req))) return fail(res, 404, 'Template not found');
+    res.json({ success: true });
+  });
+
+  /** Runs a template. Stored input is revalidated, since agents or folders may have changed since it was saved. */
+  app.post('/api/workflow-templates/:id/run', async (req: Request, res: Response) => {
+    const template = getTemplate(pid(req));
+    if (!template) return fail(res, 404, 'Template not found');
+    const override = str(req.body?.goal);
+    const parsed = await parseLaunch({ ...toBody(template.input), ...(override ? { goal: override } : {}) });
+    if (!parsed.ok) return fail(res, parsed.status, parsed.error);
+    markTemplateRun(template.id);
+    res.status(201).json({ success: true, run: launchRun(parsed.input, broadcast) });
   });
 }

@@ -56,4 +56,24 @@ export const workflowsApi = {
   remove: (id: string) => call<unknown>(`/api/workflows/${id}`, { method: 'DELETE' }),
 };
 
+export interface WorkflowTemplate {
+  id: string;
+  name: string;
+  created: number;
+  lastRunAt?: number;
+  input: { goal: string; cwd: string; projectId?: string; options: WorkflowRun['options'] };
+}
+
+export const templatesApi = {
+  list: () => call<{ templates: WorkflowTemplate[] }>('/api/workflow-templates').then((r) => r.templates),
+  create: (name: string, goal: string, cwd: string, projectId: string | undefined, opts: WorkflowRun['options']) =>
+    call<{ template: WorkflowTemplate }>('/api/workflow-templates', {
+      method: 'POST',
+      body: JSON.stringify({ name, goal, cwd, projectId, ...opts }),
+    }).then((r) => r.template),
+  run: (id: string, goal?: string) =>
+    call<{ run: WorkflowRun }>(`/api/workflow-templates/${id}/run`, { method: 'POST', body: JSON.stringify({ goal }) }).then((r) => r.run),
+  remove: (id: string) => call<unknown>(`/api/workflow-templates/${id}`, { method: 'DELETE' }),
+};
+
 export const isActive = (s: RunStatus) => s === 'planning' || s === 'awaiting_approval' || s === 'running' || s === 'reviewing' || s === 'reporting';

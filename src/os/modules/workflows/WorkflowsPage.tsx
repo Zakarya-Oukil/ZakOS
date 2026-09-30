@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Check, Folder, Play, Plus, Square, Trash2, X } from 'lucide-react';
+import { Bookmark, Check, Folder, Play, Plus, Square, Trash2, X } from 'lucide-react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { agentsSocket } from '../../lib/agentsSocket';
@@ -9,7 +9,7 @@ import { cx } from '../../ui/cx';
 import { useAgents, useSession } from '../agents/hooks';
 import { Pipeline } from './Pipeline';
 import { TaskBoard } from './TaskBoard';
-import { isActive, workflowsApi, type Role, type WorkflowRun, type WorkflowTask } from './api';
+import { isActive, templatesApi, workflowsApi, type Role, type WorkflowRun, type WorkflowTask, type WorkflowTemplate } from './api';
 
 const STATUS_LABEL: Record<WorkflowRun['status'], string> = {
   planning: 'Planning',
@@ -215,7 +215,7 @@ function RunView({ run, onChanged }: { run: WorkflowRun; onChanged: () => void }
   );
 }
 
-function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (run: WorkflowRun) => void }) {
+function NewRun({ projects, onStarted, onTemplatesChanged }: { projects: ProjectInfo[]; onStarted: (run: WorkflowRun) => void; onTemplatesChanged: () => void }) {
   const [goal, setGoal] = useState('');
   const [projectId, setProjectId] = useState('');
   const { agents } = useAgents();
@@ -225,6 +225,22 @@ function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const project = projects.find((p) => p.id === projectId);
+  const [tplName, setTplName] = useState('');
+  const [saved, setSaved] = useState(false);
+  const opts = { approval, agents: roles, worktrees };
+
+  const saveTemplate = async () => {
+    if (!goal.trim() || !tplName.trim()) return;
+    setError(null);
+    try {
+      await templatesApi.create(tplName.trim(), goal.trim(), project?.path ?? '', project?.id, opts);
+      setTplName('');
+      setSaved(true);
+      onTemplatesChanged();
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -292,6 +308,22 @@ function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (
       <button type="submit" className={btn} disabled={busy || !goal.trim()}>
         <Play size={14} aria-hidden /> Start workflow
       </button>
+      <div className="flex gap-2">
+        <input
+          aria-label="Template name"
+          value={tplName}
+          onChange={(e) => {
+            setTplName(e.target.value);
+            setSaved(false);
+          }}
+          placeholder="Template name"
+          className={cx(field, 'h-8 min-w-0 flex-1')}
+        />
+        <button type="button" className={btn} disabled={!goal.trim() || !tplName.trim()} onClick={saveTemplate}>
+          <Bookmark size={14} aria-hidden /> Save
+        </button>
+      </div>
+      {saved && <p className="text-xs text-os-cyan" role="status">Template saved</p>}
       <p className="text-xs text-os-muted">
         Sub-agents edit files in the project under your permission setting, and a checkpoint is taken before each prompt.
       </p>
@@ -299,9 +331,40 @@ function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (
   );
 }
 
+function Templates({ templates, onRun, onDelete }: { templates: WorkflowTemplate[]; onRun: (t: WorkflowTemplate) => void; onDelete: (t: WorkflowTemplate) => void }) {
+  if (templates.length === 0) return null;
+  return (
+    <>
+      <h2 className="mb-2 mt-6 text-sm font-medium text-os-muted">Templates</h2>
+      <ul className="grid gap-1.5">
+        {templates.map((t) => (
+          <li key={t.id} className="flex items-center gap-2 rounded-[var(--os-radius)] border border-os-line px-2.5 py-2">
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm text-os-text">{t.name}</span>
+              <span className="block truncate text-xs text-os-muted">{t.lastRunAt ? `Last run ${timeAgo(t.lastRunAt)}` : 'Never run'}</span>
+            </span>
+            <button type="button" aria-label={`Run template ${t.name}`} className={cx(btn, 'w-8 justify-center px-0')} onClick={() => onRun(t)}>
+              <Play size={14} aria-hidden />
+            </button>
+            <button type="button" aria-label={`Delete template ${t.name}`} className={cx(btn, 'w-8 justify-center px-0')} onClick={() => onDelete(t)}>
+              <Trash2 size={14} aria-hidden />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 export default function WorkflowsPage({ route, navigate }: ModuleProps) {
   const { runs, error, refresh } = useRuns();
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
+  const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
+  const [templateError, setTemplateError] = useState<string | null>(null);
+  const refreshTemplates = useCallback(() => {
+    templatesApi.list().then(setTemplates).catch(() => setTemplates([]));
+  }, []);
+  useEffect(refreshTemplates, [refreshTemplates]);
   const selectedId = route[0];
   const run = useMemo(() => runs.find((r) => r.id === selectedId), [runs, selectedId]);
 
@@ -319,7 +382,24 @@ export default function WorkflowsPage({ route, navigate }: ModuleProps) {
               refresh();
               navigate('workflows', r.id);
             }}
+            onTemplatesChanged={refreshTemplates}
           />
+          <Templates
+            templates={templates}
+            onRun={(t) => {
+              setTemplateError(null);
+              templatesApi
+                .run(t.id)
+                .then((r) => {
+                  refresh();
+                  refreshTemplates();
+                  navigate('workflows', r.id);
+                })
+                .catch((e: Error) => setTemplateError(e.message));
+            }}
+            onDelete={(t) => templatesApi.remove(t.id).then(refreshTemplates).catch((e: Error) => setTemplateError(e.message))}
+          />
+          {templateError && <p className="mt-2 text-xs text-os-danger" role="alert">{templateError}</p>}
           <h2 className="mb-2 mt-6 text-sm font-medium text-os-muted">Runs</h2>
           {error && <p className="text-xs text-os-danger">{error}</p>}
           {runs.length === 0 && !error && <p className="text-sm text-os-muted">No runs yet.</p>}
