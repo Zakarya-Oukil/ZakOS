@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Bookmark, Check, Folder, Play, Plus, Square, Trash2, X } from 'lucide-react';
+import { Bookmark, Check, Folder, Play, Plus, Square, Trash2, Undo2, X } from 'lucide-react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { agentsSocket } from '../../lib/agentsSocket';
@@ -148,8 +148,38 @@ function RunView({ run, onChanged }: { run: WorkflowRun; onChanged: () => void }
   const [selected, setSelected] = useState<string | undefined>();
   const task = run.tasks.find((t) => t.id === selected);
   const [busy, setBusy] = useState(false);
+  const [undoNote, setUndoNote] = useState<string | null>(null);
 
   useEffect(() => setSelected(undefined), [run.id]);
+
+  const undo = async () => {
+    setUndoNote(null);
+    setBusy(true);
+    try {
+      const plan = await workflowsApi.undoPlan(run.id);
+      if (plan.blocked || !plan.possible) {
+        setUndoNote(plan.blocked ?? plan.reason ?? 'Nothing to undo');
+        return;
+      }
+      const lines = [
+        plan.revertMerges.length ? `Revert ${plan.revertMerges.length} merged change${plan.revertMerges.length > 1 ? 's' : ''} (history is kept)` : '',
+        plan.restoreTracked ? 'Restore tracked files to how they were before the run' : '',
+        plan.deleteFiles.length ? `Delete ${plan.deleteFiles.length} new file${plan.deleteFiles.length > 1 ? 's' : ''}:\n  ${plan.deleteFiles.slice(0, 8).join('\n  ')}${plan.deleteFiles.length > 8 ? '\n  ...' : ''}` : '',
+      ].filter(Boolean);
+      if (lines.length === 0) {
+        setUndoNote('This run changed nothing that can be undone');
+        return;
+      }
+      if (!window.confirm(`Undo this run?\n\n${lines.join('\n')}`)) return;
+      const result = await workflowsApi.undo(run.id);
+      setUndoNote(result.problems.length ? `Partly undone. ${result.problems.join(' ')}` : 'Undone');
+    } catch (e) {
+      setUndoNote((e as Error).message);
+    } finally {
+      setBusy(false);
+      onChanged();
+    }
+  };
 
   const act = async (fn: () => Promise<unknown>) => {
     setBusy(true);
@@ -178,9 +208,16 @@ function RunView({ run, onChanged }: { run: WorkflowRun; onChanged: () => void }
               <Square size={14} aria-hidden /> Stop
             </button>
           ) : (
-            <button type="button" className={btn} disabled={busy} onClick={() => act(() => workflowsApi.remove(run.id))}>
-              <Trash2 size={14} aria-hidden /> Delete
-            </button>
+            <div className="flex gap-2">
+              {!run.undone && (
+                <button type="button" className={btn} disabled={busy} onClick={undo}>
+                  <Undo2 size={14} aria-hidden /> Undo run
+                </button>
+              )}
+              <button type="button" className={btn} disabled={busy} onClick={() => act(() => workflowsApi.remove(run.id))}>
+                <Trash2 size={14} aria-hidden /> Delete
+              </button>
+            </div>
           )}
         </div>
         <div className="mt-5">
@@ -188,6 +225,8 @@ function RunView({ run, onChanged }: { run: WorkflowRun; onChanged: () => void }
         </div>
         {run.summary && <p className="mt-4 max-w-[68ch] border-t border-os-line pt-3 text-sm leading-relaxed text-os-muted">{run.summary}</p>}
         {run.error && <p className="mt-3 text-sm text-os-danger" role="alert">{run.error}</p>}
+        {run.undone && <p className="mt-3 text-sm text-os-muted" role="status">Undone {timeAgo(run.undone.ts)}</p>}
+        {undoNote && <p className="mt-3 text-sm text-os-muted" role="status">{undoNote}</p>}
       </Panel>
 
       {run.status === 'awaiting_approval' && <ApprovalPanel key={run.updated} run={run} onDone={onChanged} />}

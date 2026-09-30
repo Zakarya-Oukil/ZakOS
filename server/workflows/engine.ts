@@ -6,6 +6,7 @@ import * as sessions from '../agents/store';
 import * as projectStore from '../projects/store';
 import { trustForPath } from '../projects/store';
 import { notify } from '../notifications';
+import { applyUndo, captureBase, planUndo, type RunBase, type UndoPlan, type UndoResult } from './undo';
 import { runOutcomes, type OutcomeKey, type OutcomeOptions, type OutcomeResult } from './outcomes';
 import { commitWorktree, createWorktree, isGitRepo, mergeBranch, removeWorktree, type Worktree } from './worktree';
 
@@ -71,6 +72,9 @@ export interface Run {
   verdict?: 'pass' | 'needs_work';
   report?: string;
   outcomes?: Partial<Record<OutcomeKey, OutcomeResult>>;
+  /** Repository state at the start; what undo restores. Absent outside git repositories. */
+  base?: RunBase;
+  undone?: { ts: number; result: UndoResult };
   error?: string;
 }
 
@@ -273,6 +277,30 @@ export function approveRun(id: string, edits?: Array<{ title?: unknown; prompt?:
   return { ok: true };
 }
 
+/** What undoing a run would do, without doing it. */
+export async function previewUndo(id: string): Promise<UndoPlan & { blocked?: string }> {
+  const run = runs.get(id);
+  if (!run) throw new Error('Run not found');
+  const empty = { possible: false, revertMerges: [], restoreTracked: false, deleteFiles: [] };
+  if (isActive(id)) return { ...empty, blocked: 'Stop the run before undoing it' };
+  if (run.undone) return { ...empty, blocked: 'This run was already undone' };
+  return planUndo(run.base, run.tasks.some((t) => t.branch));
+}
+
+export async function undoRun(id: string): Promise<{ ok: true; result: UndoResult } | { ok: false; error: string }> {
+  const run = runs.get(id);
+  if (!run) return { ok: false, error: 'Run not found' };
+  const plan = await previewUndo(id);
+  if (plan.blocked) return { ok: false, error: plan.blocked };
+  if (!plan.possible || !run.base) return { ok: false, error: plan.reason ?? 'Nothing to undo' };
+  const result = await applyUndo(run.base, plan);
+  // Only a clean undo is final; with problems the owner may fix them and try again.
+  if (result.problems.length === 0) run.undone = { ts: Date.now(), result };
+  run.updated = Date.now();
+  persist();
+  return { ok: true, result };
+}
+
 export function stopRun(id: string): boolean {
   const run = runs.get(id);
   if (!run || !isActive(id)) return false;
@@ -299,7 +327,10 @@ async function mergeAll(run: Run, update: (p?: Partial<Run>) => void) {
     } else {
       const outcome = await mergeBranch(wt.repoRoot, wt.branch, `zakos: merge ${task.title}`);
       task.merge = outcome.state;
-      if (outcome.state === 'merged') dropBranch = true;
+      if (outcome.state === 'merged') {
+        dropBranch = true;
+        run.base?.mergeCommits.push(outcome.commit);
+      }
       else task.mergeNote = outcome.note;
     }
     await removeWorktree(wt, dropBranch);
@@ -334,6 +365,8 @@ async function execute(run: Run, broadcast: Broadcast) {
   const halted = () => stopped.has(run.id);
 
   try {
+    run.base = await captureBase(run.cwd);
+
     // 1. Plan
     run.orchestratorSessionId = newSession(run.options.agents.orchestrator, `Workflow: ${run.goal}`, run.cwd, run.trust);
     update();

@@ -77,13 +77,13 @@ export async function commitWorktree(wt: Worktree, message: string): Promise<num
   return files;
 }
 
-export type MergeOutcome = { state: 'merged' } | { state: 'conflict'; note: string } | { state: 'failed'; note: string };
+export type MergeOutcome = { state: 'merged'; commit: string } | { state: 'conflict'; note: string } | { state: 'failed'; note: string };
 
 /** Merges a task branch into whatever is checked out at the repo root. Aborts cleanly on conflict. */
 export async function mergeBranch(repoRoot: string, branch: string, message: string): Promise<MergeOutcome> {
   try {
     await git(repoRoot, ['-c', 'user.name=Zak OS', '-c', 'user.email=zakos@localhost', 'merge', '--no-ff', '-m', message, branch]);
-    return { state: 'merged' };
+    return { state: 'merged', commit: await git(repoRoot, ['rev-parse', 'HEAD']) };
   } catch (err) {
     // git reports CONFLICT on stdout, which execFile keeps off the error message.
     const e = err as { message?: string; stdout?: string; stderr?: string };

@@ -6,6 +6,14 @@ export interface OutcomeResult {
   state: 'done' | 'error' | 'skipped';
   detail: string;
 }
+export interface UndoPlan {
+  possible: boolean;
+  reason?: string;
+  blocked?: string;
+  revertMerges: string[];
+  restoreTracked: boolean;
+  deleteFiles: string[];
+}
 export type TaskState = 'queued' | 'running' | 'done' | 'error';
 
 export interface WorkflowTask {
@@ -26,6 +34,7 @@ export interface WorkflowRun {
   id: string;
   options: { approval: boolean; agents: Record<Role, string>; worktrees: boolean; outcomes: Outcomes };
   outcomes?: Partial<Record<OutcomeKey, OutcomeResult>>;
+  undone?: { ts: number };
   goal: string;
   cwd: string;
   projectId?: string;
@@ -59,6 +68,10 @@ export const workflowsApi = {
     call<{ run: WorkflowRun }>('/api/workflows', { method: 'POST', body: JSON.stringify({ goal, cwd, projectId, ...opts }) }).then((r) => r.run),
   approve: (id: string, tasks?: Array<{ title: string; prompt: string }>) =>
     call<unknown>(`/api/workflows/${id}/approve`, { method: 'POST', body: JSON.stringify({ tasks }) }),
+  undoPlan: (id: string) =>
+    call<{ plan: UndoPlan }>(`/api/workflows/${id}/undo`).then((r) => r.plan),
+  undo: (id: string) =>
+    call<{ result: { reverted: number; restored: boolean; deleted: string[]; problems: string[] } }>(`/api/workflows/${id}/undo`, { method: 'POST' }).then((r) => r.result),
   stop: (id: string) => call<unknown>(`/api/workflows/${id}/stop`, { method: 'POST' }),
   remove: (id: string) => call<unknown>(`/api/workflows/${id}`, { method: 'DELETE' }),
 };

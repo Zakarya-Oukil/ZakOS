@@ -1,7 +1,7 @@
 import type { Express, NextFunction, Request, Response } from 'express';
 import type { Broadcast } from '../agents/runner';
 import { isTrustedLocalRequest } from '../terminal/pty';
-import { approveRun, deleteRun, getRun, listRuns, stopRun } from './engine';
+import { approveRun, deleteRun, getRun, listRuns, previewUndo, stopRun, undoRun } from './engine';
 import { launchRun, parseLaunch, toBody } from './launch';
 import { listNotifications, markAllRead } from '../notifications';
 import { createTemplate, deleteTemplate, getTemplate, listTemplates, markTemplateRun, updateTemplate } from './templates';
@@ -61,6 +61,18 @@ export function mountWorkflowRoutes(app: Express, broadcast: Broadcast) {
     const result = approveRun(pid(req), edits);
     if (!result.ok) return fail(res, 409, result.error);
     res.json({ success: true });
+  });
+
+  app.get('/api/workflows/:id/undo', async (req: Request, res: Response) => {
+    if (!getRun(pid(req))) return fail(res, 404, 'Run not found');
+    res.json({ success: true, plan: await previewUndo(pid(req)) });
+  });
+
+  app.post('/api/workflows/:id/undo', async (req: Request, res: Response) => {
+    if (!getRun(pid(req))) return fail(res, 404, 'Run not found');
+    const out = await undoRun(pid(req));
+    if (!out.ok) return fail(res, 409, out.error);
+    res.json({ success: true, result: out.result });
   });
 
   app.post('/api/workflows/:id/stop', (req: Request, res: Response) => {
