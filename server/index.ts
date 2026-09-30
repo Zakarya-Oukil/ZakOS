@@ -28,6 +28,8 @@ import { mountOsSettingsRoutes } from './osSettings';
 import { mountProjectRoutes } from './projects/routes';
 import { mountWorkflowRoutes } from './workflows/routes';
 import { mountAuditRoutes } from './audit';
+import { mountScheduleRoutes } from './automations/routes';
+import { startScheduler } from './automations/scheduler';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -99,6 +101,8 @@ mountOsSettingsRoutes(app);
 mountProjectRoutes(app);
 mountWorkflowRoutes(app, broadcast);
 mountAuditRoutes(app);
+mountScheduleRoutes(app);
+startScheduler(broadcast);
 
 // ==========================================
 // REST API ROUTES

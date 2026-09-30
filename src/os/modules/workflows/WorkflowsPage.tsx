@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Bookmark, Check, Folder, Play, Plus, Square, Trash2, Undo2, X } from 'lucide-react';
+import { Bookmark, CalendarClock, Check, Folder, Play, Plus, Square, Trash2, Undo2, X } from 'lucide-react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { agentsSocket } from '../../lib/agentsSocket';
@@ -9,7 +9,7 @@ import { cx } from '../../ui/cx';
 import { useAgents, useSession } from '../agents/hooks';
 import { Pipeline } from './Pipeline';
 import { TaskBoard } from './TaskBoard';
-import { isActive, templatesApi, workflowsApi, type Outcomes, type OutcomeKey, type Role, type WorkflowRun, type WorkflowTask, type WorkflowTemplate } from './api';
+import { isActive, schedulesApi, templatesApi, workflowsApi, type Outcomes, type OutcomeKey, type Role, type WorkflowRun, type WorkflowSchedule, type WorkflowTask, type WorkflowTemplate } from './api';
 
 const OUTCOME_LABELS: Record<OutcomeKey, string> = {
   obsidian: 'Write the report to Obsidian',
@@ -430,6 +430,89 @@ function Templates({ templates, onRun, onDelete }: { templates: WorkflowTemplate
   );
 }
 
+const PRESETS: Array<{ label: string; cron?: string }> = [
+  { label: 'Every weekday at 9:00', cron: '0 9 * * 1-5' },
+  { label: 'Every day at 2:00', cron: '0 2 * * *' },
+  { label: 'Every hour', cron: '0 * * * *' },
+  { label: 'Every Monday at 9:00', cron: '0 9 * * 1' },
+  { label: 'On every new commit' },
+];
+
+const describeTrigger = ({ trigger }: WorkflowSchedule) =>
+  trigger.kind === 'commit' ? 'On every new commit' : PRESETS.find((p) => p.cron === trigger.cron)?.label ?? `Cron ${trigger.cron}`;
+
+function Schedules({ templates, schedules, onChanged }: { templates: WorkflowTemplate[]; schedules: WorkflowSchedule[]; onChanged: () => void }) {
+  const [templateId, setTemplateId] = useState('');
+  const [preset, setPreset] = useState(0);
+  const [custom, setCustom] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  if (templates.length === 0) return null;
+  const chosen = templateId || templates[0].id;
+  const nameOf = (id: string) => templates.find((t) => t.id === id)?.name ?? 'Missing template';
+
+  const add = async () => {
+    setError(null);
+    const p = PRESETS[preset];
+    const cron = custom.trim() || p.cron;
+    try {
+      await schedulesApi.create(chosen, cron ? { kind: 'cron', cron } : { kind: 'commit' });
+      setCustom('');
+      onChanged();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  };
+  const field = 'rounded-[var(--os-radius)] border border-os-line bg-os-surface px-2 py-1.5 text-xs text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
+
+  return (
+    <>
+      <h2 className="mb-2 mt-6 text-sm font-medium text-os-muted">Schedules</h2>
+      <div className="mb-2 grid gap-1.5">
+        <select aria-label="Template to schedule" className={field} value={chosen} onChange={(e) => setTemplateId(e.target.value)}>
+          {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+        </select>
+        <select aria-label="When to run" className={field} value={preset} onChange={(e) => setPreset(Number(e.target.value))}>
+          {PRESETS.map((p, i) => <option key={p.label} value={i}>{p.label}</option>)}
+        </select>
+        <input aria-label="Custom cron expression" className={field} placeholder="Or custom cron, e.g. 30 6 * * 1-5" value={custom} onChange={(e) => setCustom(e.target.value)} />
+        <button type="button" className={btn} onClick={add}>
+          <CalendarClock size={14} aria-hidden /> Add schedule
+        </button>
+        {error && <p className="text-xs text-os-danger" role="alert">{error}</p>}
+      </div>
+      <ul className="grid gap-1.5">
+        {schedules.map((s) => (
+          <li key={s.id} className="flex items-center gap-2 rounded-[var(--os-radius)] border border-os-line px-2.5 py-2">
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm text-os-text">{nameOf(s.templateId)}</span>
+              <span className="block truncate text-xs text-os-muted">
+                {describeTrigger(s)}
+                {s.enabled && s.nextAt ? ` · next ${new Date(s.nextAt).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
+                {s.lastRunAt ? ` · last ${timeAgo(s.lastRunAt)}` : ''}
+              </span>
+              {s.lastError && <span className="block truncate text-xs text-os-danger">{s.lastError}</span>}
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={s.enabled}
+              aria-label={`${s.enabled ? 'Pause' : 'Resume'} schedule for ${nameOf(s.templateId)}`}
+              className={cx(btn, 'px-2', s.enabled && 'border-os-cyan text-os-cyan')}
+              onClick={() => schedulesApi.setEnabled(s.id, !s.enabled).then(onChanged).catch((e: Error) => setError(e.message))}
+            >
+              {s.enabled ? 'On' : 'Off'}
+            </button>
+            <button type="button" aria-label={`Delete schedule for ${nameOf(s.templateId)}`} className={cx(btn, 'w-8 justify-center px-0')} onClick={() => schedulesApi.remove(s.id).then(onChanged).catch((e: Error) => setError(e.message))}>
+              <Trash2 size={14} aria-hidden />
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 text-xs text-os-muted">Schedules run only while Zak OS is open. Runs use the template's approval setting.</p>
+    </>
+  );
+}
+
 export default function WorkflowsPage({ route, navigate }: ModuleProps) {
   const { runs, error, refresh } = useRuns();
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
@@ -439,6 +522,15 @@ export default function WorkflowsPage({ route, navigate }: ModuleProps) {
     templatesApi.list().then(setTemplates).catch(() => setTemplates([]));
   }, []);
   useEffect(refreshTemplates, [refreshTemplates]);
+  const [schedules, setSchedules] = useState<WorkflowSchedule[]>([]);
+  const refreshSchedules = useCallback(() => {
+    schedulesApi.list().then(setSchedules).catch(() => setSchedules([]));
+  }, []);
+  useEffect(refreshSchedules, [refreshSchedules]);
+  useEffect(() => {
+    const t = setInterval(refreshSchedules, 30_000); // picks up last-run times from the scheduler
+    return () => clearInterval(t);
+  }, [refreshSchedules]);
   const selectedId = route[0];
   const run = useMemo(() => runs.find((r) => r.id === selectedId), [runs, selectedId]);
 
@@ -471,8 +563,9 @@ export default function WorkflowsPage({ route, navigate }: ModuleProps) {
                 })
                 .catch((e: Error) => setTemplateError(e.message));
             }}
-            onDelete={(t) => templatesApi.remove(t.id).then(refreshTemplates).catch((e: Error) => setTemplateError(e.message))}
+            onDelete={(t) => templatesApi.remove(t.id).then(() => { refreshTemplates(); refreshSchedules(); }).catch((e: Error) => setTemplateError(e.message))}
           />
+          <Schedules templates={templates} schedules={schedules} onChanged={refreshSchedules} />
           {templateError && <p className="mt-2 text-xs text-os-danger" role="alert">{templateError}</p>}
           <h2 className="mb-2 mt-6 text-sm font-medium text-os-muted">Runs</h2>
           {error && <p className="text-xs text-os-danger">{error}</p>}

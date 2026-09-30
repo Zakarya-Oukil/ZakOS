@@ -5,6 +5,7 @@ import { approveRun, deleteRun, getRun, listRuns, previewUndo, stopRun, undoRun 
 import { launchRun, parseLaunch, toBody } from './launch';
 import { getLimits, LimitError, updateLimits } from './limits';
 import { listNotifications, markAllRead } from '../notifications';
+import { deleteSchedulesForTemplate } from '../automations/schedules';
 import { createTemplate, deleteTemplate, getTemplate, listTemplates, markTemplateRun, updateTemplate } from './templates';
 
 /** Runs start agents that edit files, so these routes are local-only like the terminal. */
@@ -129,6 +130,7 @@ export function mountWorkflowRoutes(app: Express, broadcast: Broadcast) {
 
   app.delete('/api/workflow-templates/:id', (req: Request, res: Response) => {
     if (!deleteTemplate(pid(req))) return fail(res, 404, 'Template not found');
+    deleteSchedulesForTemplate(pid(req));
     res.json({ success: true });
   });
 

@@ -97,3 +97,25 @@ export const templatesApi = {
 };
 
 export const isActive = (s: RunStatus) => s === 'planning' || s === 'awaiting_approval' || s === 'running' || s === 'reviewing' || s === 'reporting';
+
+export type ScheduleTrigger = { kind: 'cron'; cron: string } | { kind: 'commit' };
+
+export interface WorkflowSchedule {
+  id: string;
+  name: string;
+  templateId: string;
+  trigger: ScheduleTrigger;
+  enabled: boolean;
+  lastRunAt?: number;
+  lastRunId?: string;
+  lastError?: string;
+  nextAt: number | null;
+}
+
+export const schedulesApi = {
+  list: () => call<{ schedules: WorkflowSchedule[] }>('/api/workflow-schedules').then((r) => r.schedules),
+  create: (templateId: string, trigger: ScheduleTrigger) =>
+    call<{ schedule: WorkflowSchedule }>('/api/workflow-schedules', { method: 'POST', body: JSON.stringify({ templateId, trigger }) }).then((r) => r.schedule),
+  setEnabled: (id: string, enabled: boolean) => call<unknown>(`/api/workflow-schedules/${id}`, { method: 'PATCH', body: JSON.stringify({ enabled }) }),
+  remove: (id: string) => call<unknown>(`/api/workflow-schedules/${id}`, { method: 'DELETE' }),
+};
