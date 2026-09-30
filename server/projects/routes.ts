@@ -6,6 +6,7 @@ import path from 'node:path';
 import { isTrustedLocalRequest } from '../terminal/pty';
 import * as store from './store';
 import { isTrust } from '../agents/settings';
+import { audit } from '../audit';
 
 // ---- guard -------------------------------------------------------------------------------------
 
@@ -218,6 +219,7 @@ export function mountProjectRoutes(app: Express) {
     if (rawTrust === 'full' && req.body?.confirmFull !== true) return fail(res, 400, 'Full access needs explicit confirmation');
     const project = store.updateProject(pid(req), { name: str(req.body?.name), color: str(req.body?.color), trust: rawTrust });
     if (!project) return fail(res, 404, 'Project not found');
+    if (rawTrust !== undefined) audit('trust', 'owner', `Agent permissions for ${project.name}: ${rawTrust ?? 'follow global setting'}`, { project: project.name });
     res.json({ success: true, project });
   });
 

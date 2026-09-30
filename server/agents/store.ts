@@ -65,6 +65,18 @@ db.exec(`
     detail TEXT NOT NULL,
     checkpoint_ref TEXT
   );
+  CREATE TABLE IF NOT EXISTS audit (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts INTEGER NOT NULL,
+    kind TEXT NOT NULL,
+    actor TEXT NOT NULL,
+    detail TEXT NOT NULL,
+    session_id TEXT,
+    run_id TEXT,
+    project TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit(ts DESC, id DESC);
+  CREATE INDEX IF NOT EXISTS idx_audit_kind ON audit(kind, ts DESC);
   CREATE INDEX IF NOT EXISTS idx_sessions_agent ON sessions(agent, updated DESC);
   CREATE INDEX IF NOT EXISTS idx_actions_session ON actions(session_id, ts DESC);
 `);
@@ -176,4 +188,50 @@ export function logAction(
 
 export function listActions(sessionId: string): ActionRow[] {
   return q.listActions.all(sessionId) as unknown as ActionRow[];
+}
+
+// ---- audit log -----------------------------------------------------------------------------------
+
+export interface AuditRow {
+  id: number;
+  ts: number;
+  kind: string;
+  actor: string;
+  detail: string;
+  session_id: string | null;
+  run_id: string | null;
+  project: string | null;
+}
+
+const auditInsert = db.prepare(
+  `INSERT INTO audit (ts, kind, actor, detail, session_id, run_id, project) VALUES (?, ?, ?, ?, ?, ?, ?)`
+);
+
+export function insertAudit(row: Omit<AuditRow, 'id' | 'ts'>): void {
+  auditInsert.run(Date.now(), row.kind, row.actor, row.detail, row.session_id, row.run_id, row.project);
+}
+
+/** Newest first. `before` is an id cursor; `q` matches detail, actor and project. */
+export function queryAudit(opts: { kind?: string; q?: string; before?: number; limit: number }): AuditRow[] {
+  const where: string[] = [];
+  const args: Array<string | number> = [];
+  if (opts.kind) {
+    where.push('kind = ?');
+    args.push(opts.kind);
+  }
+  if (opts.q) {
+    where.push(`(detail LIKE ? ESCAPE '\\' OR actor LIKE ? ESCAPE '\\' OR project LIKE ? ESCAPE '\\')`);
+    const like = `%${opts.q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+    args.push(like, like, like);
+  }
+  if (opts.before) {
+    where.push('id < ?');
+    args.push(opts.before);
+  }
+  const sql = `SELECT * FROM audit ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY id DESC LIMIT ?`;
+  return db.prepare(sql).all(...args, opts.limit) as unknown as AuditRow[];
+}
+
+export function auditKinds(): string[] {
+  return (db.prepare(`SELECT DISTINCT kind FROM audit ORDER BY kind`).all() as unknown as Array<{ kind: string }>).map((r) => r.kind);
 }

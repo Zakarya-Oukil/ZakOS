@@ -6,6 +6,7 @@ import * as sessions from '../agents/store';
 import * as projectStore from '../projects/store';
 import { trustForPath } from '../projects/store';
 import { notify } from '../notifications';
+import { audit } from '../audit';
 import { getLimits, LimitError } from './limits';
 import { applyUndo, captureBase, planUndo, type RunBase, type UndoPlan, type UndoResult } from './undo';
 import { runOutcomes, type OutcomeKey, type OutcomeOptions, type OutcomeResult } from './outcomes';
@@ -272,6 +273,7 @@ export function startRun(goal: string, cwd: string, projectId: string | undefine
   const run: Run = { id: randomUUID(), options: withDefaults(options), trust: trustForPath(cwd), goal, cwd, projectId, status: 'planning', created: now, updated: now, tasks: [] };
   runs.set(run.id, run);
   persist();
+  audit('run-start', 'workflow', `${goal} (approval ${run.options.approval ? 'on' : 'off'}, worktrees ${run.options.worktrees ? 'on' : 'off'}, trust ${run.trust})`, { runId: run.id, project: path.basename(cwd) });
   void execute(run, broadcast);
   return run;
 }
@@ -290,6 +292,7 @@ export function approveRun(id: string, edits?: Array<{ title?: unknown; prompt?:
     tasks = clean.slice(0, getLimits().maxTasks).map(toTask);
   }
   gate(tasks);
+  audit('run-approve', 'owner', `Approved ${tasks.length} task${tasks.length > 1 ? 's' : ''}: ${tasks.map((t) => t.title).join('; ')}`, { runId: id, project: path.basename(run.cwd) });
   return { ok: true };
 }
 
@@ -311,6 +314,7 @@ export async function undoRun(id: string): Promise<{ ok: true; result: UndoResul
   if (!plan.possible || !run.base) return { ok: false, error: plan.reason ?? 'Nothing to undo' };
   const result = await applyUndo(run.base, plan);
   // Only a clean undo is final; with problems the owner may fix them and try again.
+  audit('run-undo', 'owner', `Reverted ${result.reverted} merge(s), restored ${result.restored}, deleted ${result.deleted.length} file(s)${result.problems.length ? `; problems: ${result.problems.join(' ')}` : ''}`, { runId: id, project: path.basename(run.cwd) });
   if (result.problems.length === 0) run.undone = { ts: Date.now(), result };
   run.updated = Date.now();
   persist();
@@ -321,6 +325,7 @@ export function stopRun(id: string): boolean {
   const run = runs.get(id);
   if (!run || !isActive(id)) return false;
   stopped.add(id);
+  audit('run-stop', limitReasons.has(id) ? 'limit' : 'owner', limitReasons.get(id) ?? 'Stopped the run', { runId: id, project: path.basename(run.cwd) });
   gates.get(id)?.(null);
   for (const sid of [run.orchestratorSessionId, run.reviewerSessionId, ...run.tasks.map((t) => t.sessionId)]) {
     if (sid) stopSession(sid);
@@ -349,6 +354,7 @@ async function mergeAll(run: Run, update: (p?: Partial<Run>) => void) {
       }
       else task.mergeNote = outcome.note;
     }
+    audit('merge', 'workflow', `${task.title}: ${task.merge}${task.mergeNote ? ` (${task.mergeNote})` : ''}`, { runId: run.id, project: path.basename(run.cwd) });
     await removeWorktree(wt, dropBranch);
     worktrees.delete(task.id);
     update();
@@ -481,6 +487,7 @@ async function execute(run: Run, broadcast: Broadcast) {
     // 5. Outcomes: report to the vault, graph refresh, pull request, notification
     const projectName = (run.projectId && projectStore.getProject(run.projectId)?.name) || path.basename(run.cwd) || 'Project';
     update({ outcomes: await runOutcomes(run, projectName, broadcast) });
+    audit('run-done', 'workflow', `${run.verdict === 'pass' ? 'Passed review' : 'Needs work'}; outcomes: ${Object.entries(run.outcomes ?? {}).map(([k, v]) => `${k} ${v.state}`).join(', ') || 'none'}`, { runId: run.id, project: projectName });
   } catch (err) {
     const wasStopped = halted();
     for (const t of run.tasks) {
@@ -490,6 +497,7 @@ async function execute(run: Run, broadcast: Broadcast) {
       }
     }
     await abandonWorktrees(run);
+    if (!wasStopped) audit('run-error', 'workflow', err instanceof Error ? err.message : String(err), { runId: run.id, project: path.basename(run.cwd) });
     if (!wasStopped && run.options.outcomes.notify) notify('Workflow failed', err instanceof Error ? err.message : String(err), broadcast, { module: 'workflows', route: [run.id] });
     update({ status: wasStopped ? 'stopped' : 'error', error: wasStopped ? limitReasons.get(run.id) : err instanceof Error ? err.message : String(err) });
   } finally {

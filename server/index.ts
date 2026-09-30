@@ -27,6 +27,7 @@ import { handlePtyConnection } from './terminal/pty';
 import { mountOsSettingsRoutes } from './osSettings';
 import { mountProjectRoutes } from './projects/routes';
 import { mountWorkflowRoutes } from './workflows/routes';
+import { mountAuditRoutes } from './audit';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -97,6 +98,7 @@ mountAgentRoutes(app, broadcast);
 mountOsSettingsRoutes(app);
 mountProjectRoutes(app);
 mountWorkflowRoutes(app, broadcast);
+mountAuditRoutes(app);
 
 // ==========================================
 // REST API ROUTES

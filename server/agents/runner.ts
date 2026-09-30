@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { getAdapter } from './adapters';
 import type { AgentEvent } from './adapters/types';
 import { createCheckpoint } from './checkpoint';
+import path from 'node:path';
+import { audit } from '../audit';
 import * as store from './store';
 import { trustForPath } from '../projects/store';
 import { isTrust } from './settings';
@@ -49,6 +51,8 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
 
   const checkpoint = await createCheckpoint(session.cwd);
   store.logAction(sessionId, 'prompt', prompt.slice(0, 500), checkpoint);
+  const project = path.basename(session.cwd);
+  audit('prompt', session.agent, prompt, { sessionId, project });
   store.appendMessage(sessionId, 'user', { type: 'user', text: prompt });
   store.setSessionStatus(sessionId, 'running');
   emit(broadcast, sessionId, { type: 'user', text: prompt });
@@ -65,7 +69,11 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
         resume,
         signal: ctl.signal,
       })) {
-        if (event.type === 'error') failed = true;
+        if (event.type === 'error') {
+          failed = true;
+          audit('error', session.agent, event.message, { sessionId, project });
+        }
+        if (event.type === 'tool_use') audit('tool', session.agent, `${event.name} ${JSON.stringify(event.input)}`, { sessionId, project });
         if (event.type === 'done' && event.cliSessionId) store.setCliSessionId(sessionId, event.cliSessionId);
         // Text deltas are high-volume; persist them merged when the run ends.
         if (event.type === 'text') {

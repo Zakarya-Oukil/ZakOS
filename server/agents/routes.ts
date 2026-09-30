@@ -5,6 +5,7 @@ import path from 'node:path';
 import { getAdapter, listAdapters } from './adapters';
 import { restoreCheckpoint } from './checkpoint';
 import { isRunning, SessionBusyError, sendMessage, stop, type Broadcast } from './runner';
+import { audit } from '../audit';
 import * as store from './store';
 import { getSettings, updateSettings } from './settings';
 
@@ -78,6 +79,7 @@ export function mountAgentRoutes(app: Express, broadcast: Broadcast) {
   app.delete('/api/agents/sessions/:id', (req: Request, res: Response) => {
     if (!store.getSession(pid(req))) return fail(res, 404, 'Session not found');
     stop(pid(req));
+    audit('session-delete', 'owner', `Deleted session ${store.getSession(pid(req))?.title ?? pid(req)}`, { sessionId: pid(req) });
     store.deleteSession(pid(req));
     res.json({ success: true });
   });
@@ -113,6 +115,7 @@ export function mountAgentRoutes(app: Express, broadcast: Broadcast) {
     try {
       await restoreCheckpoint(session.cwd, ref);
       store.logAction(session.id, 'restore', `Restored tracked files to ${ref}`, ref);
+      audit('restore', 'owner', `Restored tracked files to ${ref}`, { sessionId: session.id, project: path.basename(session.cwd) });
       res.json({ success: true });
     } catch (err) {
       fail(res, 400, err instanceof Error ? err.message : String(err));
