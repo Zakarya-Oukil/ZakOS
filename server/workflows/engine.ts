@@ -6,6 +6,7 @@ import * as sessions from '../agents/store';
 import * as projectStore from '../projects/store';
 import { trustForPath } from '../projects/store';
 import { notify } from '../notifications';
+import { getLimits, LimitError } from './limits';
 import { applyUndo, captureBase, planUndo, type RunBase, type UndoPlan, type UndoResult } from './undo';
 import { runOutcomes, type OutcomeKey, type OutcomeOptions, type OutcomeResult } from './outcomes';
 import { commitWorktree, createWorktree, isGitRepo, mergeBranch, removeWorktree, type Worktree } from './worktree';
@@ -78,8 +79,8 @@ export interface Run {
   error?: string;
 }
 
-const MAX_TASKS = 5;
-const CONCURRENCY = 3;
+/** Why a run was stopped by the system rather than by the owner. */
+const limitReasons = new Map<string, string>();
 const RESULT_LIMIT = 6000;
 const TURN_TIMEOUT_MS = 30 * 60 * 1000;
 const FILE = path.resolve(process.cwd(), 'data', 'workflow-runs.json');
@@ -226,7 +227,7 @@ Do not modify any files. You may read the code to plan.
 Goal from the owner:
 ${goal}
 
-Split the goal into at most ${MAX_TASKS} independent tasks that sub-agents can do in parallel.
+Split the goal into at most ${getLimits().maxTasks} independent tasks that sub-agents can do in parallel.
 Each task must touch a different set of files so they do not conflict, and its prompt must be
 self-contained (the sub-agent has no other context).
 
@@ -251,6 +252,21 @@ ${clip(run.review ?? '(none)')}`;
 
 // ---- the run ----------------------------------------------------------------------------------
 
+/** Throws LimitError when starting another run would break a configured limit. */
+export function checkLimits() {
+  const limits = getLimits();
+  const active = [...runs.values()].filter((r) => isActive(r.id)).length;
+  if (active >= limits.maxActiveRuns) {
+    throw new LimitError(`${active} run${active > 1 ? 's are' : ' is'} already in progress (limit ${limits.maxActiveRuns}). Wait for one to finish or raise the limit.`);
+  }
+  const midnight = new Date();
+  midnight.setHours(0, 0, 0, 0);
+  const today = [...runs.values()].filter((r) => r.created >= midnight.getTime()).length;
+  if (today >= limits.maxRunsPerDay) {
+    throw new LimitError(`Daily limit of ${limits.maxRunsPerDay} runs reached. It resets at midnight, or raise the limit.`);
+  }
+}
+
 export function startRun(goal: string, cwd: string, projectId: string | undefined, options: Partial<RunOptions>, broadcast: Broadcast): Run {
   const now = Date.now();
   const run: Run = { id: randomUUID(), options: withDefaults(options), trust: trustForPath(cwd), goal, cwd, projectId, status: 'planning', created: now, updated: now, tasks: [] };
@@ -271,7 +287,7 @@ export function approveRun(id: string, edits?: Array<{ title?: unknown; prompt?:
   if (edits) {
     const clean = edits.filter((t): t is { title: string; prompt: string } => typeof t?.title === 'string' && typeof t?.prompt === 'string' && t.title.trim() !== '' && t.prompt.trim() !== '');
     if (clean.length === 0) return { ok: false, error: 'Keep at least one task with a title and instructions' };
-    tasks = clean.slice(0, MAX_TASKS).map(toTask);
+    tasks = clean.slice(0, getLimits().maxTasks).map(toTask);
   }
   gate(tasks);
   return { ok: true };
@@ -363,6 +379,8 @@ async function execute(run: Run, broadcast: Broadcast) {
     broadcast({ channel: 'workflows', runId: run.id });
   };
   const halted = () => stopped.has(run.id);
+  let softTimer: NodeJS.Timeout | undefined;
+  let hardTimer: NodeJS.Timeout | undefined;
 
   try {
     run.base = await captureBase(run.cwd);
@@ -377,7 +395,7 @@ async function execute(run: Run, broadcast: Broadcast) {
     const rawTasks = Array.isArray(parsed.tasks) ? parsed.tasks : [];
     let tasks: Task[] = rawTasks
       .filter((t): t is { title: string; prompt: string } => typeof t?.title === 'string' && typeof t?.prompt === 'string' && t.title.trim() !== '' && t.prompt.trim() !== '')
-      .slice(0, MAX_TASKS)
+      .slice(0, getLimits().maxTasks)
       .map(toTask);
     if (tasks.length === 0) throw new Error('The orchestrator produced no tasks');
     const summary = typeof parsed.summary === 'string' ? parsed.summary : undefined;
@@ -392,6 +410,17 @@ async function execute(run: Run, broadcast: Broadcast) {
       tasks = approved;
     }
     update({ summary, tasks, status: 'running' });
+
+    // The clock starts when work starts, so time spent waiting for approval is free.
+    const { maxRunMinutes } = getLimits();
+    const ms = maxRunMinutes * 60_000;
+    softTimer = setTimeout(() => {
+      if (run.options.outcomes.notify) notify('Run is near its time limit', `${run.goal} will be stopped in about ${Math.max(1, Math.round(maxRunMinutes * 0.2))} minutes`, broadcast, { module: 'workflows', route: [run.id] });
+    }, ms * 0.8);
+    hardTimer = setTimeout(() => {
+      limitReasons.set(run.id, `Stopped: the ${maxRunMinutes} minute time limit was reached`);
+      stopRun(run.id);
+    }, ms);
 
     // 2. Sub-agents, a few at a time
     const useWorktrees = run.options.worktrees && (await isGitRepo(run.cwd));
@@ -424,7 +453,7 @@ async function execute(run: Run, broadcast: Broadcast) {
         update();
       }
     };
-    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, tasks.length) }, worker));
+    await Promise.all(Array.from({ length: Math.min(getLimits().maxWorkers, tasks.length) }, worker));
     if (halted()) throw new Error('Stopped');
 
     // 2b. Bring each worktree's work back into the main tree, one task at a time
@@ -462,8 +491,11 @@ async function execute(run: Run, broadcast: Broadcast) {
     }
     await abandonWorktrees(run);
     if (!wasStopped && run.options.outcomes.notify) notify('Workflow failed', err instanceof Error ? err.message : String(err), broadcast, { module: 'workflows', route: [run.id] });
-    update({ status: wasStopped ? 'stopped' : 'error', error: wasStopped ? undefined : err instanceof Error ? err.message : String(err) });
+    update({ status: wasStopped ? 'stopped' : 'error', error: wasStopped ? limitReasons.get(run.id) : err instanceof Error ? err.message : String(err) });
   } finally {
+    clearTimeout(softTimer);
+    clearTimeout(hardTimer);
+    limitReasons.delete(run.id);
     stopped.delete(run.id);
   }
 }

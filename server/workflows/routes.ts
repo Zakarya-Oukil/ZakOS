@@ -3,6 +3,7 @@ import type { Broadcast } from '../agents/runner';
 import { isTrustedLocalRequest } from '../terminal/pty';
 import { approveRun, deleteRun, getRun, listRuns, previewUndo, stopRun, undoRun } from './engine';
 import { launchRun, parseLaunch, toBody } from './launch';
+import { getLimits, LimitError, updateLimits } from './limits';
 import { listNotifications, markAllRead } from '../notifications';
 import { createTemplate, deleteTemplate, getTemplate, listTemplates, markTemplateRun, updateTemplate } from './templates';
 
@@ -51,6 +52,7 @@ export function mountWorkflowRoutes(app: Express, broadcast: Broadcast) {
     try {
       res.status(201).json({ success: true, run: launchRun(parsed.input, broadcast) });
     } catch (err) {
+      if (err instanceof LimitError) return fail(res, 429, err.message);
       fail(res, 500, err instanceof Error ? err.message : String(err));
     }
   });
@@ -84,6 +86,22 @@ export function mountWorkflowRoutes(app: Express, broadcast: Broadcast) {
     if (!getRun(pid(req))) return fail(res, 404, 'Run not found');
     if (!deleteRun(pid(req))) return fail(res, 409, 'Stop the run before deleting it');
     res.json({ success: true });
+  });
+
+  // ---- limits -------------------------------------------------------------------------------
+
+  app.use('/api/workflow-limits', localOnly);
+
+  app.get('/api/workflow-limits', (_req: Request, res: Response) => {
+    res.json({ success: true, limits: getLimits() });
+  });
+
+  app.put('/api/workflow-limits', (req: Request, res: Response) => {
+    try {
+      res.json({ success: true, limits: updateLimits(req.body ?? {}) });
+    } catch (err) {
+      fail(res, 400, err instanceof Error ? err.message : String(err));
+    }
   });
 
   // ---- templates ----------------------------------------------------------------------------
@@ -121,7 +139,13 @@ export function mountWorkflowRoutes(app: Express, broadcast: Broadcast) {
     const override = str(req.body?.goal);
     const parsed = await parseLaunch({ ...toBody(template.input), ...(override ? { goal: override } : {}) });
     if (!parsed.ok) return fail(res, parsed.status, parsed.error);
-    markTemplateRun(template.id);
-    res.status(201).json({ success: true, run: launchRun(parsed.input, broadcast) });
+    try {
+      const run = launchRun(parsed.input, broadcast);
+      markTemplateRun(template.id);
+      res.status(201).json({ success: true, run });
+    } catch (err) {
+      if (err instanceof LimitError) return fail(res, 429, err.message);
+      fail(res, 500, err instanceof Error ? err.message : String(err));
+    }
   });
 }

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { getAdapter } from '../agents/adapters';
 import type { Broadcast } from '../agents/runner';
-import { DEFAULT_OPTIONS, startRun, withDefaults, type Role, type Run, type RunOptions } from './engine';
+import { DEFAULT_OPTIONS, checkLimits, startRun, withDefaults, type Role, type Run, type RunOptions } from './engine';
 
 /** Everything needed to start a run; also what a template or a schedule stores. */
 export interface LaunchInput {
@@ -69,6 +69,7 @@ export async function parseLaunch(body: Record<string, any> | undefined): Promis
 }
 
 export function launchRun(input: LaunchInput, broadcast: Broadcast): Run {
+  checkLimits();
   return startRun(input.goal, input.cwd, input.projectId, input.options, broadcast);
 }
 
