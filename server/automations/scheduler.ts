@@ -28,15 +28,17 @@ export function nextFire(s: Schedule): number | null {
   }
 }
 
-async function fire(s: Schedule, why: string, broadcast: Broadcast) {
+export type FireResult = { ok: true; runId: string } | { ok: false; error: string };
+
+async function fire(s: Schedule, why: string, broadcast: Broadcast): Promise<FireResult> {
   const template = getTemplate(s.templateId);
   if (!template) {
     recordSchedule(s.id, { lastError: 'Template no longer exists' });
-    return;
+    return { ok: false, error: 'Its template no longer exists' };
   }
   // A run from this schedule still going means the last one overran; skip rather than pile up.
   const prev = s.lastRunId ? getRun(s.lastRunId) : undefined;
-  if (prev && ACTIVE.has(prev.status)) return;
+  if (prev && ACTIVE.has(prev.status)) return { ok: false, error: 'The previous run from this automation is still going' };
 
   const project = path.basename(template.input.cwd);
   try {
@@ -45,17 +47,22 @@ async function fire(s: Schedule, why: string, broadcast: Broadcast) {
     if (!parsed.ok) throw new Error(parsed.error);
     const run = launchRun(parsed.input, broadcast);
     markTemplateRun(template.id);
-    recordSchedule(s.id, { lastRunAt: Date.now(), lastRunId: run.id, lastError: undefined });
+    recordSchedule(s.id, { lastRunAt: Date.now(), lastRunId: run.id, lastError: undefined, addRun: { runId: run.id, at: Date.now(), why } });
     audit('schedule-fire', 'scheduler', `${s.name}: ${why}`, { runId: run.id, project });
     notify(`Scheduled run started: ${s.name}`, why, broadcast, { module: 'workflows', route: [run.id] }, { native: false });
+    return { ok: true, runId: run.id };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     recordSchedule(s.id, { lastError: message });
     audit('schedule-error', 'scheduler', `${s.name}: ${message}`, { project });
     // A limit hit is expected and self-heals; anything else deserves a nudge.
     if (!(err instanceof LimitError)) notify(`Schedule failed: ${s.name}`, message, broadcast, undefined, { native: false });
+    return { ok: false, error: message };
   }
 }
+
+/** Starts an automation's run immediately, on the owner's request. */
+export const fireNow = (s: Schedule, broadcast: Broadcast) => fire(s, 'Started by you (Run now)', broadcast);
 
 let lastMinute = -1;
 

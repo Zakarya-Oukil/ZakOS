@@ -17,6 +17,8 @@ export interface Schedule {
   lastError?: string;
   /** Commit trigger only: the HEAD last seen, so a new commit is one that differs from it. */
   lastHead?: string;
+  /** The most recent runs this automation started, newest first. */
+  history?: Array<{ runId: string; at: number; why: string }>;
 }
 
 const FILE = path.resolve(process.cwd(), 'data', 'workflow-schedules.json');
@@ -61,11 +63,16 @@ export function updateSchedule(id: string, patch: Partial<Pick<Schedule, 'name' 
 }
 
 /** Records what the scheduler just did; fields set to undefined are cleared. */
-export function recordSchedule(id: string, patch: Partial<Pick<Schedule, 'lastRunAt' | 'lastRunId' | 'lastError' | 'lastHead'>>) {
+export function recordSchedule(
+  id: string,
+  patch: Partial<Pick<Schedule, 'lastRunAt' | 'lastRunId' | 'lastError' | 'lastHead'>> & { addRun?: { runId: string; at: number; why: string } },
+) {
   const list = read();
   const s = list.find((x) => x.id === id);
   if (!s) return;
-  Object.assign(s, patch);
+  const { addRun, ...rest } = patch;
+  Object.assign(s, rest);
+  if (addRun) s.history = [addRun, ...(s.history ?? [])].slice(0, 20);
   write(list);
 }
 

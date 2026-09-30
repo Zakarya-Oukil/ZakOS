@@ -112,7 +112,7 @@ mountHomeRoutes(app);
 mountGitRoutes(app);
 mountSkillRoutes(app);
 mountTerminalRoutes(app);
-mountScheduleRoutes(app);
+mountScheduleRoutes(app, broadcast);
 startScheduler(broadcast);
 
 // ==========================================

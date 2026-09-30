@@ -1,5 +1,5 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import { Bot, Brain, FolderGit2, GitBranch, GitCommitHorizontal, House, Sparkles, ScrollText, ShieldCheck, Settings, SquareTerminal, type LucideIcon } from 'lucide-react';
+import { Bot, Brain, FolderGit2, GitBranch, GitCommitHorizontal, House, Sparkles, Timer, ScrollText, ShieldCheck, Settings, SquareTerminal, type LucideIcon } from 'lucide-react';
 
 export interface OsModule {
   id: string;
@@ -68,6 +68,13 @@ export const MODULES: OsModule[] = [
     icon: ScrollText,
     component: lazy(() => import('./audit/AuditPage')),
     description: 'Searchable history of every prompt, tool call, error and run decision.',
+  },
+  {
+    id: 'automations',
+    label: 'Automations',
+    icon: Timer,
+    component: lazy(() => import('./automations/AutomationsPage')),
+    description: 'Run saved workflows on a schedule or when a commit lands, with history and Run now.',
   },
   {
     id: 'skills',
