@@ -1,4 +1,4 @@
-export type RunStatus = 'planning' | 'running' | 'reviewing' | 'reporting' | 'done' | 'error' | 'stopped';
+export type RunStatus = 'planning' | 'awaiting_approval' | 'running' | 'reviewing' | 'reporting' | 'done' | 'error' | 'stopped';
 export type TaskState = 'queued' | 'running' | 'done' | 'error';
 
 export interface WorkflowTask {
@@ -13,6 +13,7 @@ export interface WorkflowTask {
 
 export interface WorkflowRun {
   id: string;
+  options: { approval: boolean };
   goal: string;
   cwd: string;
   projectId?: string;
@@ -42,10 +43,12 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 export const workflowsApi = {
   list: () => call<{ runs: WorkflowRun[] }>('/api/workflows').then((r) => r.runs),
   get: (id: string) => call<{ run: WorkflowRun }>(`/api/workflows/${id}`).then((r) => r.run),
-  start: (goal: string, cwd: string, projectId?: string) =>
-    call<{ run: WorkflowRun }>('/api/workflows', { method: 'POST', body: JSON.stringify({ goal, cwd, projectId }) }).then((r) => r.run),
+  start: (goal: string, cwd: string, projectId?: string, approval = true) =>
+    call<{ run: WorkflowRun }>('/api/workflows', { method: 'POST', body: JSON.stringify({ goal, cwd, projectId, approval }) }).then((r) => r.run),
+  approve: (id: string, tasks?: Array<{ title: string; prompt: string }>) =>
+    call<unknown>(`/api/workflows/${id}/approve`, { method: 'POST', body: JSON.stringify({ tasks }) }),
   stop: (id: string) => call<unknown>(`/api/workflows/${id}/stop`, { method: 'POST' }),
   remove: (id: string) => call<unknown>(`/api/workflows/${id}`, { method: 'DELETE' }),
 };
 
-export const isActive = (s: RunStatus) => s === 'planning' || s === 'running' || s === 'reviewing' || s === 'reporting';
+export const isActive = (s: RunStatus) => s === 'planning' || s === 'awaiting_approval' || s === 'running' || s === 'reviewing' || s === 'reporting';

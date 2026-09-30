@@ -4,7 +4,7 @@ import path from 'node:path';
 import { sendMessage, stop as stopSession, type Broadcast } from '../agents/runner';
 import * as sessions from '../agents/store';
 
-export type RunStatus = 'planning' | 'running' | 'reviewing' | 'reporting' | 'done' | 'error' | 'stopped';
+export type RunStatus = 'planning' | 'awaiting_approval' | 'running' | 'reviewing' | 'reporting' | 'done' | 'error' | 'stopped';
 export type TaskState = 'queued' | 'running' | 'done' | 'error';
 
 export interface Task {
@@ -17,8 +17,16 @@ export interface Task {
   error?: string;
 }
 
+export interface RunOptions {
+  /** Pause after the plan so the owner can edit and approve the tasks. */
+  approval: boolean;
+}
+
+export const DEFAULT_OPTIONS: RunOptions = { approval: true };
+
 export interface Run {
   id: string;
+  options: RunOptions;
   goal: string;
   cwd: string;
   projectId?: string;
@@ -44,6 +52,8 @@ const FILE = path.resolve(process.cwd(), 'data', 'workflow-runs.json');
 
 const runs = new Map<string, Run>();
 const stopped = new Set<string>();
+/** Open approval gates: resolved with the approved tasks, or null to cancel. */
+const gates = new Map<string, (tasks: Task[] | null) => void>();
 
 // ---- persistence ------------------------------------------------------------------------------
 
@@ -51,7 +61,8 @@ try {
   const saved = JSON.parse(fs.readFileSync(FILE, 'utf8')) as Run[];
   for (const r of saved) {
     // A restart leaves no live child processes, so anything mid-flight is over.
-    if (['planning', 'running', 'reviewing', 'reporting'].includes(r.status)) {
+    r.options = { ...DEFAULT_OPTIONS, ...r.options };
+    if (['planning', 'awaiting_approval', 'running', 'reviewing', 'reporting'].includes(r.status)) {
       r.status = 'stopped';
       r.error = 'Server restarted during the run';
       for (const t of r.tasks) if (t.state === 'running' || t.state === 'queued') t.state = 'error';
@@ -99,7 +110,7 @@ export function deleteRun(id: string): boolean {
 
 const isActive = (id: string) => {
   const s = runs.get(id)?.status;
-  return s === 'planning' || s === 'running' || s === 'reviewing' || s === 'reporting';
+  return s === 'planning' || s === 'awaiting_approval' || s === 'running' || s === 'reviewing' || s === 'reporting';
 };
 
 // ---- one agent turn, awaited ------------------------------------------------------------------
@@ -204,19 +215,37 @@ ${clip(run.review ?? '(none)')}`;
 
 // ---- the run ----------------------------------------------------------------------------------
 
-export function startRun(goal: string, cwd: string, projectId: string | undefined, broadcast: Broadcast): Run {
+export function startRun(goal: string, cwd: string, projectId: string | undefined, options: Partial<RunOptions>, broadcast: Broadcast): Run {
   const now = Date.now();
-  const run: Run = { id: randomUUID(), goal, cwd, projectId, status: 'planning', created: now, updated: now, tasks: [] };
+  const run: Run = { id: randomUUID(), options: { ...DEFAULT_OPTIONS, ...options }, goal, cwd, projectId, status: 'planning', created: now, updated: now, tasks: [] };
   runs.set(run.id, run);
   persist();
   void execute(run, broadcast);
   return run;
 }
 
+const toTask = (t: { title: string; prompt: string }): Task => ({ id: randomUUID(), title: t.title.trim().slice(0, 120), prompt: t.prompt.trim(), state: 'queued' });
+
+/** Approves a run waiting at the gate. `edits` replaces the planned tasks; omit to keep them. */
+export function approveRun(id: string, edits?: Array<{ title?: unknown; prompt?: unknown }>): { ok: true } | { ok: false; error: string } {
+  const run = runs.get(id);
+  const gate = gates.get(id);
+  if (!run || !gate || run.status !== 'awaiting_approval') return { ok: false, error: 'This run is not waiting for approval' };
+  let tasks = run.tasks;
+  if (edits) {
+    const clean = edits.filter((t): t is { title: string; prompt: string } => typeof t?.title === 'string' && typeof t?.prompt === 'string' && t.title.trim() !== '' && t.prompt.trim() !== '');
+    if (clean.length === 0) return { ok: false, error: 'Keep at least one task with a title and instructions' };
+    tasks = clean.slice(0, MAX_TASKS).map(toTask);
+  }
+  gate(tasks);
+  return { ok: true };
+}
+
 export function stopRun(id: string): boolean {
   const run = runs.get(id);
   if (!run || !isActive(id)) return false;
   stopped.add(id);
+  gates.get(id)?.(null);
   for (const sid of [run.orchestratorSessionId, run.reviewerSessionId, ...run.tasks.map((t) => t.sessionId)]) {
     if (sid) stopSession(sid);
   }
@@ -240,12 +269,22 @@ async function execute(run: Run, broadcast: Broadcast) {
     if (plan.error && !plan.text) throw new Error(plan.error);
     const parsed = extractJson(plan.text) as { summary?: unknown; tasks?: unknown };
     const rawTasks = Array.isArray(parsed.tasks) ? parsed.tasks : [];
-    const tasks: Task[] = rawTasks
+    let tasks: Task[] = rawTasks
       .filter((t): t is { title: string; prompt: string } => typeof t?.title === 'string' && typeof t?.prompt === 'string' && t.title.trim() !== '' && t.prompt.trim() !== '')
       .slice(0, MAX_TASKS)
-      .map((t) => ({ id: randomUUID(), title: t.title.slice(0, 120), prompt: t.prompt, state: 'queued' as const }));
+      .map(toTask);
     if (tasks.length === 0) throw new Error('The orchestrator produced no tasks');
-    update({ summary: typeof parsed.summary === 'string' ? parsed.summary : undefined, tasks, status: 'running' });
+    const summary = typeof parsed.summary === 'string' ? parsed.summary : undefined;
+
+    // Approval gate: nothing edits files until the owner has seen and accepted the plan.
+    if (run.options.approval) {
+      update({ summary, tasks, status: 'awaiting_approval' });
+      const approved = await new Promise<Task[] | null>((resolve) => gates.set(run.id, resolve));
+      gates.delete(run.id);
+      if (approved === null || halted()) throw new Error('Stopped');
+      tasks = approved;
+    }
+    update({ summary, tasks, status: 'running' });
 
     // 2. Sub-agents, a few at a time
     const queue = [...tasks];

@@ -11,7 +11,7 @@ const STAGES: Array<{ id: string; label: string; icon: LucideIcon }> = [
   { id: 'report', label: 'Report', icon: FileText },
 ];
 
-const ACTIVE_INDEX: Partial<Record<WorkflowRun['status'], number>> = { planning: 0, running: 1, reviewing: 2, reporting: 3 };
+const ACTIVE_INDEX: Partial<Record<WorkflowRun['status'], number>> = { planning: 0, awaiting_approval: 1, running: 1, reviewing: 2, reporting: 3 };
 
 function stageStates(run: WorkflowRun): NodeState[] {
   if (run.status === 'done') return STAGES.map(() => 'done');
@@ -30,6 +30,7 @@ function detail(run: WorkflowRun, id: string, state: NodeState): string {
     case 'plan':
       return run.tasks.length ? `${run.tasks.length} ${run.tasks.length === 1 ? 'task' : 'tasks'}` : state === 'active' ? 'Planning' : '';
     case 'build':
+      if (run.status === 'awaiting_approval') return 'Needs your approval';
       return run.tasks.length ? `${settled} of ${run.tasks.length} finished` : '';
     case 'review':
       return run.verdict ? (run.verdict === 'pass' ? 'Passed' : 'Needs work') : state === 'active' ? 'Checking the repo' : '';

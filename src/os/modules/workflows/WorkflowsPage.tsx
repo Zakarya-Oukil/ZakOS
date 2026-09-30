@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Folder, Play, Square, Trash2 } from 'lucide-react';
+import { Check, Folder, Play, Plus, Square, Trash2, X } from 'lucide-react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { agentsSocket } from '../../lib/agentsSocket';
@@ -13,6 +13,7 @@ import { isActive, workflowsApi, type WorkflowRun, type WorkflowTask } from './a
 
 const STATUS_LABEL: Record<WorkflowRun['status'], string> = {
   planning: 'Planning',
+  awaiting_approval: 'Needs approval',
   running: 'Building',
   reviewing: 'In review',
   reporting: 'Writing report',
@@ -68,6 +69,74 @@ function TaskLog({ task }: { task: WorkflowTask }) {
   );
 }
 
+function ApprovalPanel({ run, onDone }: { run: WorkflowRun; onDone: () => void }) {
+  const [drafts, setDrafts] = useState(() => run.tasks.map((t) => ({ title: t.title, prompt: t.prompt })));
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const valid = drafts.length > 0 && drafts.every((d) => d.title.trim() && d.prompt.trim());
+  const edit = (i: number, patch: Partial<{ title: string; prompt: string }>) =>
+    setDrafts((ds) => ds.map((d, j) => (j === i ? { ...d, ...patch } : d)));
+
+  const submit = async (fn: () => Promise<unknown>) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await fn();
+      onDone();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Panel title="Review the plan before anything runs">
+      <div className="grid gap-3">
+        {drafts.map((d, i) => (
+          <div key={i} className="grid gap-1.5 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 p-2.5">
+            <div className="flex items-center gap-2">
+              <input
+                aria-label={`Task ${i + 1} title`}
+                value={d.title}
+                onChange={(e) => edit(i, { title: e.target.value })}
+                className={cx(field, 'h-8 min-w-0 flex-1')}
+              />
+              <button
+                type="button"
+                aria-label={`Remove task ${i + 1}`}
+                className={cx(btn, 'w-8 justify-center px-0')}
+                onClick={() => setDrafts((ds) => ds.filter((_, j) => j !== i))}
+              >
+                <X size={14} aria-hidden />
+              </button>
+            </div>
+            <textarea
+              aria-label={`Task ${i + 1} instructions`}
+              rows={4}
+              value={d.prompt}
+              onChange={(e) => edit(i, { prompt: e.target.value })}
+              className={cx(field, 'resize-y py-2 text-xs leading-relaxed')}
+            />
+          </div>
+        ))}
+        {error && <p className="text-xs text-os-danger" role="alert">{error}</p>}
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={btn} disabled={busy || drafts.length >= 5} onClick={() => setDrafts((ds) => [...ds, { title: '', prompt: '' }])}>
+            <Plus size={14} aria-hidden /> Add task
+          </button>
+          <button type="button" className={btn} disabled={busy || !valid} onClick={() => submit(() => workflowsApi.approve(run.id, drafts))}>
+            <Check size={14} aria-hidden /> Approve and run
+          </button>
+          <button type="button" className={btn} disabled={busy} onClick={() => submit(() => workflowsApi.stop(run.id))}>
+            <Square size={14} aria-hidden /> Cancel run
+          </button>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
 function RunView({ run, onChanged }: { run: WorkflowRun; onChanged: () => void }) {
   const [selected, setSelected] = useState<string | undefined>();
   const task = run.tasks.find((t) => t.id === selected);
@@ -114,6 +183,8 @@ function RunView({ run, onChanged }: { run: WorkflowRun; onChanged: () => void }
         {run.error && <p className="mt-3 text-sm text-os-danger" role="alert">{run.error}</p>}
       </Panel>
 
+      {run.status === 'awaiting_approval' && <ApprovalPanel key={run.updated} run={run} onDone={onChanged} />}
+
       <Panel title="Sub-agents" padded={false}>
         <TaskBoard run={run} selected={selected} onSelect={(id) => setSelected((cur) => (cur === id ? undefined : id))} />
       </Panel>
@@ -147,6 +218,7 @@ function RunView({ run, onChanged }: { run: WorkflowRun; onChanged: () => void }
 function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (run: WorkflowRun) => void }) {
   const [goal, setGoal] = useState('');
   const [projectId, setProjectId] = useState('');
+  const [approval, setApproval] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const project = projects.find((p) => p.id === projectId);
@@ -157,7 +229,7 @@ function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (
     setBusy(true);
     setError(null);
     try {
-      onStarted(await workflowsApi.start(goal.trim(), project?.path ?? '', project?.id));
+      onStarted(await workflowsApi.start(goal.trim(), project?.path ?? '', project?.id, approval));
       setGoal('');
     } catch (err) {
       setError((err as Error).message);
@@ -186,6 +258,10 @@ function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (
           </option>
         ))}
       </select>
+      <label className="flex items-center gap-2 text-sm text-os-text">
+        <input type="checkbox" checked={approval} onChange={(e) => setApproval(e.target.checked)} />
+        Ask me to approve the plan first
+      </label>
       {error && <p className="text-xs text-os-danger">{error}</p>}
       <button type="submit" className={btn} disabled={busy || !goal.trim()}>
         <Play size={14} aria-hidden /> Start workflow

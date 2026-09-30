@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Broadcast } from '../agents/runner';
 import { isTrustedLocalRequest } from '../terminal/pty';
-import { deleteRun, getRun, listRuns, startRun, stopRun } from './engine';
+import { approveRun, deleteRun, getRun, listRuns, startRun, stopRun } from './engine';
 
 /** Runs start agents that edit files, so these routes are local-only like the terminal. */
 function localOnly(req: Request, res: Response, next: NextFunction) {
@@ -44,11 +44,19 @@ export function mountWorkflowRoutes(app: Express, broadcast: Broadcast) {
     }
     if (!isDir) return fail(res, 400, 'cwd does not exist or is not a directory');
     try {
-      const run = startRun(goal.slice(0, 4000), cwd, str(req.body?.projectId)?.slice(0, 64), broadcast);
+      const run = startRun(goal.slice(0, 4000), cwd, str(req.body?.projectId)?.slice(0, 64), { approval: req.body?.approval !== false }, broadcast);
       res.status(201).json({ success: true, run });
     } catch (err) {
       fail(res, 500, err instanceof Error ? err.message : String(err));
     }
+  });
+
+  app.post('/api/workflows/:id/approve', (req: Request, res: Response) => {
+    if (!getRun(String(req.params.id))) return fail(res, 404, 'Run not found');
+    const edits = Array.isArray(req.body?.tasks) ? req.body.tasks : undefined;
+    const result = approveRun(String(req.params.id), edits);
+    if (!result.ok) return fail(res, 409, result.error);
+    res.json({ success: true });
   });
 
   app.post('/api/workflows/:id/stop', (req: Request, res: Response) => {
