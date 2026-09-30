@@ -35,6 +35,11 @@ export interface ActionInfo {
   checkpoint_ref: string | null;
 }
 
+export interface FileChange {
+  file: string;
+  status: 'M' | 'A' | 'D' | 'U';
+}
+
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
     ...init,
@@ -66,6 +71,14 @@ export const agentsApi = {
   stop: (id: string) => call<unknown>(`/api/agents/sessions/${id}/stop`, { method: 'POST' }),
   actions: (id: string) =>
     call<{ actions: ActionInfo[] }>(`/api/agents/sessions/${id}/checkpoints`).then((r) => r.actions),
+  changes: (id: string, ref: string) =>
+    call<{ changes: FileChange[] }>(`/api/agents/sessions/${id}/changes?ref=${encodeURIComponent(ref)}`).then((r) => r.changes),
+  changeDiff: (id: string, ref: string, file: string) =>
+    call<{ diff: string; binary: boolean; truncated: boolean }>(
+      `/api/agents/sessions/${id}/changes/diff?ref=${encodeURIComponent(ref)}&file=${encodeURIComponent(file)}`,
+    ),
+  revertFile: (id: string, ref: string, file: string) =>
+    call<unknown>(`/api/agents/sessions/${id}/changes/revert`, { method: 'POST', body: JSON.stringify({ ref, file }) }),
   restore: (id: string, ref: string) =>
     call<unknown>(`/api/agents/sessions/${id}/restore`, { method: 'POST', body: JSON.stringify({ ref }) }),
 };

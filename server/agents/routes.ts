@@ -8,6 +8,7 @@ import { isRunning, SessionBusyError, sendMessage, stop, type Broadcast } from '
 import { audit } from '../audit';
 import * as store from './store';
 import { dropForSession } from './approvals';
+import { fileDiff, listChanges, revertFile, type Change } from './changes';
 import { getSettings, updateSettings } from './settings';
 
 const REPO_ROOT = process.cwd();
@@ -118,6 +119,55 @@ export function mountAgentRoutes(app: Express, broadcast: Broadcast) {
       await restoreCheckpoint(session.cwd, ref);
       store.logAction(session.id, 'restore', `Restored tracked files to ${ref}`, ref);
       audit('restore', 'owner', `Restored tracked files to ${ref}`, { sessionId: session.id, project: path.basename(session.cwd) });
+      res.json({ success: true });
+    } catch (err) {
+      fail(res, 400, err instanceof Error ? err.message : String(err));
+    }
+  });
+  /** The session and a checkpoint ref it really took, so a request cannot name an arbitrary commit. */
+  const changeScope = (req: Request, res: Response): { cwd: string; ref: string; sessionId: string } | undefined => {
+    const session = store.getSession(pid(req));
+    if (!session) return void fail(res, 404, 'Session not found');
+    const ref = str(req.query.ref) ?? str(req.body?.ref);
+    if (!ref || !store.listActions(session.id).some((a) => a.checkpoint_ref === ref)) return void fail(res, 400, 'Unknown checkpoint');
+    return { cwd: session.cwd, ref, sessionId: session.id };
+  };
+
+  /** Re-derives the change list so a file name from the client is only acted on if it really differs. */
+  const findChange = async (scope: { cwd: string; ref: string }, file: unknown): Promise<Change | undefined> =>
+    typeof file === 'string' ? (await listChanges(scope.cwd, scope.ref)).find((c) => c.file === file) : undefined;
+
+  app.get('/api/agents/sessions/:id/changes', async (req: Request, res: Response) => {
+    const scope = changeScope(req, res);
+    if (!scope) return;
+    try {
+      res.json({ success: true, changes: await listChanges(scope.cwd, scope.ref) });
+    } catch (err) {
+      fail(res, 400, err instanceof Error ? err.message : String(err));
+    }
+  });
+
+  app.get('/api/agents/sessions/:id/changes/diff', async (req: Request, res: Response) => {
+    const scope = changeScope(req, res);
+    if (!scope) return;
+    try {
+      const change = await findChange(scope, req.query.file);
+      if (!change) return fail(res, 404, 'That file has no changes');
+      res.json({ success: true, ...(await fileDiff(scope.cwd, scope.ref, change)) });
+    } catch (err) {
+      fail(res, 400, err instanceof Error ? err.message : String(err));
+    }
+  });
+
+  app.post('/api/agents/sessions/:id/changes/revert', async (req: Request, res: Response) => {
+    const scope = changeScope(req, res);
+    if (!scope) return;
+    if (isRunning(scope.sessionId)) return fail(res, 409, 'Stop the running session first');
+    try {
+      const change = await findChange(scope, req.body?.file);
+      if (!change) return fail(res, 404, 'That file has no changes');
+      await revertFile(scope.cwd, scope.ref, change);
+      audit('revert-file', 'owner', `Reverted ${change.file} (${change.status}) to ${scope.ref.slice(0, 8)}`, { sessionId: scope.sessionId, project: path.basename(scope.cwd) });
       res.json({ success: true });
     } catch (err) {
       fail(res, 400, err instanceof Error ? err.message : String(err));

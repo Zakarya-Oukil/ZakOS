@@ -3,6 +3,7 @@ import { Copy, Check } from 'lucide-react';
 import { Panel } from '../../ui';
 import { agentsApi, type ActionInfo, type SessionInfo } from './api';
 import { ago, resumeCommand } from './format';
+import { Changes } from './Changes';
 
 interface RightRailProps {
   session: SessionInfo;
@@ -100,6 +101,8 @@ export function RightRail({ session, actions, running, onChanged }: RightRailPro
           </div>
         </div>
       </Panel>
+
+      <Changes session={session} actions={actions} running={running} />
 
       <Panel title="Checkpoints" padded={false}>
         {notice && (
