@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import cors from 'cors';
@@ -23,7 +23,7 @@ import { scraperService } from './scraperService';
 import { handleSshWebSocketConnection } from './sshBridge';
 import { jarvisService } from './jarvisService';
 import { mountAgentRoutes } from './agents/routes';
-import { handlePtyConnection, mountTerminalRoutes } from './terminal/pty';
+import { handlePtyConnection, isTrustedLocalRequest, mountTerminalRoutes } from './terminal/pty';
 import { mountOsSettingsRoutes } from './osSettings';
 import { mountProjectRoutes } from './projects/routes';
 import { mountWorkflowRoutes } from './workflows/routes';
@@ -118,6 +118,13 @@ startScheduler(broadcast);
 // ==========================================
 // REST API ROUTES
 // ==========================================
+
+// The vault holds private notes and these routes can write and delete files, so they answer only
+// this machine (loopback peer, localhost origin), like the terminal does.
+app.use('/api/vault', (req: Request, res: Response, next: NextFunction) => {
+  if (!isTrustedLocalRequest(req)) return res.status(403).json({ success: false, error: 'Local access only' });
+  next();
+});
 
 // 1. Vault Overview & Telemetry
 app.get('/api/vault/overview', (req: Request, res: Response) => {

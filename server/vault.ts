@@ -591,6 +591,22 @@ export class VaultService {
   }
 
   /**
+   * Resolves a note path to a file inside the vault, or throws. Notes are only ever Markdown files
+   * under the vault folder, so neither an absolute path elsewhere on disk nor `..` segments get through,
+   * and the app's own folders (.obsidian, .git, .trash) are off limits.
+   */
+  private resolveNotePath(relativePath: string): string {
+    if (typeof relativePath !== 'string' || !relativePath.trim() || relativePath.includes(' ')) throw new Error('Invalid note path');
+    const candidate = path.isAbsolute(relativePath) ? relativePath : path.join(this.vaultPath, relativePath.endsWith('.md') ? relativePath : `${relativePath}.md`);
+    const full = path.resolve(candidate);
+    const rel = path.relative(path.resolve(this.vaultPath), full);
+    if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) throw new Error('Notes must be inside the vault');
+    if (path.extname(full).toLowerCase() !== '.md') throw new Error('Only Markdown notes can be written');
+    if (rel.split(path.sep).some((seg) => ['.obsidian', '.git', '.trash'].includes(seg))) throw new Error('That folder is managed by Obsidian and cannot be edited here');
+    return full;
+  }
+
+  /**
    * Save / Create / Update a Note directly to disk
    */
   public async saveNote(
@@ -598,9 +614,7 @@ export class VaultService {
     content: string,
     frontmatterUpdates?: Partial<Record<string, any>>
   ): Promise<NoteItem> {
-    const fullPath = path.isAbsolute(relativePath)
-      ? relativePath
-      : path.join(this.vaultPath, relativePath.endsWith('.md') ? relativePath : `${relativePath}.md`);
+    const fullPath = this.resolveNotePath(relativePath);
 
     // Ensure parent directory exists
     const dir = path.dirname(fullPath);
@@ -645,9 +659,7 @@ export class VaultService {
    * Delete a note from disk
    */
   public async deleteNote(relativePath: string): Promise<boolean> {
-    const fullPath = path.isAbsolute(relativePath)
-      ? relativePath
-      : path.join(this.vaultPath, relativePath.endsWith('.md') ? relativePath : `${relativePath}.md`);
+    const fullPath = this.resolveNotePath(relativePath);
 
     if (fs.existsSync(fullPath)) {
       fs.unlinkSync(fullPath);
