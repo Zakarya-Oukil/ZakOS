@@ -77,6 +77,19 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit(ts DESC, id DESC);
   CREATE INDEX IF NOT EXISTS idx_audit_kind ON audit(kind, ts DESC);
+  CREATE TABLE IF NOT EXISTS usage (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts INTEGER NOT NULL,
+    agent TEXT NOT NULL,
+    session_id TEXT,
+    input INTEGER NOT NULL,
+    output INTEGER NOT NULL,
+    cache_read INTEGER NOT NULL,
+    cache_write INTEGER NOT NULL,
+    cost_usd REAL NOT NULL,
+    model TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_usage_ts ON usage(agent, ts DESC);
   CREATE INDEX IF NOT EXISTS idx_sessions_agent ON sessions(agent, updated DESC);
   CREATE INDEX IF NOT EXISTS idx_actions_session ON actions(session_id, ts DESC);
 `);
@@ -234,4 +247,48 @@ export function queryAudit(opts: { kind?: string; q?: string; before?: number; l
 
 export function auditKinds(): string[] {
   return (db.prepare(`SELECT DISTINCT kind FROM audit ORDER BY kind`).all() as unknown as Array<{ kind: string }>).map((r) => r.kind);
+}
+
+// ---- usage -----------------------------------------------------------------------------------
+
+export interface UsageRow {
+  agent: string;
+  session_id: string | null;
+  input: number;
+  output: number;
+  cache_read: number;
+  cache_write: number;
+  cost_usd: number;
+  model: string | null;
+}
+
+const usageInsert = db.prepare(
+  `INSERT INTO usage (ts, agent, session_id, input, output, cache_read, cache_write, cost_usd, model) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+);
+
+export function insertUsage(row: UsageRow): void {
+  usageInsert.run(Date.now(), row.agent, row.session_id, row.input, row.output, row.cache_read, row.cache_write, row.cost_usd, row.model);
+}
+
+export interface UsageTotals {
+  runs: number;
+  tokens: number;
+  costUsd: number;
+}
+
+/** Totals for one agent since `since` (ms). Runs are counted from prompts, so agents that report no usage still have a count. */
+export function usageSince(agent: string, since: number): UsageTotals {
+  const u = db
+    .prepare(`SELECT COALESCE(SUM(input + output + cache_read + cache_write), 0) AS tokens, COALESCE(SUM(cost_usd), 0) AS cost FROM usage WHERE agent = ? AND ts >= ?`)
+    .get(agent, since) as unknown as { tokens: number; cost: number };
+  const r = db
+    .prepare(`SELECT COUNT(*) AS n FROM audit WHERE kind = 'prompt' AND actor = ? AND ts >= ?`)
+    .get(agent, since) as unknown as { n: number };
+  return { runs: r.n, tokens: u.tokens, costUsd: u.cost };
+}
+
+/** When usage tracking first recorded anything for this agent; earlier runs have no token data. */
+export function usageTrackedSince(agent: string): number | null {
+  const r = db.prepare(`SELECT MIN(ts) AS t FROM usage WHERE agent = ?`).get(agent) as unknown as { t: number | null };
+  return r.t;
 }

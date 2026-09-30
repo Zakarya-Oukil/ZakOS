@@ -62,7 +62,26 @@ function* mapLine(raw: string, seenTools: Set<string>): Generator<AgentEvent> {
       }
       break;
     }
+    case 'rate_limit_event': {
+      const w = msg.rate_limit_info?.unifiedWindows ?? {};
+      const pick = (x: any) => (x && typeof x.utilization === 'number' && typeof x.resetsAt === 'number' ? { utilization: x.utilization, resetsAt: x.resetsAt } : undefined);
+      yield { type: 'rate_limit', windows: { fiveHour: pick(w.five_hour), sevenDay: pick(w.seven_day), status: msg.rate_limit_info?.status } };
+      break;
+    }
     case 'result': {
+      if (msg.usage && typeof msg.total_cost_usd === 'number') {
+        yield {
+          type: 'usage',
+          usage: {
+            input: Number(msg.usage.input_tokens) || 0,
+            output: Number(msg.usage.output_tokens) || 0,
+            cacheRead: Number(msg.usage.cache_read_input_tokens) || 0,
+            cacheWrite: Number(msg.usage.cache_creation_input_tokens) || 0,
+            costUsd: msg.total_cost_usd,
+            model: Object.keys(msg.modelUsage ?? {})[0],
+          },
+        };
+      }
       if (Array.isArray(msg.permission_denials) && msg.permission_denials.length > 0) {
         yield {
           type: 'permission_denied',

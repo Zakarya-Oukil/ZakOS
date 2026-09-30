@@ -1,5 +1,5 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import { Bot, Brain, FolderGit2, GitBranch, ScrollText, ShieldCheck, Settings, SquareTerminal, type LucideIcon } from 'lucide-react';
+import { Bot, Brain, FolderGit2, GitBranch, House, ScrollText, ShieldCheck, Settings, SquareTerminal, type LucideIcon } from 'lucide-react';
 
 export interface OsModule {
   id: string;
@@ -18,6 +18,14 @@ export interface ModuleProps {
 }
 
 export const MODULES: OsModule[] = [
+  {
+    id: 'home',
+    label: 'Home',
+    icon: House,
+    required: true,
+    component: lazy(() => import('./home/HomePage')),
+    description: 'What needs you, what is running, usage by provider, schedules and a quick start.',
+  },
   {
     id: 'agents',
     label: 'Agents',

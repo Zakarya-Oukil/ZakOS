@@ -8,6 +8,7 @@ import * as store from './store';
 import { trustForPath } from '../projects/store';
 import { isTrust } from './settings';
 import { addApprovals } from './approvals';
+import { recordUsage, recordWindows } from './usage';
 import { notify } from '../notifications';
 
 export type Broadcast = (data: unknown) => void;
@@ -73,6 +74,15 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
         allowedTools: grant.allowedTools,
         signal: ctl.signal,
       })) {
+        // Accounting events feed the usage tracker and never appear in the conversation.
+        if (event.type === 'usage') {
+          recordUsage(session.agent, sessionId, event.usage);
+          continue;
+        }
+        if (event.type === 'rate_limit') {
+          recordWindows(session.agent, event.windows);
+          continue;
+        }
         if (event.type === 'error') {
           failed = true;
           audit('error', session.agent, event.message, { sessionId, project });

@@ -30,6 +30,7 @@ import { mountWorkflowRoutes } from './workflows/routes';
 import { mountAuditRoutes } from './audit';
 import { mountApprovalRoutes } from './agents/approvalRoutes';
 import { mountContextRoutes } from './agents/contextRoutes';
+import { mountHomeRoutes } from './home';
 import { mountScheduleRoutes } from './automations/routes';
 import { startScheduler } from './automations/scheduler';
 
@@ -105,6 +106,7 @@ mountWorkflowRoutes(app, broadcast);
 mountAuditRoutes(app);
 mountApprovalRoutes(app, broadcast);
 mountContextRoutes(app);
+mountHomeRoutes(app);
 mountScheduleRoutes(app);
 startScheduler(broadcast);
 
