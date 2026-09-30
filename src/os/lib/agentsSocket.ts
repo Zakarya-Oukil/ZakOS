@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 export type AgentEvent =
-  | { type: 'user'; text: string }
+  | { type: 'user'; text: string; attachments?: Array<{ kind: string; label: string; truncated: boolean }> }
   | { type: 'text'; delta: string }
   | { type: 'tool_use'; id: string; name: string; input: unknown }
   | { type: 'tool_result'; id: string; output: string; isError: boolean }

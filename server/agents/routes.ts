@@ -8,10 +8,12 @@ import { isRunning, SessionBusyError, sendMessage, stop, type Broadcast } from '
 import { audit } from '../audit';
 import * as store from './store';
 import { dropForSession } from './approvals';
+import { buildPrompt, type AttachRef } from './context';
 import { fileDiff, listChanges, revertFile, type Change } from './changes';
 import { getSettings, updateSettings } from './settings';
 
 const REPO_ROOT = process.cwd();
+const ATTACH_KINDS = ['file', 'folder', 'note', 'graph', 'url', 'picked'];
 
 const pid = (req: Request): string => String(req.params.id);
 
@@ -92,7 +94,19 @@ export function mountAgentRoutes(app: Express, broadcast: Broadcast) {
     if (!prompt) return fail(res, 400, 'prompt is required');
     if (!store.getSession(pid(req))) return fail(res, 404, 'Session not found');
     try {
-      await sendMessage(pid(req), prompt, broadcast);
+      const raw = Array.isArray(req.body?.attachments) ? req.body.attachments : [];
+      const refs: AttachRef[] = raw
+        .filter((a: any) => a && typeof a.ref === 'string' && ATTACH_KINDS.includes(a.kind))
+        .map((a: any) => ({ kind: a.kind, ref: a.ref }));
+      if (refs.length === 0) {
+        await sendMessage(pid(req), prompt, broadcast);
+      } else {
+        const built = await buildPrompt(store.getSession(pid(req))!.cwd, prompt, refs);
+        await sendMessage(pid(req), prompt, broadcast, {}, {
+          agentPrompt: built.prompt,
+          attachments: built.items.map((i) => ({ kind: i.kind, label: i.label, truncated: i.truncated })),
+        });
+      }
       res.status(202).json({ success: true });
     } catch (err) {
       if (err instanceof SessionBusyError) return fail(res, 409, err.message);

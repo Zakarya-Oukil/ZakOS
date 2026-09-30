@@ -1,7 +1,8 @@
 import type { AgentEvent } from '../../lib/agentsSocket';
+import type { SentAttachment } from './attach';
 
 export type Item =
-  | { kind: 'user'; key: string; text: string }
+  | { kind: 'user'; key: string; text: string; attachments?: SentAttachment[] }
   | { kind: 'text'; key: string; text: string; open: boolean }
   | { kind: 'tool'; key: string; id: string; name: string; input: unknown; output?: string; isError?: boolean; open: boolean }
   | { kind: 'error'; key: string; message: string };
@@ -14,7 +15,7 @@ export function applyEvent(items: Item[], event: AgentEvent): Item[] {
   const last = items[items.length - 1];
   switch (event.type) {
     case 'user':
-      return [...items.map(closeAll), { kind: 'user', key: nextKey(), text: event.text }];
+      return [...items.map(closeAll), { kind: 'user', key: nextKey(), text: event.text, attachments: event.attachments as SentAttachment[] | undefined }];
     case 'text': {
       if (last?.kind === 'text' && last.open) {
         return [...items.slice(0, -1), { ...last, text: last.text + event.delta }];

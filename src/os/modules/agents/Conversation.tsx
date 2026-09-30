@@ -1,7 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { ArrowUp, ChevronRight, Square } from 'lucide-react';
+import { useLayoutEffect, useRef, useState } from 'react';
+import { ChevronRight, Paperclip } from 'lucide-react';
 import { cx } from '../../ui/cx';
-import { Kbd, Markdown, StatusDot } from '../../ui';
+import { Markdown, StatusDot } from '../../ui';
+import { Composer } from './Composer';
+import { formatSize, type AttachRef } from './attach';
 import { usePrefersReducedMotion } from '../../theme/motion';
 import { summarizeInput, type Item } from './items';
 
@@ -43,6 +45,17 @@ function ItemView({ item }: { item: Item }) {
       return (
         <div className="ml-auto max-w-[85%] whitespace-pre-wrap break-words rounded-[var(--os-radius-lg)] bg-os-surface-2 px-3.5 py-2.5 text-[15px] leading-relaxed text-os-text">
           {item.text}
+          {item.attachments && item.attachments.length > 0 && (
+            <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Attached context">
+              {item.attachments.map((a, i) => (
+                <li key={i} className="flex max-w-full items-center gap-1 rounded-full border border-os-line px-2 py-0.5 text-xs text-os-muted">
+                  <Paperclip size={11} aria-hidden className="shrink-0" />
+                  <span className="truncate">{a.label}</span>
+                  {a.truncated && <span className="text-os-amber">cut</span>}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       );
     case 'text':
@@ -64,18 +77,17 @@ interface ConversationProps {
   loading: boolean;
   error: string | null;
   sessionKey: string;
-  onSend: (prompt: string) => Promise<void>;
+  sessionId?: string;
+  onSend: (prompt: string, attachments: AttachRef[]) => Promise<void>;
   onStop: () => Promise<void>;
   agentLabel: string;
 }
 
-export function Conversation({ items, running, loading, error, sessionKey, onSend, onStop, agentLabel }: ConversationProps) {
+export function Conversation({ items, running, loading, error, sessionKey, sessionId, onSend, onStop, agentLabel }: ConversationProps) {
   const scroller = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
   const reduced = usePrefersReducedMotion();
-  const [draft, setDraft] = useState('');
   const [sendError, setSendError] = useState<string | null>(null);
-  const input = useRef<HTMLTextAreaElement>(null);
 
   // A new session always opens at the latest message.
   useLayoutEffect(() => {
@@ -87,40 +99,9 @@ export function Conversation({ items, running, loading, error, sessionKey, onSen
     if (el && stick.current) el.scrollTo({ top: el.scrollHeight, behavior: reduced ? 'auto' : 'auto' });
   }, [items, running, sessionKey, reduced]);
 
-  useEffect(() => {
-    setDraft('');
-    setSendError(null);
-    input.current?.focus();
-  }, [sessionKey]);
-
-  // Grow the box with its content, up to a cap.
   useLayoutEffect(() => {
-    const el = input.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
-  }, [draft]);
-
-  const submit = async () => {
-    const prompt = draft.trim();
-    if (!prompt || running) return;
     setSendError(null);
-    stick.current = true;
-    setDraft('');
-    try {
-      await onSend(prompt);
-    } catch (e) {
-      setDraft(prompt);
-      setSendError((e as Error).message);
-    }
-  };
-
-  const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-      e.preventDefault();
-      void submit();
-    }
-  };
+  }, [sessionKey]);
 
   const last = items[items.length - 1];
   const showWorking = running && !(last?.kind === 'text' && last.open);
@@ -166,43 +147,18 @@ export function Conversation({ items, running, loading, error, sessionKey, onSen
               {sendError}
             </p>
           )}
-          <div className="flex items-end gap-2 rounded-[var(--os-radius-lg)] border border-os-line bg-os-bg p-2 focus-within:border-os-cyan">
-            <textarea
-              ref={input}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={onKeyDown}
-              rows={1}
-              aria-label={`Message ${agentLabel}`}
-              placeholder={running ? `${agentLabel} is working` : `Message ${agentLabel}`}
-              disabled={running}
-              className="max-h-[200px] min-h-[28px] flex-1 resize-none bg-transparent px-1.5 py-1 text-[15px] leading-relaxed text-os-text placeholder:text-os-muted focus:outline-none disabled:opacity-60"
-            />
-            {running ? (
-              <button
-                type="button"
-                onClick={() => void onStop()}
-                aria-label="Stop the running agent"
-                className="flex h-8 items-center gap-1.5 rounded-[var(--os-radius)] border border-os-amber px-3 text-sm text-os-amber hover:bg-os-surface-2 focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
-              >
-                <Square size={12} strokeWidth={2} aria-hidden />
-                Stop
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => void submit()}
-                disabled={!draft.trim()}
-                aria-label="Send message"
-                className="grid h-8 w-8 place-items-center rounded-[var(--os-radius)] bg-os-cyan text-os-bg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-30"
-              >
-                <ArrowUp size={16} strokeWidth={2.25} aria-hidden />
-              </button>
-            )}
-          </div>
-          <p className="mt-1.5 text-xs text-os-muted">
-            <Kbd>Enter</Kbd> to send, <Kbd>Shift</Kbd> + <Kbd>Enter</Kbd> for a new line
-          </p>
+          <Composer
+            sessionId={sessionId}
+            sessionKey={sessionKey}
+            running={running}
+            agentLabel={agentLabel}
+            onSend={onSend}
+            onStop={onStop}
+            onSent={() => {
+              stick.current = true;
+            }}
+            onError={setSendError}
+          />
         </div>
       </div>
     </div>

@@ -109,9 +109,9 @@ export function useSession(sessionId: string | undefined) {
   }, [sessionId, load]);
 
   const send = useCallback(
-    async (prompt: string) => {
+    async (prompt: string, attachments: Array<{ kind: string; ref: string }> = []) => {
       if (!sessionId) return;
-      await agentsApi.send(sessionId, prompt);
+      await agentsApi.send(sessionId, prompt, attachments);
     },
     [sessionId],
   );

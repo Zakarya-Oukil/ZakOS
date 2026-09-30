@@ -70,8 +70,8 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
   );
 
   const send = useCallback(
-    async (prompt: string) => {
-      await current.send(prompt);
+    async (prompt: string, attachments: Array<{ kind: string; ref: string }> = []) => {
+      await current.send(prompt, attachments);
       // Name a fresh session after its first prompt so the list stays readable.
       if (current.session?.title === 'New session' && sessionId) {
         await agentsApi.rename(sessionId, prompt.replace(/\s+/g, ' ').slice(0, 60)).catch(() => {});
@@ -149,6 +149,7 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
                   loading={current.loading}
                   error={current.error}
                   sessionKey={sessionId}
+                  sessionId={sessionId}
                   onSend={send}
                   onStop={current.stop}
                   agentLabel={agentLabel}

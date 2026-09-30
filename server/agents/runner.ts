@@ -27,7 +27,7 @@ export function stop(sessionId: string): boolean {
   return true;
 }
 
-function emit(broadcast: Broadcast, sessionId: string, event: AgentEvent | { type: 'user'; text: string }) {
+function emit(broadcast: Broadcast, sessionId: string, event: AgentEvent | { type: 'user'; text: string; attachments?: unknown[] }) {
   broadcast({ channel: 'agents', sessionId, event });
 }
 
@@ -35,7 +35,7 @@ function emit(broadcast: Broadcast, sessionId: string, event: AgentEvent | { typ
  * Start one agent turn. Resolves once the run has been accepted; the actual
  * streaming continues in the background and is delivered over the WebSocket.
  */
-export async function sendMessage(sessionId: string, prompt: string, broadcast: Broadcast, grant: { allowedTools?: string[] } = {}): Promise<void> {
+export async function sendMessage(sessionId: string, prompt: string, broadcast: Broadcast, grant: { allowedTools?: string[] } = {}, extra: { agentPrompt?: string; attachments?: Array<{ kind: string; label: string; truncated: boolean }> } = {}): Promise<void> {
   const session = store.getSession(sessionId);
   if (!session) throw new Error('Session not found');
   if (active.has(sessionId)) throw new SessionBusyError('Session already has a run in progress');
@@ -54,17 +54,18 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
   const checkpoint = await createCheckpoint(session.cwd);
   store.logAction(sessionId, 'prompt', prompt.slice(0, 500), checkpoint);
   const project = path.basename(session.cwd);
-  audit('prompt', session.agent, prompt, { sessionId, project });
-  store.appendMessage(sessionId, 'user', { type: 'user', text: prompt });
+  audit('prompt', session.agent, extra.attachments?.length ? `${prompt} [+${extra.attachments.length} attached: ${extra.attachments.map((a) => a.label).join(', ')}]` : prompt, { sessionId, project });
+  const userEvent = { type: 'user' as const, text: prompt, ...(extra.attachments?.length ? { attachments: extra.attachments } : {}) };
+  store.appendMessage(sessionId, 'user', userEvent);
   store.setSessionStatus(sessionId, 'running');
-  emit(broadcast, sessionId, { type: 'user', text: prompt });
+  emit(broadcast, sessionId, userEvent);
   emit(broadcast, sessionId, { type: 'status', state: 'running' });
 
   void (async () => {
     let failed = false;
     try {
       for await (const event of adapter.run({
-        prompt,
+        prompt: extra.agentPrompt ?? prompt,
         cwd: session.cwd,
         trust: isTrust(session.trust) ? session.trust : trustForPath(session.cwd),
         cliSessionId,

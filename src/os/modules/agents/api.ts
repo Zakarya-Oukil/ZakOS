@@ -66,8 +66,8 @@ export const agentsApi = {
   rename: (id: string, title: string) =>
     call<unknown>(`/api/agents/sessions/${id}`, { method: 'PATCH', body: JSON.stringify({ title }) }),
   remove: (id: string) => call<unknown>(`/api/agents/sessions/${id}`, { method: 'DELETE' }),
-  send: (id: string, prompt: string) =>
-    call<unknown>(`/api/agents/sessions/${id}/message`, { method: 'POST', body: JSON.stringify({ prompt }) }),
+  send: (id: string, prompt: string, attachments: Array<{ kind: string; ref: string }> = []) =>
+    call<unknown>(`/api/agents/sessions/${id}/message`, { method: 'POST', body: JSON.stringify({ prompt, attachments }) }),
   stop: (id: string) => call<unknown>(`/api/agents/sessions/${id}/stop`, { method: 'POST' }),
   actions: (id: string) =>
     call<{ actions: ActionInfo[] }>(`/api/agents/sessions/${id}/checkpoints`).then((r) => r.actions),

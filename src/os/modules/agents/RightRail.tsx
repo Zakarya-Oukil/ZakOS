@@ -57,7 +57,7 @@ export function RightRail({ session, actions, running, onChanged }: RightRailPro
   const prompts = actions.filter((a) => a.kind === 'prompt');
 
   return (
-    <div className="grid content-start gap-4 p-3">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-4 p-3">
       <Panel title="Session">
         <div className="grid gap-3 text-sm">
           <div className="grid gap-1">

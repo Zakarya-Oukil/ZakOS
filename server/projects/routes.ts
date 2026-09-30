@@ -110,6 +110,24 @@ export interface GraphLink {
 
 const graphCache = new Map<string, { mtime: number; data: { nodes: GraphNode[]; links: GraphLink[]; builtAtCommit?: string } }>();
 
+/** The graph of the registered project that contains `cwd`, if it has one. */
+export function graphForCwd(cwd: string) {
+  const target = path.resolve(cwd).toLowerCase();
+  const project = store
+    .listProjects()
+    .filter((p) => {
+      const root = path.resolve(p.path).toLowerCase();
+      return target === root || target.startsWith(root + path.sep);
+    })
+    .sort((a, b) => b.path.length - a.path.length)[0];
+  if (!project) return undefined;
+  try {
+    return { project, graph: readGraph(project) };
+  } catch {
+    return undefined;
+  }
+}
+
 function graphFile(project: store.Project): string {
   return path.join(project.path, 'graphify-out', 'graph.json');
 }
