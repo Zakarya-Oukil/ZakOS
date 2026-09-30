@@ -7,6 +7,7 @@ import { isTrustedLocalRequest } from '../terminal/pty';
 import * as store from './store';
 import { isTrust } from '../agents/settings';
 import { audit } from '../audit';
+import { snapshotBeforeRebuild } from '../brain/graphdiff';
 
 // ---- guard -------------------------------------------------------------------------------------
 
@@ -256,6 +257,12 @@ export function mountProjectRoutes(app: Express) {
 
     const job = newJob('graphify', project.id);
     // AST extraction only: no model calls, no cost. `update` also works for a first build.
+    // Keep the graph as it is now, so the rebuild can be compared with it afterwards.
+    try {
+      snapshotBeforeRebuild(project.id, project.path);
+    } catch {
+      /* a missing snapshot must never block a rebuild */
+    }
     runJob(job, 'python', ['-m', 'graphify', 'update', '.'], project.path, () => {
       graphCache.delete(project.id);
       if (!fs.existsSync(graphFile(project))) throw new Error('graphify finished but produced no graph');

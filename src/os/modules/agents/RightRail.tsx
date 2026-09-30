@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, BookmarkPlus } from 'lucide-react';
 import { Panel } from '../../ui';
 import { agentsApi, type ActionInfo, type SessionInfo } from './api';
 import { ago, resumeCommand } from './format';
@@ -16,10 +16,14 @@ export function RightRail({ session, actions, running, onChanged }: RightRailPro
   const [title, setTitle] = useState(session.title);
   const [copied, setCopied] = useState(false);
   const [confirmRef, setConfirmRef] = useState<string | null>(null);
+  const [brainNotice, setBrainNotice] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
   const [notice, setNotice] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
 
   useEffect(() => setTitle(session.title), [session.id, session.title]);
-  useEffect(() => setNotice(null), [session.id]);
+  useEffect(() => {
+    setNotice(null);
+    setBrainNotice(null);
+  }, [session.id]);
 
   const saveTitle = async () => {
     const next = title.trim();
@@ -29,6 +33,18 @@ export function RightRail({ session, actions, running, onChanged }: RightRailPro
       onChanged();
     } catch (e) {
       setNotice({ tone: 'error', text: (e as Error).message });
+    }
+  };
+
+  const saveToBrain = async () => {
+    setBrainNotice(null);
+    try {
+      const res = await fetch('/api/brain/capture', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: session.id }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) throw new Error(data.error || 'Could not save to the Brain');
+      setBrainNotice({ tone: 'ok', text: `Saved to the vault: ${data.note}` });
+    } catch (e) {
+      setBrainNotice({ tone: 'error', text: (e as Error).message });
     }
   };
 
@@ -100,6 +116,21 @@ export function RightRail({ session, actions, running, onChanged }: RightRailPro
             )}
           </div>
         </div>
+      </Panel>
+
+      <Panel title="Memory">
+        <button
+          type="button"
+          disabled={running || !actions.some((a) => a.kind === 'prompt')}
+          onClick={() => void saveToBrain()}
+          className="inline-flex h-8 items-center gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 px-3 text-sm text-os-text hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <BookmarkPlus size={14} aria-hidden /> Save to Brain
+        </button>
+        <p className="mt-2 text-xs leading-relaxed text-os-muted">Adds the latest question and result to today's capture note in your vault. Keys and passwords are blanked out.</p>
+        {brainNotice && (
+          <p role={brainNotice.tone === 'error' ? 'alert' : 'status'} className={brainNotice.tone === 'error' ? 'mt-2 text-xs text-os-danger' : 'mt-2 break-words text-xs text-os-cyan'}>{brainNotice.text}</p>
+        )}
       </Panel>
 
       <Changes session={session} actions={actions} running={running} />

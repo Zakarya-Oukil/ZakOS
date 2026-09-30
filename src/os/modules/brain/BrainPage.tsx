@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Search, ScanEye } from 'lucide-react';
+import { ArrowLeft, Search, ScanEye, Wrench } from 'lucide-react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { projectsApi, type ProjectGraph, type ProjectInfo } from '../../lib/projectsApi';
@@ -8,6 +8,7 @@ import { IconButton } from '../../ui';
 import { cx } from '../../ui/cx';
 import { Galaxy, type GalaxyLink, type GalaxyNode } from './galaxy';
 import { NoteReader, PanelShell } from './NotePanel';
+import { BrainTools } from './BrainTools';
 
 interface VaultNode {
   id: string;
@@ -129,6 +130,8 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [webglError, setWebglError] = useState(false);
+  const [tools, setTools] = useState(false);
+  const [openNote, setOpenNote] = useState<string | null>(null);
 
   // ---- data ----
   useEffect(() => {
@@ -176,7 +179,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
     const el = host.current;
     if (!el) return;
     try {
-      galaxy.current = new Galaxy(el, { onSelect: setSelectedId, onHover: setHoverId }, reduced);
+      galaxy.current = new Galaxy(el, { onSelect: (id) => { setOpenNote(null); setSelectedId(id); }, onHover: setHoverId }, reduced);
     } catch {
       setWebglError(true);
       return;
@@ -205,7 +208,16 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
     if (hits.length) setSelectedId(hits[0]);
   };
 
-  const closePanel = useCallback(() => setSelectedId(null), []);
+  const closePanel = useCallback(() => {
+    setSelectedId(null);
+    setOpenNote(null);
+  }, []);
+
+  /** A note picked in the tools opens in the reader, and is pulled into view in the galaxy when it is on screen. */
+  const showNote = (relativePath: string, id: string) => {
+    setOpenNote(relativePath);
+    if (!projectId && nodeById.has(id)) setSelectedId(id);
+  };
 
   // ---- derived UI ----
   const currentProject = projectId ? (projectGraph?.project ?? projects.find((p) => p.id === projectId)) : undefined;
@@ -260,6 +272,9 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
               className="h-7 w-48 rounded-[var(--os-radius)] border border-os-line bg-os-bg pl-7 pr-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
             />
           </div>
+          <IconButton aria-label="Brain tools: search, ask, changes, memory" active={tools} onClick={() => setTools((v) => !v)}>
+            <Wrench size={16} strokeWidth={1.75} />
+          </IconButton>
           <IconButton aria-label="Reset the view" onClick={() => galaxy.current?.resetView()}>
             <ScanEye size={16} strokeWidth={1.75} />
           </IconButton>
@@ -327,11 +342,16 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
           </p>
         )}
 
+        {tools && <BrainTools projectId={projectId} onOpenNote={showNote} onClose={() => setTools(false)} />}
+
+        {/* A note opened from search, ask or the graph. */}
+        {openNote && <NoteReader path={openNote} onClose={closePanel} />}
+
         {/* Details for the selected star. */}
-        {selected && !projectId && selected.kind === 'note' && noteById.get(selected.id) && (
+        {!openNote && selected && !projectId && selected.kind === 'note' && noteById.get(selected.id) && (
           <NoteReader path={noteById.get(selected.id)!.path} onClose={closePanel} />
         )}
-        {selected && !projectId && selected.kind === 'project' && (
+        {!openNote && selected && !projectId && selected.kind === 'project' && (
           <ProjectCard
             node={selected}
             project={projects.find((p) => `project:${p.id}` === selected.id)}
@@ -339,7 +359,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
             onClose={closePanel}
           />
         )}
-        {selected && projectId && (
+        {!openNote && selected && projectId && (
           <PanelShell title={selected.label} subtitle={`${selected.degree ?? 0} connections`} onClose={closePanel}>
             <SymbolDetails
               id={selected.id}

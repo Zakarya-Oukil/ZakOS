@@ -9,6 +9,7 @@ import { trustForPath } from '../projects/store';
 import { isTrust } from './settings';
 import { addApprovals } from './approvals';
 import { recordUsage, recordWindows } from './usage';
+import { capture, getBrainSettings } from '../brain/capture';
 import { notify } from '../notifications';
 
 export type Broadcast = (data: unknown) => void;
@@ -64,6 +65,7 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
 
   void (async () => {
     let failed = false;
+    let answer = '';
     try {
       for await (const event of adapter.run({
         prompt: extra.agentPrompt ?? prompt,
@@ -99,6 +101,7 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
         if (event.type === 'done' && event.cliSessionId) store.setCliSessionId(sessionId, event.cliSessionId);
         // Text deltas are high-volume; persist them merged when the run ends.
         if (event.type === 'text') {
+          answer += event.delta;
           bufferText(sessionId, event.delta);
         } else {
           flushText(sessionId); // keep persisted order: buffered text first, then this event
@@ -116,6 +119,10 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
     } finally {
       flushText(sessionId);
       active.delete(sessionId);
+      // Auto-capture: interactive sessions only (workflow workers have a fixed trust and would flood the vault).
+      if (!failed && !ctl.signal.aborted && session.trust === null && answer.trim() && getBrainSettings().autoCapture) {
+        capture({ agent: session.agent, project, title: session.title, prompt, answer, ts: Date.now() }).catch((err) => console.error('[brain] capture failed:', err instanceof Error ? err.message : err));
+      }
       const status = failed && !ctl.signal.aborted ? 'error' : 'idle';
       store.setSessionStatus(sessionId, status);
       emit(broadcast, sessionId, { type: 'status', state: status });
