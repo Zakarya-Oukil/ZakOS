@@ -221,6 +221,7 @@ function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (
   const { agents } = useAgents();
   const [roles, setRoles] = useState<Record<Role, string>>({ orchestrator: 'claude', worker: 'claude', reviewer: 'claude' });
   const [approval, setApproval] = useState(true);
+  const [worktrees, setWorktrees] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const project = projects.find((p) => p.id === projectId);
@@ -231,7 +232,7 @@ function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (
     setBusy(true);
     setError(null);
     try {
-      onStarted(await workflowsApi.start(goal.trim(), project?.path ?? '', project?.id, { approval, agents: roles }));
+      onStarted(await workflowsApi.start(goal.trim(), project?.path ?? '', project?.id, { approval, agents: roles, worktrees }));
       setGoal('');
     } catch (err) {
       setError((err as Error).message);
@@ -282,6 +283,10 @@ function NewRun({ projects, onStarted }: { projects: ProjectInfo[]; onStarted: (
       <label className="flex items-center gap-2 text-sm text-os-text">
         <input type="checkbox" checked={approval} onChange={(e) => setApproval(e.target.checked)} />
         Ask me to approve the plan first
+      </label>
+      <label className="flex items-center gap-2 text-sm text-os-text">
+        <input type="checkbox" checked={worktrees} onChange={(e) => setWorktrees(e.target.checked)} />
+        Isolate each sub-agent in a git worktree
       </label>
       {error && <p className="text-xs text-os-danger">{error}</p>}
       <button type="submit" className={btn} disabled={busy || !goal.trim()}>

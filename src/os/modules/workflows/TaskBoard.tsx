@@ -24,7 +24,7 @@ function StateIcon({ state }: { state: TaskState }) {
 }
 
 function TaskCard({ task, selected, onSelect }: { task: WorkflowTask; selected: boolean; onSelect: () => void }) {
-  const note = task.state === 'error' ? task.error : task.state === 'done' ? firstLine(task.result) : task.state === 'running' ? 'Working' : 'Waiting for a free slot';
+  const note = task.merge === 'conflict' || task.merge === 'failed' ? task.mergeNote : task.state === 'error' ? task.error : task.state === 'done' ? firstLine(task.result) : task.state === 'running' ? 'Working' : 'Waiting for a free slot';
   return (
     <button
       type="button"
@@ -43,7 +43,7 @@ function TaskCard({ task, selected, onSelect }: { task: WorkflowTask; selected: 
         <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">
           <span className="block text-sm font-medium leading-snug text-os-text">{task.title}</span>
           {note && (
-            <span className={cx('mt-0.5 line-clamp-2 block text-xs leading-snug', task.state === 'error' ? 'text-os-danger' : 'text-os-muted')}>
+            <span className={cx('mt-0.5 line-clamp-2 block text-xs leading-snug', task.state === 'error' || task.merge === 'conflict' || task.merge === 'failed' ? 'text-os-danger' : 'text-os-muted')}>
               {note}
             </span>
           )}

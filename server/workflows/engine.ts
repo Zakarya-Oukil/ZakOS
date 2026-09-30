@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sendMessage, stop as stopSession, type Broadcast } from '../agents/runner';
 import * as sessions from '../agents/store';
+import { commitWorktree, createWorktree, isGitRepo, mergeBranch, removeWorktree, type Worktree } from './worktree';
 
 export type RunStatus = 'planning' | 'awaiting_approval' | 'running' | 'reviewing' | 'reporting' | 'done' | 'error' | 'stopped';
 export type TaskState = 'queued' | 'running' | 'done' | 'error';
@@ -15,6 +16,11 @@ export interface Task {
   sessionId?: string;
   result?: string;
   error?: string;
+  /** Set when the task ran in its own git worktree. */
+  branch?: string;
+  filesChanged?: number;
+  merge?: 'merged' | 'nochanges' | 'conflict' | 'failed';
+  mergeNote?: string;
 }
 
 export type Role = 'orchestrator' | 'worker' | 'reviewer';
@@ -24,10 +30,13 @@ export interface RunOptions {
   approval: boolean;
   /** Which agent adapter plays each role. */
   agents: Record<Role, string>;
+  /** Give every worker its own git worktree and branch, merged back afterwards (git repos only). */
+  worktrees: boolean;
 }
 
 export const DEFAULT_OPTIONS: RunOptions = {
   approval: true,
+  worktrees: true,
   agents: { orchestrator: 'claude', worker: 'claude', reviewer: 'claude' },
 };
 
@@ -64,6 +73,8 @@ const FILE = path.resolve(process.cwd(), 'data', 'workflow-runs.json');
 const runs = new Map<string, Run>();
 const stopped = new Set<string>();
 /** Open approval gates: resolved with the approved tasks, or null to cancel. */
+/** Live worktrees by task id, needed for merge and cleanup. */
+const worktrees = new Map<string, Worktree>();
 const gates = new Map<string, (tasks: Task[] | null) => void>();
 
 // ---- persistence ------------------------------------------------------------------------------
@@ -212,7 +223,7 @@ const reviewPrompt = (run: Run) => `You are the reviewer. Do not implement anyth
 Owner goal: ${run.goal}
 
 Sub-agents reported the following:
-${run.tasks.map((t, i) => `## Task ${i + 1}: ${t.title}${t.state === 'error' ? ' (FAILED)' : ''}\n${clip([t.result, t.error && `Error: ${t.error}`].filter(Boolean).join('\n') || '(no output)')}`).join('\n\n')}
+${run.tasks.map((t, i) => `## Task ${i + 1}: ${t.title}${t.state === 'error' ? ' (FAILED)' : ''}${t.merge === 'conflict' || t.merge === 'failed' ? ` (NOT MERGED: ${t.mergeNote ?? t.merge})` : ''}\n${clip([t.result, t.error && `Error: ${t.error}`].filter(Boolean).join('\n') || '(no output)')}`).join('\n\n')}
 
 Check the actual state of the repository (for example with git status and git diff, and by running the
 project's tests or type check if they exist). Do not trust the reports alone.
@@ -263,6 +274,47 @@ export function stopRun(id: string): boolean {
   return true;
 }
 
+/** Merges finished task branches sequentially, then removes the worktrees. */
+async function mergeAll(run: Run, update: (p?: Partial<Run>) => void) {
+  for (const task of run.tasks) {
+    const wt = worktrees.get(task.id);
+    if (!wt) continue;
+    let dropBranch = false;
+    if (task.state !== 'done') {
+      task.merge = 'failed';
+      task.mergeNote = `Task did not finish, work kept on branch ${wt.branch}`;
+    } else if (!task.filesChanged) {
+      task.merge = 'nochanges';
+      dropBranch = true;
+    } else {
+      const outcome = await mergeBranch(wt.repoRoot, wt.branch, `zakos: merge ${task.title}`);
+      task.merge = outcome.state;
+      if (outcome.state === 'merged') dropBranch = true;
+      else task.mergeNote = outcome.note;
+    }
+    await removeWorktree(wt, dropBranch);
+    worktrees.delete(task.id);
+    update();
+  }
+}
+
+/** On stop or failure: keep whatever each worker produced on its branch, then free the checkouts. */
+async function abandonWorktrees(run: Run) {
+  for (const task of run.tasks) {
+    const wt = worktrees.get(task.id);
+    if (!wt) continue;
+    try {
+      task.filesChanged = await commitWorktree(wt, `zakos: ${task.title} (unfinished)`);
+    } catch {
+      /* best effort */
+    }
+    task.merge = 'failed';
+    task.mergeNote = `Run ended early, work kept on branch ${wt.branch}`;
+    await removeWorktree(wt, !task.filesChanged);
+    worktrees.delete(task.id);
+  }
+}
+
 async function execute(run: Run, broadcast: Broadcast) {
   const update = (patch: Partial<Run> = {}) => {
     Object.assign(run, patch, { updated: Date.now() });
@@ -298,14 +350,24 @@ async function execute(run: Run, broadcast: Broadcast) {
     update({ summary, tasks, status: 'running' });
 
     // 2. Sub-agents, a few at a time
+    const useWorktrees = run.options.worktrees && (await isGitRepo(run.cwd));
     const queue = [...tasks];
     const worker = async () => {
       for (let task = queue.shift(); task && !halted(); task = queue.shift()) {
-        task.sessionId = newSession(run.options.agents.worker, `Task: ${task.title}`, run.cwd);
         task.state = 'running';
-        update();
         try {
+          let workDir = run.cwd;
+          if (useWorktrees) {
+            const created = await createWorktree(run.cwd, run.id, task.id);
+            worktrees.set(task.id, created);
+            task.branch = created.branch;
+            workDir = created.workDir;
+          }
+          task.sessionId = newSession(run.options.agents.worker, `Task: ${task.title}`, workDir);
+          update();
           const out = await runTurn(task.sessionId, task.prompt, broadcast);
+          const wt = worktrees.get(task.id);
+          if (wt) task.filesChanged = await commitWorktree(wt, `zakos: ${task.title}`);
           task.result = out.text || undefined;
           if (out.error) {
             task.state = 'error';
@@ -320,6 +382,9 @@ async function execute(run: Run, broadcast: Broadcast) {
     };
     await Promise.all(Array.from({ length: Math.min(CONCURRENCY, tasks.length) }, worker));
     if (halted()) throw new Error('Stopped');
+
+    // 2b. Bring each worktree's work back into the main tree, one task at a time
+    if (useWorktrees) await mergeAll(run, update);
 
     // 3. Review
     update({ status: 'reviewing' });
@@ -347,6 +412,7 @@ async function execute(run: Run, broadcast: Broadcast) {
         t.error = wasStopped ? 'Stopped' : 'Run ended before this task finished';
       }
     }
+    await abandonWorktrees(run);
     update({ status: wasStopped ? 'stopped' : 'error', error: wasStopped ? undefined : err instanceof Error ? err.message : String(err) });
   } finally {
     stopped.delete(run.id);

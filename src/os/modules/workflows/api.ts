@@ -10,11 +10,15 @@ export interface WorkflowTask {
   sessionId?: string;
   result?: string;
   error?: string;
+  branch?: string;
+  filesChanged?: number;
+  merge?: 'merged' | 'nochanges' | 'conflict' | 'failed';
+  mergeNote?: string;
 }
 
 export interface WorkflowRun {
   id: string;
-  options: { approval: boolean; agents: Record<Role, string> };
+  options: { approval: boolean; agents: Record<Role, string>; worktrees: boolean };
   goal: string;
   cwd: string;
   projectId?: string;
@@ -44,7 +48,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 export const workflowsApi = {
   list: () => call<{ runs: WorkflowRun[] }>('/api/workflows').then((r) => r.runs),
   get: (id: string) => call<{ run: WorkflowRun }>(`/api/workflows/${id}`).then((r) => r.run),
-  start: (goal: string, cwd: string, projectId: string | undefined, opts: { approval: boolean; agents: Record<Role, string> }) =>
+  start: (goal: string, cwd: string, projectId: string | undefined, opts: { approval: boolean; agents: Record<Role, string>; worktrees: boolean }) =>
     call<{ run: WorkflowRun }>('/api/workflows', { method: 'POST', body: JSON.stringify({ goal, cwd, projectId, ...opts }) }).then((r) => r.run),
   approve: (id: string, tasks?: Array<{ title: string; prompt: string }>) =>
     call<unknown>(`/api/workflows/${id}/approve`, { method: 'POST', body: JSON.stringify({ tasks }) }),

@@ -56,7 +56,7 @@ export function mountWorkflowRoutes(app: Express, broadcast: Broadcast) {
       agents[role] = id;
     }
     try {
-      const run = startRun(goal.slice(0, 4000), cwd, str(req.body?.projectId)?.slice(0, 64), { approval: req.body?.approval !== false, agents: agents as never }, broadcast);
+      const run = startRun(goal.slice(0, 4000), cwd, str(req.body?.projectId)?.slice(0, 64), { approval: req.body?.approval !== false, agents: agents as never, worktrees: req.body?.worktrees !== false }, broadcast);
       res.status(201).json({ success: true, run });
     } catch (err) {
       fail(res, 500, err instanceof Error ? err.message : String(err));
