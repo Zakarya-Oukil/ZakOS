@@ -32,6 +32,7 @@ import { mountApprovalRoutes } from './agents/approvalRoutes';
 import { mountContextRoutes } from './agents/contextRoutes';
 import { mountHomeRoutes } from './home';
 import { mountGitRoutes } from './git/routes';
+import { mountSkillRoutes } from './skills/routes';
 import { mountScheduleRoutes } from './automations/routes';
 import { startScheduler } from './automations/scheduler';
 
@@ -109,6 +110,7 @@ mountApprovalRoutes(app, broadcast);
 mountContextRoutes(app);
 mountHomeRoutes(app);
 mountGitRoutes(app);
+mountSkillRoutes(app);
 mountTerminalRoutes(app);
 mountScheduleRoutes(app);
 startScheduler(broadcast);
