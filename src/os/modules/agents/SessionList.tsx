@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Columns2, Plus, Trash2 } from 'lucide-react';
 import { cx } from '../../ui/cx';
 import { StatusDot, type Status } from '../../ui';
 import type { SessionInfo } from './api';
@@ -16,6 +16,12 @@ interface SessionListProps {
   projects: ProjectInfo[];
   onCreate: (cwd: string, title?: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  /** Show a session in a second pane next to the open one. Omitted when nothing is open to sit beside. */
+  onOpenBeside?: (id: string) => void;
+  /** Session already in the second pane, marked in the list. */
+  besideId?: string;
+  /** Appended to every row link so picking a session keeps the second pane open. */
+  linkSuffix?: string;
 }
 
 function statusOf(s: SessionInfo): Status {
@@ -23,7 +29,7 @@ function statusOf(s: SessionInfo): Status {
   return s.status === 'error' ? 'error' : 'idle';
 }
 
-export function SessionList({ agent, sessions, loading, error, activeId, disabledReason, projects, onCreate, onDelete }: SessionListProps) {
+export function SessionList({ agent, sessions, loading, error, activeId, disabledReason, projects, onCreate, onDelete, onOpenBeside, besideId, linkSuffix = '' }: SessionListProps) {
   const [creating, setCreating] = useState(false);
   const [cwd, setCwd] = useState('');
   const [choice, setChoice] = useState<string>(() => {
@@ -69,7 +75,7 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
   const row = (s: SessionInfo) => (
     <li key={s.id} className="group relative">
       <a
-        href={`#/agents/${agent}/${s.id}`}
+        href={`#/agents/${agent}/${s.id}${linkSuffix}`}
         aria-current={s.id === activeId ? 'page' : undefined}
         className={cx(
           'block rounded-[var(--os-radius)] px-2.5 py-2 pr-9 transition-colors',
@@ -80,6 +86,7 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
         <span className="flex min-w-0 items-center gap-2">
           <StatusDot className="shrink-0" status={statusOf(s)} label={statusOf(s) === 'live' ? 'Running' : statusOf(s) === 'error' ? 'Last run failed' : 'Idle'} />
           <span className="min-w-0 flex-1 truncate text-sm text-os-text">{s.title}</span>
+          {s.id === besideId && <span className="shrink-0 rounded-full border border-os-line px-1.5 text-[10px] text-os-muted">beside</span>}
         </span>
         <span className="mt-0.5 block truncate pl-4 text-xs text-os-muted">
           {ago(s.updated)} in{' '}
@@ -117,6 +124,18 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
           </button>
         </span>
       ) : (
+        <>
+          {onOpenBeside && s.id !== activeId && s.id !== besideId && (
+            <button
+              type="button"
+              aria-label={`Open ${s.title} beside the current session`}
+              title="Open beside"
+              onClick={() => onOpenBeside(s.id)}
+              className="absolute right-7 top-2 hidden rounded-[var(--os-radius-sm)] p-1 text-os-muted opacity-0 hover:text-os-cyan focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] group-hover:opacity-100 lg:block"
+            >
+              <Columns2 size={14} strokeWidth={1.75} />
+            </button>
+          )}
         <button
           type="button"
           aria-label={`Delete session ${s.title}`}
@@ -125,6 +144,7 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
         >
           <Trash2 size={14} strokeWidth={1.75} />
         </button>
+        </>
       )}
     </li>
   );

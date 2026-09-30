@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, PanelRight } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { ArrowLeft, ArrowLeftRight, PanelRight, X } from 'lucide-react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { IconButton, StatusDot, Tabs, type TabItem } from '../../ui';
@@ -17,13 +17,21 @@ const FALLBACK_AGENTS = [
   { id: 'antigravity', label: 'Antigravity' },
 ];
 
+type Attachments = Array<{ kind: string; ref: string }>;
+
+/**
+ * Routes: `#/agents/<agent>/<session>` for one pane, and
+ * `#/agents/<agent>/<session>/beside/<agent>/<session>` for two side by side.
+ */
 export default function AgentsPage({ route, navigate }: ModuleProps) {
   const agentId = route[0] ?? 'claude';
   const sessionId = route[1];
+  const split = route[2] === 'beside' && route[3] && route[4] && route[4] !== sessionId ? { agent: route[3], id: route[4] } : undefined;
 
   const { agents, error: agentsError } = useAgents();
   const list = useSessions(agentId);
   const current = useSession(sessionId);
+  const beside = useSession(split?.id);
   const [railOpen, setRailOpen] = useState(true);
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
 
@@ -31,8 +39,12 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
     projectsApi.list().then(setProjects).catch(() => setProjects([]));
   }, []);
 
+  const labelOf = useCallback(
+    (id: string) => agents.find((a) => a.id === id)?.label ?? FALLBACK_AGENTS.find((a) => a.id === id)?.label ?? id,
+    [agents],
+  );
   const agent = agents.find((a) => a.id === agentId);
-  const agentLabel = agent?.label ?? FALLBACK_AGENTS.find((a) => a.id === agentId)?.label ?? agentId;
+  const agentLabel = labelOf(agentId);
   const unavailable = agent && !agent.available ? agent.reason ?? 'Not available' : undefined;
 
   const tabs: TabItem[] = useMemo(
@@ -51,50 +63,53 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
 
   const runningCount = list.sessions.filter((s) => s.running || s.status === 'running').length;
 
+  /** Navigates to a primary session, keeping the second pane unless told otherwise. */
+  const go = useCallback(
+    (agent: string, id?: string, next?: typeof split | null) => {
+      // `null` closes the second pane; leaving it out keeps whatever is open.
+      const second = next === undefined ? split : next;
+      if (!id) return navigate('agents', agent);
+      if (second) navigate('agents', agent, id, 'beside', second.agent, second.id);
+      else navigate('agents', agent, id);
+    },
+    [navigate, split],
+  );
+
   const create = useCallback(
     async (cwd: string, title?: string) => {
       const s = await agentsApi.create(agentId, cwd || undefined, title);
       list.refresh();
-      navigate('agents', agentId, s.id);
+      go(agentId, s.id);
     },
-    [agentId, list, navigate],
+    [agentId, list, go],
   );
 
   const remove = useCallback(
     async (id: string) => {
       await agentsApi.remove(id);
       list.refresh();
-      if (id === sessionId) navigate('agents', agentId);
+      if (id === sessionId) go(agentId);
+      else if (id === split?.id) go(agentId, sessionId, null);
     },
-    [agentId, list, navigate, sessionId],
+    [agentId, list, go, sessionId, split],
   );
 
-  const send = useCallback(
-    async (prompt: string, attachments: Array<{ kind: string; ref: string }> = []) => {
-      await current.send(prompt, attachments);
-      // Name a fresh session after its first prompt so the list stays readable.
-      if (current.session?.title === 'New session' && sessionId) {
-        await agentsApi.rename(sessionId, prompt.replace(/\s+/g, ' ').slice(0, 60)).catch(() => {});
-        list.refresh();
-        current.reload();
-      }
-    },
-    [current, list, sessionId],
-  );
+  /** One sender for either pane; a fresh session is named after its first prompt so the list stays readable. */
+  const senderFor = (pane: ReturnType<typeof useSession>, id: string | undefined) => async (prompt: string, attachments: Attachments = []) => {
+    await pane.send(prompt, attachments);
+    if (pane.session?.title === 'New session' && id) {
+      await agentsApi.rename(id, prompt.replace(/\s+/g, ' ').slice(0, 60)).catch(() => {});
+      list.refresh();
+      pane.reload();
+    }
+  };
 
   const sessionOpen = Boolean(sessionId);
 
   return (
     <PageFrame
       title="Agents"
-      leading={
-        <Tabs
-          aria-label="Agent"
-          tabs={tabs}
-          value={agentId}
-          onChange={(id) => navigate('agents', id)}
-        />
-      }
+      leading={<Tabs aria-label="Agent" tabs={tabs} value={agentId} onChange={(id) => navigate('agents', id)} />}
       actions={
         <>
           {runningCount > 0 && (
@@ -129,6 +144,9 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
             projects={projects}
             onCreate={create}
             onDelete={remove}
+            onOpenBeside={sessionId ? (id) => go(agentId, sessionId, { agent: agentId, id }) : undefined}
+            besideId={split?.id}
+            linkSuffix={split ? `/beside/${split.agent}/${split.id}` : ''}
           />
         </aside>
 
@@ -142,6 +160,14 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
                 <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
                 Sessions
               </a>
+              {split && (
+                <PaneHeader
+                  title={current.session?.title ?? 'Session'}
+                  agent={agentLabel}
+                  running={current.running}
+                  className="hidden lg:flex"
+                />
+              )}
               <div className="min-h-0 flex-1">
                 <Conversation
                   items={current.items}
@@ -150,7 +176,7 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
                   error={current.error}
                   sessionKey={sessionId}
                   sessionId={sessionId}
-                  onSend={send}
+                  onSend={senderFor(current, sessionId)}
                   onStop={current.stop}
                   agentLabel={agentLabel}
                 />
@@ -170,8 +196,44 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
           )}
         </section>
 
+        {split && sessionId && (
+          <section aria-label="Second conversation" className="hidden min-h-0 min-w-0 flex-1 flex-col border-l border-os-line lg:flex">
+            <PaneHeader
+              title={beside.session?.title ?? 'Session'}
+              agent={labelOf(split.agent)}
+              running={beside.running}
+              actions={
+                <>
+                  <IconButton aria-label="Swap the two sessions" onClick={() => go(split.agent, split.id, { agent: agentId, id: sessionId })}>
+                    <ArrowLeftRight size={14} strokeWidth={1.75} />
+                  </IconButton>
+                  <IconButton aria-label="Close the second session" onClick={() => go(agentId, sessionId, null)}>
+                    <X size={14} strokeWidth={1.75} />
+                  </IconButton>
+                </>
+              }
+            />
+            <div className="min-h-0 flex-1">
+              <Conversation
+                items={beside.items}
+                running={beside.running}
+                loading={beside.loading}
+                error={beside.error}
+                sessionKey={split.id}
+                sessionId={split.id}
+                onSend={senderFor(beside, split.id)}
+                onStop={beside.stop}
+                agentLabel={labelOf(split.agent)}
+              />
+            </div>
+          </section>
+        )}
+
         {railOpen && current.session && (
-          <aside aria-label="Session details" className="hidden min-h-0 w-[288px] shrink-0 overflow-y-auto border-l border-os-line bg-os-surface lg:block">
+          <aside
+            aria-label="Session details"
+            className={cx('hidden min-h-0 w-[288px] shrink-0 overflow-y-auto border-l border-os-line bg-os-surface', split ? '2xl:block' : 'lg:block')}
+          >
             <RightRail
               session={current.session}
               actions={current.actions}
@@ -185,5 +247,16 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
         )}
       </div>
     </PageFrame>
+  );
+}
+
+function PaneHeader({ title, agent, running, actions, className }: { title: string; agent: string; running: boolean; actions?: ReactNode; className?: string }) {
+  return (
+    <div className={cx('h-9 shrink-0 items-center gap-2 border-b border-os-line px-3 text-sm', className ?? 'flex')}>
+      <StatusDot status={running ? 'live' : 'idle'} label={running ? 'Running' : 'Idle'} />
+      <span className="min-w-0 flex-1 truncate text-os-text">{title}</span>
+      <span className="shrink-0 text-xs text-os-muted">{agent}</span>
+      {actions}
+    </div>
   );
 }
