@@ -44,7 +44,7 @@ export const MODULES: OsModule[] = [
     id: 'workflows',
     label: 'Workflows',
     icon: GitBranch,
-    component: lazy(() => import('./WorkflowsPage')),
+    component: lazy(() => import('./workflows/WorkflowsPage')),
     description: 'Orchestrator, sub-agents and reviewer working on a task.',
   },
   {

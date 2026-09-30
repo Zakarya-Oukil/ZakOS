@@ -16,12 +16,14 @@ export interface AgentSocketMessage {
 }
 
 type Listener = (msg: AgentSocketMessage) => void;
+type WorkflowListener = (runId: string) => void;
 type StateListener = (connected: boolean) => void;
 
 /** One shared WebSocket to the server (proxied at /ws), with backoff reconnect. */
 class AgentsSocket {
   private ws: WebSocket | null = null;
   private listeners = new Set<Listener>();
+  private workflowListeners = new Set<WorkflowListener>();
   private stateListeners = new Set<StateListener>();
   private retry = 0;
   private timer: number | undefined;
@@ -39,6 +41,7 @@ class AgentsSocket {
       try {
         const data = JSON.parse(e.data);
         if (data?.channel === 'agents') this.listeners.forEach((l) => l(data as AgentSocketMessage));
+        else if (data?.channel === 'workflows') this.workflowListeners.forEach((l) => l(String(data.runId)));
       } catch {
         /* ignore non-JSON frames */
       }
@@ -46,7 +49,7 @@ class AgentsSocket {
     ws.onclose = () => {
       this.setConnected(false);
       this.ws = null;
-      if (this.listeners.size === 0 && this.stateListeners.size === 0) return;
+      if (this.listeners.size === 0 && this.stateListeners.size === 0 && this.workflowListeners.size === 0) return;
       const delay = Math.min(10_000, 500 * 2 ** this.retry++);
       this.timer = window.setTimeout(() => this.open(), delay);
     };
@@ -67,6 +70,14 @@ class AgentsSocket {
     this.ensure();
     return () => {
       this.listeners.delete(l);
+    };
+  }
+
+  subscribeWorkflows(l: WorkflowListener): () => void {
+    this.workflowListeners.add(l);
+    this.ensure();
+    return () => {
+      this.workflowListeners.delete(l);
     };
   }
 

@@ -26,6 +26,7 @@ import { mountAgentRoutes } from './agents/routes';
 import { handlePtyConnection } from './terminal/pty';
 import { mountOsSettingsRoutes } from './osSettings';
 import { mountProjectRoutes } from './projects/routes';
+import { mountWorkflowRoutes } from './workflows/routes';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -95,6 +96,7 @@ projectService.setBroadcastCallback(broadcast);
 mountAgentRoutes(app, broadcast);
 mountOsSettingsRoutes(app);
 mountProjectRoutes(app);
+mountWorkflowRoutes(app, broadcast);
 
 // ==========================================
 // REST API ROUTES

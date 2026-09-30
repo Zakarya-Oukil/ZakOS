@@ -41,3 +41,39 @@
 @media (prefers-reduced-motion: reduce) {
   .os-live-dot { animation: none; }
 }
+
+/* Text selection carries the accent instead of the browser blue. */
+::selection { background: rgba(95, 227, 240, 0.28); color: var(--os-text); }
+
+/* Workflows: a highlight that travels along the active pipeline connector, and an
+   indeterminate bar on running task cards. Both are transform-only. */
+@keyframes os-flow {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(260%); }
+}
+.os-flow {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, var(--os-cyan), transparent);
+  animation: os-flow 1.7s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+.os-indeterminate {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2px;
+  overflow: hidden;
+}
+.os-indeterminate::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 35%;
+  background: var(--os-cyan);
+  animation: os-flow 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .os-flow, .os-indeterminate::after { animation: none; }
+  .os-flow { display: none; }
+  .os-indeterminate::after { width: 100%; opacity: 0.5; }
+}
