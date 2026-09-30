@@ -54,6 +54,7 @@ export async function fileDiff(cwd: string, ref: string, change: Change): Promis
     const buf = fs.readFileSync(abs);
     if (buf.includes(0)) return { diff: '', binary: true, truncated: false };
     const lines = buf.toString('utf8').split('\n');
+    if (lines[lines.length - 1] === '') lines.pop(); // a trailing newline is not a line
     return { diff: [`--- /dev/null`, `+++ b/${change.file}`, `@@ -0,0 +1,${lines.length} @@`, ...lines.map((l) => `+${l}`)].join('\n'), binary: false, truncated: false };
   }
   const out = await git(cwd, ['diff', '--relative', '--no-color', ref, '--', change.file]);

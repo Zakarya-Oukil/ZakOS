@@ -15,7 +15,7 @@ const LABEL: Record<FileChange['status'], { text: string; tone: string; hint: st
 const small =
   'rounded-[var(--os-radius-sm)] px-1.5 py-0.5 text-xs text-os-muted hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-40';
 
-function DiffView({ text }: { text: string }) {
+export function DiffView({ text }: { text: string }) {
   const lines = text.split('\n');
   return (
     <pre className="max-h-72 overflow-auto border-t border-os-line bg-os-bg px-3 py-2 font-os-mono text-[11px] leading-[1.5]">
