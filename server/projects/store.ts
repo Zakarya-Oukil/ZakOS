@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { globalTrust, isTrust, type Trust } from '../agents/settings';
 
 export interface Project {
   id: string;
@@ -10,6 +11,8 @@ export interface Project {
   source: 'folder' | 'github';
   remoteUrl?: string;
   addedAt: number;
+  /** Agent permission level for this project; unset means the global setting applies. */
+  trust?: Trust;
 }
 
 const FILE = path.resolve(process.cwd(), 'data', 'projects.json');
@@ -65,12 +68,14 @@ export function addProject(input: { path: string; name?: string; source: Project
   return project;
 }
 
-export function updateProject(id: string, patch: { name?: string; color?: string }): Project | undefined {
+export function updateProject(id: string, patch: { name?: string; color?: string; trust?: Trust | null }): Project | undefined {
   const list = read();
   const i = list.findIndex((p) => p.id === id);
   if (i < 0) return undefined;
   if (patch.name?.trim()) list[i].name = patch.name.trim().slice(0, 80);
   if (patch.color && /^#[0-9a-f]{6}$/i.test(patch.color)) list[i].color = patch.color;
+  if (patch.trust === null) delete list[i].trust;
+  else if (isTrust(patch.trust)) list[i].trust = patch.trust;
   write(list);
   return list[i];
 }
@@ -82,4 +87,19 @@ export function removeProject(id: string): boolean {
   if (next.length === list.length) return false;
   write(next);
   return true;
+}
+
+/**
+ * The trust level for a working directory: the closest registered project that contains it,
+ * else the global setting. Worktrees live elsewhere, so workflows pass trust explicitly instead.
+ */
+export function trustForPath(cwd: string): Trust {
+  const target = path.resolve(cwd).toLowerCase();
+  const match = read()
+    .filter((p) => {
+      const root = path.resolve(p.path).toLowerCase();
+      return target === root || target.startsWith(root + path.sep);
+    })
+    .sort((a, b) => b.path.length - a.path.length)[0];
+  return match?.trust ?? globalTrust();
 }

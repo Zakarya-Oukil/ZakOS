@@ -3,6 +3,20 @@ import path from 'node:path';
 
 export type PermissionMode = 'acceptEdits' | 'default';
 
+/**
+ * How much an agent may do without asking, per project.
+ * read-only: no edits, planning only. default: the CLI asks. acceptEdits: file edits auto-approved.
+ * full: no permission prompts at all; only ever set by the owner, per project, with explicit confirmation.
+ */
+export type Trust = 'read-only' | 'default' | 'acceptEdits' | 'full';
+export const TRUSTS: Trust[] = ['read-only', 'default', 'acceptEdits', 'full'];
+export const isTrust = (v: unknown): v is Trust => typeof v === 'string' && (TRUSTS as string[]).includes(v);
+
+/** The trust level used where a project has none of its own. */
+export function globalTrust(): Trust {
+  return getSettings().permissionMode;
+}
+
 export interface AgentSettings {
   /**
    * acceptEdits: file edits are auto-approved, everything else follows the CLI's own rules.

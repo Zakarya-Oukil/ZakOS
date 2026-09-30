@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { isTrustedLocalRequest } from '../terminal/pty';
 import * as store from './store';
+import { isTrust } from '../agents/settings';
 
 // ---- guard -------------------------------------------------------------------------------------
 
@@ -211,7 +212,11 @@ export function mountProjectRoutes(app: Express) {
   });
 
   app.patch('/api/projects/:id', (req: Request, res: Response) => {
-    const project = store.updateProject(pid(req), { name: str(req.body?.name), color: str(req.body?.color) });
+    const rawTrust = req.body?.trust;
+    if (rawTrust !== undefined && rawTrust !== null && !isTrust(rawTrust)) return fail(res, 400, 'Invalid trust level');
+    // Full access removes every permission prompt, so it is never set by accident.
+    if (rawTrust === 'full' && req.body?.confirmFull !== true) return fail(res, 400, 'Full access needs explicit confirmation');
+    const project = store.updateProject(pid(req), { name: str(req.body?.name), color: str(req.body?.color), trust: rawTrust });
     if (!project) return fail(res, 404, 'Project not found');
     res.json({ success: true, project });
   });

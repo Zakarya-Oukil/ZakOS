@@ -2,18 +2,19 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { AgentAdapter, AgentEvent, AgentRunOptions } from './types';
 import { spawnLines } from './proc';
-import { getSettings } from '../settings';
+import type { Trust } from '../settings';
 
 const execFileAsync = promisify(execFile);
 
 const BIN = process.env.AGY_BIN || 'agy';
 
 /**
- * Antigravity's own default mode asks for review on every action, so `default` passes no flag.
- * `acceptEdits` auto-approves file edits only. There is deliberately no bypass mode.
+ * Antigravity's own default mode asks for review on every action, so anything below acceptEdits passes
+ * no flag (it cannot be made read-only from outside). `acceptEdits` and `full` both use accept-edits:
+ * Antigravity has no bypass mode.
  */
-function modeArgs(): string[] {
-  return getSettings().permissionMode === 'default' ? [] : ['--mode', 'accept-edits'];
+function modeArgs(trust: Trust): string[] {
+  return trust === 'acceptEdits' || trust === 'full' ? ['--mode', 'accept-edits'] : [];
 }
 
 /** Map one NDJSON line from `agy --output-format stream-json` to normalized events. */
@@ -78,7 +79,7 @@ export const antigravityAdapter: AgentAdapter = {
 
   async *run(opts: AgentRunOptions): AsyncGenerator<AgentEvent> {
     // `--print=<prompt>` keeps a prompt that starts with a dash from being read as a flag.
-    const args = [`--print=${opts.prompt}`, '--output-format', 'stream-json', ...modeArgs()];
+    const args = [`--print=${opts.prompt}`, '--output-format', 'stream-json', ...modeArgs(opts.trust)];
     if (opts.resume && opts.cliSessionId) args.push('--conversation', opts.cliSessionId);
 
     const proc = spawnLines(BIN, args, { cwd: opts.cwd, signal: opts.signal });

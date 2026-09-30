@@ -2,16 +2,17 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { AgentAdapter, AgentEvent, AgentRunOptions } from './types';
 import { spawnLines } from './proc';
-import { getSettings } from '../settings';
+import type { Trust } from '../settings';
 
 const execFileAsync = promisify(execFile);
 
-// Normal permission system only. `acceptEdits` auto-approves file edits; `default` asks for everything.
-type PermissionMode = 'acceptEdits' | 'default';
-
-function permissionMode(): PermissionMode {
-  return getSettings().permissionMode;
-}
+/** Maps a trust level onto Claude Code's own permission modes. */
+const MODE: Record<Trust, string> = {
+  'read-only': 'plan',
+  default: 'default',
+  acceptEdits: 'acceptEdits',
+  full: 'bypassPermissions',
+};
 
 function stringifyResult(content: unknown): string {
   if (typeof content === 'string') return content;
@@ -91,7 +92,7 @@ export const claudeAdapter: AgentAdapter = {
       '--input-format', 'text',
       '--verbose',
       '--include-partial-messages',
-      '--permission-mode', permissionMode(),
+      '--permission-mode', MODE[opts.trust],
     ];
     if (opts.cliSessionId) args.push(opts.resume ? '--resume' : '--session-id', opts.cliSessionId);
 

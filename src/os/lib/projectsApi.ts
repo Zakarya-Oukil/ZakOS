@@ -1,4 +1,8 @@
+export type Trust = 'read-only' | 'default' | 'acceptEdits' | 'full';
+
 export interface ProjectInfo {
+  /** Unset means the global permission setting applies. */
+  trust?: Trust;
   id: string;
   name: string;
   path: string;
@@ -57,6 +61,8 @@ export const projectsApi = {
     call<{ project: ProjectInfo }>('/api/projects', { method: 'POST', body: JSON.stringify({ path }) }).then((r) => r.project),
   clone: (url: string, destination: string) =>
     call<{ job: Job }>('/api/projects/clone', { method: 'POST', body: JSON.stringify({ url, destination }) }).then((r) => r.job),
+  setTrust: (id: string, trust: Trust | null, confirmFull = false) =>
+    call<{ project: ProjectInfo }>(`/api/projects/${id}`, { method: 'PATCH', body: JSON.stringify({ trust, confirmFull }) }).then((r) => r.project),
   remove: (id: string) => call<unknown>(`/api/projects/${id}`, { method: 'DELETE' }),
   graphify: (id: string) => call<{ job: Job }>(`/api/projects/${id}/graphify`, { method: 'POST' }).then((r) => r.job),
   job: (id: string) => call<{ job: Job }>(`/api/projects/jobs/${id}`).then((r) => r.job),

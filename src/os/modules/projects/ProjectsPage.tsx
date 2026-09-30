@@ -3,7 +3,7 @@ import { FolderOpen, FolderPlus, GitBranch, Network, Trash2, Waypoints } from 'l
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { agentsApi } from '../agents/api';
-import { projectsApi, timeAgo, type Job, type ProjectInfo } from '../../lib/projectsApi';
+import { projectsApi, timeAgo, type Job, type ProjectInfo, type Trust } from '../../lib/projectsApi';
 import { Panel } from '../../ui';
 import { cx } from '../../ui/cx';
 
@@ -129,6 +129,18 @@ export default function ProjectsPage({ navigate }: ModuleProps) {
     try {
       const s = await agentsApi.create('claude', p.path, p.name);
       navigate('agents', 'claude', s.id);
+    } catch (e) {
+      setNotice((e as Error).message);
+    }
+  };
+
+  const changeTrust = async (p: ProjectInfo, value: Trust | '') => {
+    setNotice(null);
+    const full = value === 'full';
+    if (full && !window.confirm(`Let agents do anything in "${p.name}" without asking? Files can be changed or deleted and commands run with no prompts. Checkpoints still protect tracked files.`)) return;
+    try {
+      await projectsApi.setTrust(p.id, value === '' ? null : value, full);
+      refresh();
     } catch (e) {
       setNotice((e as Error).message);
     }
@@ -289,6 +301,21 @@ export default function ProjectsPage({ navigate }: ModuleProps) {
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
+                        <label className="flex items-center gap-1.5 text-xs text-os-muted">
+                          Agents may
+                          <select
+                            aria-label={`Agent permissions for ${p.name}`}
+                            value={p.trust ?? ''}
+                            onChange={(e) => void changeTrust(p, e.target.value as Trust | '')}
+                            className={cx(field, 'h-8')}
+                          >
+                            <option value="">Follow global setting</option>
+                            <option value="read-only">Read only</option>
+                            <option value="default">Ask each time</option>
+                            <option value="acceptEdits">Edit files freely</option>
+                            <option value="full">Do anything (no prompts)</option>
+                          </select>
+                        </label>
                         <button type="button" className={btn} disabled={building || !p.exists} onClick={() => void graphify(p)}>
                           <Waypoints size={15} strokeWidth={1.75} aria-hidden />
                           {building ? 'Building graph' : p.hasGraph ? 'Rebuild graph' : 'Build graph'}

@@ -3,6 +3,8 @@ import { getAdapter } from './adapters';
 import type { AgentEvent } from './adapters/types';
 import { createCheckpoint } from './checkpoint';
 import * as store from './store';
+import { trustForPath } from '../projects/store';
+import { isTrust } from './settings';
 
 export type Broadcast = (data: unknown) => void;
 
@@ -58,6 +60,7 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
       for await (const event of adapter.run({
         prompt,
         cwd: session.cwd,
+        trust: isTrust(session.trust) ? session.trust : trustForPath(session.cwd),
         cliSessionId,
         resume,
         signal: ctl.signal,

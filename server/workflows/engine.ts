@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sendMessage, stop as stopSession, type Broadcast } from '../agents/runner';
 import * as sessions from '../agents/store';
+import { trustForPath } from '../projects/store';
 import { commitWorktree, createWorktree, isGitRepo, mergeBranch, removeWorktree, type Worktree } from './worktree';
 
 export type RunStatus = 'planning' | 'awaiting_approval' | 'running' | 'reviewing' | 'reporting' | 'done' | 'error' | 'stopped';
@@ -51,6 +52,8 @@ export interface Run {
   goal: string;
   cwd: string;
   projectId?: string;
+  /** Permission level every session of this run uses, fixed when the run starts. */
+  trust?: string;
   status: RunStatus;
   created: number;
   updated: number;
@@ -171,8 +174,8 @@ function runTurn(sessionId: string, prompt: string, broadcast: Broadcast): Promi
   });
 }
 
-function newSession(agent: string, title: string, cwd: string): string {
-  return sessions.createSession(randomUUID(), agent, title.slice(0, 120), cwd).id;
+function newSession(agent: string, title: string, cwd: string, trust?: string): string {
+  return sessions.createSession(randomUUID(), agent, title.slice(0, 120), cwd, trust ?? null).id;
 }
 
 /** Pulls the first balanced JSON object out of free text (agents often wrap it in prose or fences). */
@@ -239,7 +242,7 @@ ${clip(run.review ?? '(none)')}`;
 
 export function startRun(goal: string, cwd: string, projectId: string | undefined, options: Partial<RunOptions>, broadcast: Broadcast): Run {
   const now = Date.now();
-  const run: Run = { id: randomUUID(), options: withDefaults(options), goal, cwd, projectId, status: 'planning', created: now, updated: now, tasks: [] };
+  const run: Run = { id: randomUUID(), options: withDefaults(options), trust: trustForPath(cwd), goal, cwd, projectId, status: 'planning', created: now, updated: now, tasks: [] };
   runs.set(run.id, run);
   persist();
   void execute(run, broadcast);
@@ -325,7 +328,7 @@ async function execute(run: Run, broadcast: Broadcast) {
 
   try {
     // 1. Plan
-    run.orchestratorSessionId = newSession(run.options.agents.orchestrator, `Workflow: ${run.goal}`, run.cwd);
+    run.orchestratorSessionId = newSession(run.options.agents.orchestrator, `Workflow: ${run.goal}`, run.cwd, run.trust);
     update();
     const plan = await runTurn(run.orchestratorSessionId, planPrompt(run.goal), broadcast);
     if (halted()) throw new Error('Stopped');
@@ -363,7 +366,7 @@ async function execute(run: Run, broadcast: Broadcast) {
             task.branch = created.branch;
             workDir = created.workDir;
           }
-          task.sessionId = newSession(run.options.agents.worker, `Task: ${task.title}`, workDir);
+          task.sessionId = newSession(run.options.agents.worker, `Task: ${task.title}`, workDir, run.trust);
           update();
           const out = await runTurn(task.sessionId, task.prompt, broadcast);
           const wt = worktrees.get(task.id);
@@ -388,7 +391,7 @@ async function execute(run: Run, broadcast: Broadcast) {
 
     // 3. Review
     update({ status: 'reviewing' });
-    run.reviewerSessionId = newSession(run.options.agents.reviewer, `Review: ${run.goal}`, run.cwd);
+    run.reviewerSessionId = newSession(run.options.agents.reviewer, `Review: ${run.goal}`, run.cwd, run.trust);
     update();
     const review = await runTurn(run.reviewerSessionId, reviewPrompt(run), broadcast);
     if (halted()) throw new Error('Stopped');

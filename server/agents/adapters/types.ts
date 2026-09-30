@@ -6,8 +6,12 @@ export type AgentEvent =
   | { type: 'done'; cliSessionId?: string }
   | { type: 'error'; message: string };
 
+import type { Trust } from '../settings';
+
 export interface AgentRunOptions {
   prompt: string;
+  /** Permission level for this run, already resolved from the project or global setting. */
+  trust: Trust;
   cwd: string;
   cliSessionId?: string;
   resume: boolean;

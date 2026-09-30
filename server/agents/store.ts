@@ -9,6 +9,8 @@ export interface SessionRow {
   title: string;
   cwd: string;
   cli_session_id: string | null;
+  /** Trust level fixed at creation (workflow workers); null means resolve from the project at run time. */
+  trust: string | null;
   status: 'idle' | 'running' | 'error';
   created: number;
   updated: number;
@@ -67,13 +69,20 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_actions_session ON actions(session_id, ts DESC);
 `);
 
+// Older databases predate the trust column.
+try {
+  db.exec(`ALTER TABLE sessions ADD COLUMN trust TEXT`);
+} catch {
+  /* column already exists */
+}
+
 // A server restart leaves no live child processes, so any "running" row is stale.
 db.prepare(`UPDATE sessions SET status = 'idle' WHERE status = 'running'`).run();
 
 const q = {
   insertSession: db.prepare(
-    `INSERT INTO sessions (id, agent, title, cwd, cli_session_id, status, created, updated)
-     VALUES (?, ?, ?, ?, NULL, 'idle', ?, ?)`
+    `INSERT INTO sessions (id, agent, title, cwd, cli_session_id, status, created, updated, trust)
+     VALUES (?, ?, ?, ?, NULL, 'idle', ?, ?, ?)`
   ),
   getSession: db.prepare(`SELECT * FROM sessions WHERE id = ?`),
   listAll: db.prepare(`SELECT * FROM sessions ORDER BY updated DESC`),
@@ -95,9 +104,9 @@ const q = {
   listActions: db.prepare(`SELECT * FROM actions WHERE session_id = ? ORDER BY ts DESC, id DESC`),
 };
 
-export function createSession(id: string, agent: string, title: string, cwd: string): SessionRow {
+export function createSession(id: string, agent: string, title: string, cwd: string, trust: string | null = null): SessionRow {
   const now = Date.now();
-  q.insertSession.run(id, agent, title, cwd, now, now);
+  q.insertSession.run(id, agent, title, cwd, now, now, trust);
   return getSession(id)!;
 }
 
