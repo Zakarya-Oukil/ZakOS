@@ -6,10 +6,11 @@ import '@xterm/xterm/css/xterm.css';
 type Phase = 'connecting' | 'ready' | 'closed';
 
 interface TerminalViewProps {
-  cwd: string;
+  /** A shell the server already owns. The view attaches to it and gets its recent output replayed. */
+  sessionId: string;
   active: boolean;
-  /** Reports the shell's folder once the server confirms the session. */
-  onReady?: (cwd: string) => void;
+  /** Called when the shell process ends or the server no longer knows this terminal. */
+  onEnded?: (why: { exitCode?: number; gone?: boolean }) => void;
 }
 
 const THEME = {
@@ -36,16 +37,15 @@ const THEME = {
   brightWhite: '#f4f7fb',
 };
 
-export function TerminalView({ cwd, active, onReady }: TerminalViewProps) {
+export function TerminalView({ sessionId, active, onEnded }: TerminalViewProps) {
   const host = useRef<HTMLDivElement>(null);
   const fitRef = useRef<FitAddon | null>(null);
   const termRef = useRef<Terminal | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
   const [phase, setPhase] = useState<Phase>('connecting');
   const [note, setNote] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const onReadyRef = useRef(onReady);
-  onReadyRef.current = onReady;
+  const onEndedRef = useRef(onEnded);
+  onEndedRef.current = onEnded;
 
   useEffect(() => {
     const el = host.current;
@@ -76,23 +76,25 @@ export function TerminalView({ cwd, active, onReady }: TerminalViewProps) {
     setPhase('connecting');
     setNote(null);
     const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const params = new URLSearchParams({ cols: String(term.cols), rows: String(term.rows) });
-    if (cwd) params.set('cwd', cwd);
-    const ws = new WebSocket(`${proto}://${window.location.host}/ws/pty?${params}`);
-    wsRef.current = ws;
+    const ws = new WebSocket(`${proto}://${window.location.host}/ws/pty?${new URLSearchParams({ session: sessionId })}`);
+    let gone = false;
 
     ws.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data);
         if (msg.type === 'ready') {
           setPhase('ready');
-          onReadyRef.current?.(msg.cwd);
+          // The server keeps one size per shell, so tell it how big this view is.
+          ws.send(JSON.stringify({ type: 'resize', cols: term.cols, rows: term.rows }));
         } else if (msg.type === 'output') {
           term.write(msg.data);
         } else if (msg.type === 'exit') {
-          setNote(`Shell exited with code ${msg.code}.`);
+          setNote(`The shell exited with code ${msg.code}. Close this tab or open a new terminal.`);
+          onEndedRef.current?.({ exitCode: msg.code });
         } else if (msg.type === 'error') {
+          gone = true;
           setNote(msg.message);
+          onEndedRef.current?.({ gone: true });
         }
       } catch {
         /* ignore malformed frames */
@@ -123,13 +125,14 @@ export function TerminalView({ cwd, active, onReady }: TerminalViewProps) {
       dataSub.dispose();
       resizeSub.dispose();
       ws.onclose = null;
+      // Closing the socket only detaches: the shell keeps running on the server.
       ws.close();
       term.dispose();
       termRef.current = null;
       fitRef.current = null;
-      wsRef.current = null;
+      void gone;
     };
-  }, [cwd, attempt]);
+  }, [sessionId, attempt]);
 
   // A background tab has no size; refit and focus when it comes forward.
   useEffect(() => {
@@ -145,22 +148,22 @@ export function TerminalView({ cwd, active, onReady }: TerminalViewProps) {
     return () => window.cancelAnimationFrame(id);
   }, [active]);
 
-  const restart = useCallback(() => setAttempt((n) => n + 1), []);
+  const reconnect = useCallback(() => setAttempt((n) => n + 1), []);
 
   return (
     <div className="relative h-full w-full bg-os-bg p-2">
       <div ref={host} className="h-full w-full" />
-      {(phase === 'closed' || phase === 'connecting') && (
+      {(phase === 'closed' || phase === 'connecting' || note) && (
         <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
           <div className="pointer-events-auto flex items-center gap-3 rounded-[var(--os-radius)] border border-os-line bg-os-surface px-3 py-2 text-sm" role="status">
-            <span className="text-os-muted">{phase === 'connecting' ? 'Starting shell' : (note ?? 'Terminal disconnected.')}</span>
-            {phase === 'closed' && (
+            <span className="text-os-muted">{note ?? (phase === 'connecting' ? 'Connecting' : 'Terminal disconnected.')}</span>
+            {phase === 'closed' && !note && (
               <button
                 type="button"
-                onClick={restart}
+                onClick={reconnect}
                 className="rounded-[var(--os-radius-sm)] border border-os-line px-2 py-0.5 text-os-text hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
               >
-                Restart
+                Reconnect
               </button>
             )}
           </div>

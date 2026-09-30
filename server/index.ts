@@ -23,7 +23,7 @@ import { scraperService } from './scraperService';
 import { handleSshWebSocketConnection } from './sshBridge';
 import { jarvisService } from './jarvisService';
 import { mountAgentRoutes } from './agents/routes';
-import { handlePtyConnection } from './terminal/pty';
+import { handlePtyConnection, mountTerminalRoutes } from './terminal/pty';
 import { mountOsSettingsRoutes } from './osSettings';
 import { mountProjectRoutes } from './projects/routes';
 import { mountWorkflowRoutes } from './workflows/routes';
@@ -109,6 +109,7 @@ mountApprovalRoutes(app, broadcast);
 mountContextRoutes(app);
 mountHomeRoutes(app);
 mountGitRoutes(app);
+mountTerminalRoutes(app);
 mountScheduleRoutes(app);
 startScheduler(broadcast);
 
