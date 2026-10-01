@@ -17,6 +17,8 @@ import { RemoteShell } from './shell/RemoteShell';
 import { SetupWizard, setupDone } from './shell/SetupWizard';
 import { useShortcutListener } from './lib/shortcuts';
 import { CAPTURE_EVENT, QuickCapture } from './shell/QuickCapture';
+import { FloatingWindows } from './shell/FloatingWindows';
+import { openFromText } from './lib/launcher';
 import { bootSequence } from './theme/gsap';
 import { usePrefersReducedMotion } from './theme/motion';
 import { CommandPalette, ContourGlyph, type Command } from './ui';
@@ -147,6 +149,21 @@ export function Shell() {
     [visible, collapsed, navigate, theme, world.id],
   );
 
+  // Anything typed in the palette can be opened: a link or video in a window, an installed app on this PC.
+  const dynamicCommands = (q: string): Command[] => [
+    { id: 'open-typed', label: `Open "${q.replace(/^(open|launch|start|play)\s+/i, '')}"`, hint: 'link or video in a window, or an app on this PC', run: () => void openFromText(q) },
+  ];
+
+  // Voice, the Home command line and any module can ask for something to be opened.
+  useEffect(() => {
+    const on = (e: Event) => {
+      const text = (e as CustomEvent<{ text?: string }>).detail?.text;
+      if (text) void openFromText(text);
+    };
+    window.addEventListener('zakos:open', on);
+    return () => window.removeEventListener('zakos:open', on);
+  }, []);
+
   useShortcutListener({
     'toggle-sidebar': toggleSidebar,
     'toggle-theme': toggleTheme,
@@ -229,7 +246,8 @@ export function Shell() {
           )}
         </main>
         <WorldTransition />
-        <CommandPalette commands={commands} />
+        <CommandPalette commands={commands} dynamic={dynamicCommands} />
+        <FloatingWindows />
         <QuickCapture />
         {showSetup && <SetupWizard theme={theme} onTheme={toggleTheme} onDone={() => setShowSetup(false)} />}
       </div>

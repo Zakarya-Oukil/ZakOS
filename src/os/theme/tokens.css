@@ -189,3 +189,7 @@
 @keyframes os-sweep { to { transform: rotate(360deg); } }
 .os-sweep { transform-origin: 6px 6px; animation: os-sweep 1.15s linear infinite; }
 @media (prefers-reduced-motion: reduce) { .os-sweep { animation: none; } }
+
+/* Floating windows: keep the frame from taking the pointer while a window is moved or resized. */
+.os-float[data-busy] .os-float-shield { display: block; }
+.os-float[data-busy] { user-select: none; }

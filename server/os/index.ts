@@ -15,6 +15,7 @@ import { mountBackupRoutes, mountScaffoldRoutes } from './backup';
 import { mountFileRoutes } from './files';
 import { startGraphWatch } from './graphWatch';
 import { mountIntegrationRoutes } from './integrations';
+import { mountLauncherRoutes } from './launcher';
 import { mountLicenceRoutes } from './licence';
 import { mountMcpRoutes } from './mcp';
 import { mountRemoteRoutes } from './remote';
@@ -53,6 +54,7 @@ export function mountOsRoutes(app: Express, broadcast: (d: unknown) => void) {
   mountReportRoutes(app);
   mountSecretRoutes(app);
   mountIntegrationRoutes(app);
+  mountLauncherRoutes(app);
   mountWebhookRoutes(app);
   mountMcpRoutes(app);
   mountRemoteRoutes(app);

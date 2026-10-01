@@ -16,12 +16,14 @@ interface CommandPaletteProps {
   /** Controlled open state; omit for internal Ctrl+K management. */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Extra commands built from what was typed, such as "Open youtube.com". */
+  dynamic?: (query: string) => Command[];
 }
 
 const FOCUSABLE = 'input,button,[href],[tabindex]:not([tabindex="-1"])';
 const LIST_ID = 'os-cmd-list';
 
-export function CommandPalette({ commands, open: openProp, onOpenChange }: CommandPaletteProps) {
+export function CommandPalette({ commands, open: openProp, onOpenChange, dynamic }: CommandPaletteProps) {
   const [inner, setInner] = useState(false);
   const open = openProp ?? inner;
   const openRef = useRef(open);
@@ -67,6 +69,7 @@ export function CommandPalette({ commands, open: openProp, onOpenChange }: Comma
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return commands;
+    const extra = dynamic?.(query.trim()) ?? [];
     // Label matches rank above matches that only appear in the hint, so "usage" finds Usage before Home.
     const rank = (c: Command) => {
       const label = c.label.toLowerCase();
@@ -75,12 +78,13 @@ export function CommandPalette({ commands, open: openProp, onOpenChange }: Comma
       if (label.includes(q)) return 1;
       return (c.hint ?? '').toLowerCase().includes(q) ? 2 : 3;
     };
-    return commands
+    const matched = commands
       .map((c) => ({ c, r: rank(c) }))
       .filter((x) => x.r < 3)
       .sort((a, b) => a.r - b.r)
       .map((x) => x.c);
-  }, [commands, query]);
+    return [...extra, ...matched];
+  }, [commands, query, dynamic]);
 
   useEffect(() => {
     setIndex(0);

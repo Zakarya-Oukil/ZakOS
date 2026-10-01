@@ -12,6 +12,7 @@ import CountUp from '../reactbits/CountUp';
 import BlurText from '../reactbits/BlurText';
 import type { WorldId } from './worlds';
 import { CyberHero } from './CyberHome';
+import { OpenBar } from '../shell/OpenBar';
 
 gsap.registerPlugin(Draggable);
 
@@ -115,6 +116,7 @@ function JarvisHero({ home, hello, summary }: HeroProps) {
             </div>
           ))}
         </dl>
+        <OpenBar className="mt-6 max-w-lg" />
       </div>
       <div className="pointer-events-none absolute right-6 top-3 hidden h-[400px] w-[400px] md:block lg:right-[8%]" aria-hidden>
         <div className="absolute inset-[66px] overflow-hidden rounded-full">
