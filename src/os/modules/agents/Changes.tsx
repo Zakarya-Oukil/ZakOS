@@ -18,7 +18,7 @@ const small =
 export function DiffView({ text }: { text: string }) {
   const lines = text.split('\n');
   return (
-    <pre className="max-h-72 overflow-auto border-t border-os-line bg-os-bg px-3 py-2 font-os-mono text-[11px] leading-[1.5]">
+    <pre className="max-h-72 overflow-auto border-t border-os-line bg-os-bg px-3 py-2 font-os-mono text-xs leading-[1.5]">
       {lines.map((l, i) => (
         <span
           key={i}

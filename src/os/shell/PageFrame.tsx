@@ -19,7 +19,7 @@ export function PageFrame({ title, leading, actions, children }: PageFrameProps)
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </header>
-      <div className="min-h-0 flex-1">{children}</div>
+      <div className="relative min-h-0 flex-1">{children}</div>
     </div>
   );
 }

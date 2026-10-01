@@ -8,6 +8,13 @@ import { MODULES, findModule } from './modules/registry';
 import { Sidebar } from './shell/Sidebar';
 import { Topography } from './shell/Topography';
 import { useTheme } from './theme/useTheme';
+import { useAppearance } from './theme/appearance';
+import { useAuth } from './lib/useAuth';
+import { planAtLeast, useLicence } from './lib/useLicence';
+import { Locked, SignIn } from './shell/Gates';
+import { RemoteShell } from './shell/RemoteShell';
+import { SetupWizard, setupDone } from './shell/SetupWizard';
+import { useShortcutListener } from './lib/shortcuts';
 import { bootSequence } from './theme/gsap';
 import { pageVariants, reducedPageVariants, usePrefersReducedMotion } from './theme/motion';
 import { CommandPalette, type Command } from './ui';
@@ -38,6 +45,11 @@ export function Shell() {
   const connected = useAgentsConnection();
   const reduced = usePrefersReducedMotion();
   const { theme, toggle: toggleTheme } = useTheme();
+  const { appearance } = useAppearance();
+  const auth = useAuth();
+  const licence = useLicence();
+  const [showSetup, setShowSetup] = useState(() => !setupDone());
+  const remoteView = !['localhost', '127.0.0.1', '[::1]', '::1'].includes(window.location.hostname) || new URLSearchParams(window.location.search).has('phone');
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -79,6 +91,16 @@ export function Shell() {
     [visible, collapsed, navigate, theme],
   );
 
+  useShortcutListener({
+    'toggle-sidebar': toggleSidebar,
+    'toggle-theme': toggleTheme,
+    ...Object.fromEntries(['home', 'agents', 'tasks', 'projects', 'brain', 'approvals', 'terminal'].map((id) => [`go-${id}`, () => visible.some((m) => m.id === id) && navigate(id)])),
+  });
+
+  // Someone opening Zak OS through a tunnel gets the phone view only.
+  if (remoteView) return <RemoteShell />;
+  if (auth.loaded && auth.enabled && !auth.user) return <SignIn />;
+
   if (isLegacy) {
     return (
       <div className="relative h-full w-full">
@@ -100,7 +122,9 @@ export function Shell() {
   return (
     <ModuleContext.Provider value={modules}>
       <div ref={rootRef} className="relative flex h-[100dvh] w-full font-os-sans text-os-text">
-        <Topography className="pointer-events-none fixed inset-0 h-full w-full" />
+        {appearance.backdrop !== 'none' && (
+          <Topography className="pointer-events-none fixed inset-0 h-full w-full" still={appearance.backdrop === 'still' || appearance.motion === 'off'} calm={appearance.motion === 'calm'} />
+        )}
         <Sidebar
           modules={visible}
           activeId={active?.id}
@@ -109,6 +133,7 @@ export function Shell() {
           connected={connected}
           theme={theme}
           onToggleTheme={toggleTheme}
+          plan={licence.plan}
         />
         <main className="relative min-w-0 flex-1">
           {Page && (
@@ -120,12 +145,17 @@ export function Shell() {
               animate="animate"
             >
               <Suspense fallback={<PageFallback />}>
-                <Page route={rest} navigate={navigate} />
+                {active.premium && licence.info && !planAtLeast(licence.plan, active.premium) ? (
+                  <Locked module={active} info={licence.info} />
+                ) : (
+                  <Page route={rest} navigate={navigate} />
+                )}
               </Suspense>
             </motion.div>
           )}
         </main>
         <CommandPalette commands={commands} />
+        {showSetup && <SetupWizard theme={theme} onTheme={toggleTheme} onDone={() => setShowSetup(false)} />}
       </div>
     </ModuleContext.Provider>
   );

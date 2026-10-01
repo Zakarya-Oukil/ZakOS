@@ -3,6 +3,7 @@ import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import chokidar from 'chokidar';
 import { vaultService } from './vault';
 import { 
@@ -1215,6 +1216,13 @@ async function startServer() {
     .on('add', (p) => handleFsChange('add', p))
     .on('change', (p) => handleFsChange('change', p))
     .on('unlink', (p) => handleFsChange('unlink', p));
+
+  // Production: serve the built app from this server so a tunnel only needs to point at one port.
+  const dist = path.resolve(process.cwd(), 'dist');
+  if (fs.existsSync(path.join(dist, 'index.html'))) {
+    app.use(express.static(dist));
+    app.get(/^\/(?!api\/|hooks\/|ws\/).*/, (_req: Request, res: Response) => res.sendFile(path.join(dist, 'index.html')));
+  }
 
   server.listen(Number(PORT), '127.0.0.1', () => {
     console.log(`\n======================================================`);

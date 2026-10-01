@@ -9,6 +9,8 @@ import { fail, handle, localOnly, str } from './common';
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', '.next', '__pycache__', '.venv', 'venv', 'graphify-out', '.cache']);
 const MAX_READ = 1_500_000;
 const IMAGE_TYPES: Record<string, string> = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml' };
+/** Key material and the secrets store are never listed, read or written through the browser. */
+const PROTECTED = /(^|[\\/])(licence-private|\.ssh|\.gnupg)([\\/]|$)|\.(pem|key|pfx|p12)$|(^|[\\/])(secrets\.enc\.json|id_rsa|id_ed25519)$/i;
 const ENV_FILE = /(^|[\\/])\.env(\..*)?$/i;
 
 /** Resolves a path inside a registered project, or throws. Nothing outside the project folder gets through. */
@@ -20,6 +22,7 @@ function resolveIn(projectId: string, rel: string): { root: string; full: string
   const back = path.relative(root, full);
   if (back.startsWith('..') || path.isAbsolute(back)) throw new Error('That path is outside the project');
   // Resolve symlinks so a link cannot lead out of the folder.
+  if (PROTECTED.test(back)) throw new Error('That file holds keys or secrets and is not available here');
   const real = fs.existsSync(full) ? fs.realpathSync(full) : full;
   const realRoot = fs.realpathSync(root);
   const realBack = path.relative(realRoot, real);
@@ -40,7 +43,7 @@ export function mountFileRoutes(app: Express) {
     const { root, full } = resolveIn(str(req.query.project, 80) ?? '', str(req.query.dir, 500) ?? '');
     const entries = fs
       .readdirSync(full, { withFileTypes: true })
-      .filter((e) => !(e.isDirectory() && SKIP_DIRS.has(e.name)))
+      .filter((e) => !(e.isDirectory() && SKIP_DIRS.has(e.name)) && !PROTECTED.test(e.name))
       .map((e) => ({ name: e.name, dir: e.isDirectory(), path: path.relative(root, path.join(full, e.name)).replace(/\\/g, '/') }))
       .sort((a, b) => Number(b.dir) - Number(a.dir) || a.name.localeCompare(b.name))
       .slice(0, 500);
@@ -79,6 +82,40 @@ export function mountFileRoutes(app: Express) {
     res.json({ success: true });
   }));
 
+  /** Files changed since a moment ago, newest first. The Files page uses it to follow an agent as it edits. */
+  app.get('/api/files/recent', handle((req, res) => {
+    const { root } = resolveIn(str(req.query.project, 80) ?? '', '');
+    const since = Number(req.query.since) || Date.now() - 60_000;
+    const found: Array<{ path: string; mtime: number }> = [];
+    let scanned = 0;
+    const walk = (dir: string, depth: number) => {
+      if (depth > 6 || scanned > 6000) return;
+      let list: fs.Dirent[];
+      try {
+        list = fs.readdirSync(dir, { withFileTypes: true });
+      } catch {
+        return;
+      }
+      for (const e of list) {
+        const p = path.join(dir, e.name);
+        if (e.isDirectory()) {
+          if (!SKIP_DIRS.has(e.name)) walk(p, depth + 1);
+        } else if (e.isFile() && !ENV_FILE.test(p)) {
+          scanned++;
+          try {
+            const m = fs.statSync(p).mtimeMs;
+            if (m > since) found.push({ path: path.relative(root, p).split(path.sep).join('/'), mtime: m });
+          } catch {
+            /* vanished while scanning */
+          }
+        }
+      }
+    };
+    walk(root, 0);
+    found.sort((a, b) => b.mtime - a.mtime);
+    res.json({ success: true, files: found.slice(0, 10), now: Date.now() });
+  }));
+
   app.get('/api/files/search', handle((req, res) => {
     const { root } = resolveIn(str(req.query.project, 80) ?? '', '');
     const q = (str(req.query.q, 100) ?? '').trim().toLowerCase();
@@ -98,7 +135,7 @@ export function mountFileRoutes(app: Express) {
         const p = path.join(dir, e.name);
         if (e.isDirectory()) {
           if (!SKIP_DIRS.has(e.name)) walk(p);
-        } else if (e.isFile() && !ENV_FILE.test(p)) {
+        } else if (e.isFile() && !ENV_FILE.test(p) && !PROTECTED.test(e.name)) {
           scanned++;
           try {
             if (fs.statSync(p).size > 400_000) continue;

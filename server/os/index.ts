@@ -1,5 +1,6 @@
 import type { Express } from 'express';
 import { authGate, mountAuthRoutes } from './auth';
+import { mountAuditExtras } from './auditExtras';
 import { mountBackupRoutes, mountScaffoldRoutes } from './backup';
 import { mountFileRoutes } from './files';
 import { mountIntegrationRoutes } from './integrations';
@@ -19,6 +20,7 @@ export function mountOsGate(app: Express) {
 }
 
 export function mountOsRoutes(app: Express) {
+  mountAuditExtras(app);
   mountTaskRoutes(app);
   mountFileRoutes(app);
   mountUsageRoutes(app);

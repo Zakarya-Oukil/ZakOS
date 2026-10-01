@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 're
 import { ArrowUp, Bell, CalendarCheck, GitBranch, ShieldCheck, Warning } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
-import { Panel, StatusDot } from '../../ui';
+import { Button, Panel, StatusDot } from '../../ui';
+import { api } from '../../lib/api';
+import { SETUP_KEY } from '../../shell/SetupWizard';
 import { cx } from '../../ui/cx';
 import { projectsApi, timeAgo, type ProjectInfo } from '../../lib/projectsApi';
 import { agentsApi } from '../agents/api';
@@ -208,7 +210,7 @@ function WindowRow({ label, w, updated }: { label: string; w: Win | null; update
 function ProviderCard({ p }: { p: Provider }) {
   const rows: Array<[string, Provider['lastHour']]> = [['Last hour', p.lastHour], ['Last 5 hours', p.last5Hours], ['Last 24 hours', p.lastDay], ['Last 7 days', p.lastWeek]];
   return (
-    <div className={cx('rounded-[var(--os-radius)] border border-os-line p-3', p.reportsUsage && 'md:col-span-2 lg:col-span-1 xl:col-span-2')}>
+    <div className="border-t border-os-line pt-4 first:border-t-0 first:pt-0">
       <div className="mb-2 flex items-center gap-2">
         <StatusDot status={p.available ? 'live' : 'error'} label={p.available ? 'Available' : 'Unavailable'} />
         <span className="text-sm font-medium text-os-text">{p.label}</span>
@@ -219,7 +221,7 @@ function ProviderCard({ p }: { p: Provider }) {
         <div className="mb-3 grid gap-2">
           <WindowRow label="5-hour limit" w={p.windows.fiveHour} updated={p.windows.updated} />
           <WindowRow label="Weekly limit" w={p.windows.sevenDay} updated={p.windows.updated} />
-          <p className="text-[11px] text-os-muted">Reading from {timeAgo(p.windows.updated)}. It refreshes after each Claude run.</p>
+          <p className="max-w-[68ch] text-xs text-os-muted">Reading from {timeAgo(p.windows.updated)}. It refreshes after each Claude run.</p>
         </div>
       )}
       <table className="w-full text-xs">
@@ -242,7 +244,7 @@ function ProviderCard({ p }: { p: Provider }) {
           ))}
         </tbody>
       </table>
-      <p className="mt-2 text-[11px] leading-relaxed text-os-muted">
+      <p className="mt-2 max-w-[68ch] text-xs leading-relaxed text-os-muted">
         {p.reportsUsage
           ? p.trackedSince
             ? `Tokens and cost are counted from runs made through Zak OS since ${new Date(p.trackedSince).toLocaleDateString()}. Plan limits cover all your Claude use.`
@@ -302,7 +304,7 @@ function Activity({ items }: { items: HomeData['activity'] }) {
             return (
               <li key={e.id} className="flex items-baseline gap-2">
                 <span className="w-[4.5rem] shrink-0 text-os-muted">{timeAgo(e.ts)}</span>
-                <span className="shrink-0 rounded-[var(--os-radius-sm)] bg-os-surface-2 px-1.5 py-0.5 font-os-mono text-[10px] text-os-muted">{e.kind}</span>
+                <span className="w-28 shrink-0 truncate font-os-mono text-xs text-os-muted">{e.kind}</span>
                 {to ? <a className={cx(link, 'min-w-0 flex-1 truncate')} href={to}>{e.detail}</a> : <span className="min-w-0 flex-1 truncate text-os-text">{e.detail}</span>}
               </li>
             );
@@ -376,7 +378,7 @@ function Territory({ home }: { home: HomeData }) {
           </p>
         </div>
       ) : (
-        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Map of ${items.length} project${items.length === 1 ? '' : 's'}`} className="block h-auto w-full">
+        <svg viewBox={`0 0 ${W} ${H}`} role="group" aria-label={`Map of ${items.length} project${items.length === 1 ? '' : 's'}`} className="block h-auto w-full">
           {placed.map(({ p, x, y, r, running }) => {
             const seed = seedOf(p.id);
             const to = p.graphUpdated ? `#/brain/${p.id}` : '#/projects';
@@ -401,7 +403,7 @@ function Territory({ home }: { home: HomeData }) {
                   {p.name}
                 </text>
                 {running > 0 && (
-                  <text x={x} y={y + r * 0.82 + 36} textAnchor="middle" className="fill-[var(--os-cyan)] text-[11px] font-medium" style={{ paintOrder: 'stroke', stroke: 'var(--os-bg)', strokeWidth: 4 }}>
+                  <text x={x} y={y + r * 0.82 + 36} textAnchor="middle" className="fill-[var(--os-cyan)] text-xs font-medium" style={{ paintOrder: 'stroke', stroke: 'var(--os-bg)', strokeWidth: 4 }}>
                     {running} running
                   </text>
                 )}
@@ -410,6 +412,53 @@ function Territory({ home }: { home: HomeData }) {
           })}
         </svg>
       )}
+    </Panel>
+  );
+}
+
+// ---- setup checklist ---------------------------------------------------------------------------
+
+/** Shown on Home until the basics are in place. Every tick comes from real data, not from a flag. */
+function SetupChecklist({ home }: { home: HomeData }) {
+  const [vaultOk, setVaultOk] = useState<boolean | null>(null);
+  useEffect(() => {
+    api('/api/vault/overview').then(() => setVaultOk(true)).catch(() => setVaultOk(false));
+  }, []);
+  const items: Array<{ done: boolean; label: string; to: string; cta: string }> = [
+    { done: home.providers.some((p) => p.available), label: 'Connect an agent', to: '#/settings', cta: 'Open settings' },
+    { done: home.projects.length > 0, label: 'Add your first project', to: '#/projects', cta: 'Add a project' },
+    { done: vaultOk === true, label: 'Connect your notes vault', to: '#/brain', cta: 'Open Brain' },
+  ];
+  if (vaultOk === null || items.every((i) => i.done)) return null;
+  const left = items.filter((i) => !i.done).length;
+  return (
+    <Panel
+      title={`Finish setting up, ${left} to go`}
+      header={
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            try {
+              window.localStorage.removeItem(SETUP_KEY);
+            } catch {
+              /* storage blocked */
+            }
+            window.location.reload();
+          }}
+        >
+          Run the setup tour
+        </Button>
+      }
+    >
+      <ul className="divide-y divide-os-line">
+        {items.map((i) => (
+          <li key={i.label} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+            <span className={i.done ? 'text-sm text-os-muted line-through' : 'text-sm font-medium text-os-text'}>{i.label}</span>
+            {i.done ? <span className="text-xs text-os-ok">Done</span> : <a className={link} href={i.to}>{i.cta}</a>}
+          </li>
+        ))}
+      </ul>
     </Panel>
   );
 }
@@ -461,6 +510,7 @@ export default function HomePage({ navigate }: ModuleProps) {
                 <p className="font-os-sans text-[34px] font-extrabold leading-[1.1] tracking-tight text-os-text">{greeting()}{profileName() ? `, ${profileName()}` : ''}.</p>
                 <p className="mt-1 text-[15px] text-os-muted">{summary(home)}</p>
               </div>
+              <SetupChecklist home={home} />
               <QuickStart home={home} projects={projects} navigate={navigate} />
               <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
                 <Territory home={home} />
@@ -471,7 +521,7 @@ export default function HomePage({ navigate }: ModuleProps) {
               </div>
               <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
                 <Panel title="Usage by provider">
-                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
+                  <div className="grid gap-4">
                     {home.providers.map((p) => (
                       <ProviderCard key={p.id} p={p} />
                     ))}

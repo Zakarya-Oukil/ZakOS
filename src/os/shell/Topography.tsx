@@ -38,7 +38,7 @@ function cssColor(name: string, fallback: string): string {
   return v || fallback;
 }
 
-export function Topography({ className }: { className?: string }) {
+export function Topography({ className, still = false, calm = false }: { className?: string; still?: boolean; calm?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -47,7 +47,9 @@ export function Topography({ className }: { className?: string }) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const reduced = prefersReducedMotion();
+    const reduced = prefersReducedMotion() || still;
+    const frameMs = calm ? 1000 / 15 : FRAME_MS;
+    const speed = calm ? 0.45 : 1;
     let w = 0;
     let h = 0;
     let cols = 0;
@@ -78,7 +80,7 @@ export function Topography({ className }: { className?: string }) {
     };
 
     const draw = (now: number) => {
-      const t = (now - t0) / 1000;
+      const t = ((now - t0) / 1000) * speed;
       // Ease the pointer so the hill glides instead of snapping.
       pointer.x += (pointer.tx - pointer.x) * 0.14;
       pointer.y += (pointer.ty - pointer.y) * 0.14;
@@ -159,7 +161,7 @@ export function Topography({ className }: { className?: string }) {
           }
         }
         ctx.strokeStyle = major ? accent : stroke;
-        ctx.globalAlpha = major ? 0.26 : 0.5;
+        ctx.globalAlpha = major ? 0.2 : 0.34;
         ctx.lineWidth = major ? 1.25 : 1;
         ctx.stroke();
       }
@@ -168,7 +170,7 @@ export function Topography({ className }: { className?: string }) {
 
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop);
-      if (now - last < FRAME_MS) return;
+      if (now - last < frameMs) return;
       last = now;
       draw(now);
     };
@@ -219,7 +221,7 @@ export function Topography({ className }: { className?: string }) {
       document.documentElement.removeEventListener('pointerleave', onLeave);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, []);
+  }, [still, calm]);
 
   return <canvas ref={ref} aria-hidden className={className} />;
 }

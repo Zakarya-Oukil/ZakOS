@@ -1,13 +1,14 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import { Brain, FolderSimple, GearSix, GitBranch, GitCommit, House, Robot, Rocket, Scroll, ShieldCheck, Sparkle, TerminalWindow, Timer, type Icon } from '@phosphor-icons/react';
+import { Brain, ChartLineUp, CirclesFour, FileText, FolderSimple, GearSix, GitBranch, GitCommit, House, Kanban, Key, Plugs, Robot, Rocket, Scroll, ShieldCheck, Sparkle, Storefront, TerminalWindow, Timer, UsersThree, Globe, WebhooksLogo, Files, type Icon } from '@phosphor-icons/react';
 
-export type ModuleGroup = 'workspace' | 'agents' | 'knowledge' | 'build' | 'system';
+export type ModuleGroup = 'workspace' | 'agents' | 'knowledge' | 'build' | 'connect' | 'system';
 
 export const GROUPS: { id: ModuleGroup; label: string }[] = [
   { id: 'workspace', label: 'Workspace' },
   { id: 'agents', label: 'Agents' },
   { id: 'knowledge', label: 'Knowledge' },
   { id: 'build', label: 'Build' },
+  { id: 'connect', label: 'Connections' },
   { id: 'system', label: 'System' },
 ];
 
@@ -17,6 +18,8 @@ export interface OsModule {
   icon: Icon;
   /** Sidebar section the module sits under. */
   group: ModuleGroup;
+  /** Needs this plan or higher. Without it the page explains what it is and how to unlock it. */
+  premium?: 'pro' | 'team';
   component: LazyExoticComponent<ComponentType<ModuleProps>>;
   /** Cannot be switched off (the shell needs somewhere to land). */
   required?: boolean;
@@ -127,6 +130,103 @@ export const MODULES: OsModule[] = [
     group: 'build',
     component: lazy(() => import('./TerminalPage')),
     description: 'Project shell.',
+  },
+
+  {
+    id: 'tasks',
+    label: 'Tasks',
+    icon: Kanban,
+    group: 'workspace',
+    component: lazy(() => import('./tasks/TasksPage')),
+    description: 'A board your agents and you share: backlog, doing, waiting on you, review, done.',
+  },
+  {
+    id: 'files',
+    label: 'Files',
+    icon: Files,
+    group: 'build',
+    component: lazy(() => import('./files/FilesPage')),
+    description: 'Browse, search, preview and edit files inside your registered projects.',
+  },
+  {
+    id: 'reports',
+    label: 'Reports',
+    icon: FileText,
+    group: 'workspace',
+    premium: 'pro',
+    component: lazy(() => import('./reports/ReportsPage')),
+    description: 'What was done, what it cost, what is open and what is next, on demand or on a schedule.',
+  },
+  {
+    id: 'templates',
+    label: 'Templates',
+    icon: Storefront,
+    group: 'knowledge',
+    premium: 'pro',
+    component: lazy(() => import('./templates/TemplatesPage')),
+    description: 'Starter workflows, skills, prompts, themes and projects. Import and export as files.',
+  },
+  {
+    id: 'integrations',
+    label: 'Integrations',
+    icon: Plugs,
+    group: 'connect',
+    premium: 'pro',
+    component: lazy(() => import('./integrations/IntegrationsPage')),
+    description: 'GitHub, Telegram, Discord and Slack, with tokens in an encrypted store.',
+  },
+  {
+    id: 'mcp',
+    label: 'MCP servers',
+    icon: CirclesFour,
+    group: 'connect',
+    premium: 'pro',
+    component: lazy(() => import('./mcp/McpPage')),
+    description: 'See, add, test and remove the MCP servers Claude Code can use.',
+  },
+  {
+    id: 'webhooks',
+    label: 'Webhooks and keys',
+    icon: WebhooksLogo,
+    group: 'connect',
+    premium: 'pro',
+    component: lazy(() => import('./webhooks/WebhooksPage')),
+    description: 'Signed inbound webhooks with a request log and replay, plus a personal API key.',
+  },
+  {
+    id: 'remote',
+    label: 'Remote access',
+    icon: Globe,
+    group: 'connect',
+    premium: 'team',
+    component: lazy(() => import('./remote/RemotePage')),
+    description: 'Approve agent actions from your phone through Tailscale or a Cloudflare tunnel.',
+  },
+  {
+    id: 'usage',
+    label: 'Usage and cost',
+    icon: ChartLineUp,
+    group: 'system',
+    component: lazy(() => import('./usage/UsagePage')),
+    description: 'Spend by day, model and session, budgets, and plan windows with a forecast.',
+  },
+  {
+    id: 'team',
+    label: 'Team',
+    icon: UsersThree,
+    group: 'system',
+    premium: 'team',
+    component: lazy(() => import('./team/TeamPage')),
+    description: 'Local accounts with Owner, Operator and Viewer roles.',
+  },
+  {
+    id: 'licence',
+    label: 'Licence',
+    icon: Key,
+    group: 'system',
+    required: true,
+    component: lazy(() => import('./licence/LicencePage')),
+    description: 'Your plan, licence key, updates and upgrade link.',
   },
   {
     id: 'settings',

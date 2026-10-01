@@ -26,10 +26,10 @@
   --os-surface-2: rgba(232, 237, 230, 0.95);
   --os-line: #cdd6cc;
   --os-contour: #a9bdae;
-  --os-cyan: #d9461b;
-  --os-cyan-rgb: 217, 70, 27;
-  --os-amber: #a8740a;
-  --os-ok: #5a7a0c;
+  --os-cyan: #b83a12;
+  --os-cyan-rgb: 184, 58, 18;
+  --os-amber: #8a5d00;
+  --os-ok: #4d6a08;
   --os-text: #14231f;
   --os-muted: #55695f;
   --os-danger: #c42b2b;
@@ -56,7 +56,7 @@
   --os-glow-amber: 0 0 10px -2px rgba(233, 185, 73, 0.35);
   --os-focus-ring: 0 0 0 2px var(--os-bg), 0 0 0 4px var(--os-cyan);
 
-  --os-font-sans: 'Bricolage Grotesque', system-ui, sans-serif;
+  --os-font-sans: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
   --os-font-mono: 'Geist Mono', ui-monospace, Consolas, monospace;
 }
 
@@ -166,3 +166,12 @@
 }
 .os-territory-live { transform-box: fill-box; transform-origin: center; animation: os-territory-live 2.4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .os-territory-live { animation: none; } }
+
+/* Appearance studio switches (set on <html> by theme/appearance.ts). */
+:root[data-density='compact'] { font-size: 14.5px; }
+:root[data-motion='off'] *, :root[data-motion='off'] *::before, :root[data-motion='off'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+:root[data-motion='calm'] .os-territory-live { animation-duration: 4.2s; }

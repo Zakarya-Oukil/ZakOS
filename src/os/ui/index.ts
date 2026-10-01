@@ -9,3 +9,4 @@ export type { TabItem } from './Tabs';
 export { CommandPalette } from './CommandPalette';
 export type { Command } from './CommandPalette';
 export { Markdown } from './Markdown';
+export * from './bits';

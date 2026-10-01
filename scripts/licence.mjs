@@ -1,17 +1,19 @@
 #!/usr/bin/env node
 // Seller tool for Zak OS licence keys. Not shipped to customers.
 //
-//   node scripts/licence.mjs keygen                      create licence/public.pem (ship it) and licence-private/private.pem (keep it secret)
+//   node scripts/licence.mjs keygen                      create licence/public.pem (ship it) and ~/.zak-os-licence/private.pem (keep it secret)
 //   node scripts/licence.mjs issue --plan pro --name "Acme Ltd" [--email a@b.c] [--days 365]
 //
-// The private key lives in licence-private/, which is gitignored. Anyone holding it can mint keys.
+// Anyone holding the private key can mint keys.
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 const root = process.cwd();
 const PUB = path.join(root, 'licence', 'public.pem');
-const PRIV = path.join(root, 'licence-private', 'private.pem');
+// The private key lives in your home folder, outside the project, so it can never be committed or browsed by the app.
+const PRIV = path.join(os.homedir(), '.zak-os-licence', 'private.pem');
 const [cmd, ...rest] = process.argv.slice(2);
 const arg = (name, fallback) => {
   const i = rest.indexOf(`--${name}`);
@@ -20,7 +22,7 @@ const arg = (name, fallback) => {
 
 if (cmd === 'keygen') {
   if (fs.existsSync(PRIV)) {
-    console.error('A private key already exists. Delete licence-private/ by hand if you really want a new pair (old keys stop working).');
+    console.error('A private key already exists. Delete ~/.zak-os-licence/ by hand if you really want a new pair (old keys stop working).');
     process.exit(1);
   }
   const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
@@ -28,7 +30,7 @@ if (cmd === 'keygen') {
   fs.mkdirSync(path.dirname(PRIV), { recursive: true });
   fs.writeFileSync(PUB, publicKey.export({ type: 'spki', format: 'pem' }));
   fs.writeFileSync(PRIV, privateKey.export({ type: 'pkcs8', format: 'pem' }), { mode: 0o600 });
-  console.log('Wrote licence/public.pem (commit this) and licence-private/private.pem (never commit, back it up).');
+  console.log('Wrote licence/public.pem (commit this) and ~/.zak-os-licence/private.pem (back it up, never share it).');
 } else if (cmd === 'issue') {
   if (!fs.existsSync(PRIV)) {
     console.error('No private key. Run: node scripts/licence.mjs keygen');

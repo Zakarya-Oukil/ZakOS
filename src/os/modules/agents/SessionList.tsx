@@ -86,7 +86,7 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
         <span className="flex min-w-0 items-center gap-2">
           <StatusDot className="shrink-0" status={statusOf(s)} label={statusOf(s) === 'live' ? 'Running' : statusOf(s) === 'error' ? 'Last run failed' : 'Idle'} />
           <span className="min-w-0 flex-1 truncate text-sm text-os-text">{s.title}</span>
-          {s.id === besideId && <span className="shrink-0 rounded-full border border-os-line px-1.5 text-[10px] text-os-muted">beside</span>}
+          {s.id === besideId && <span className="shrink-0 rounded-full border border-os-line px-1.5 text-[11px] text-os-muted">beside</span>}
         </span>
         <span className="mt-0.5 block truncate pl-4 text-xs text-os-muted">
           {ago(s.updated)} in{' '}

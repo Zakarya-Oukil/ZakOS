@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CaretDown, ClockCounterClockwise, Moon, SidebarSimple, Sun } from '@phosphor-icons/react';
+import { CaretDown, ClockCounterClockwise, LockSimple, Moon, SidebarSimple, Sun } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { cx } from '../ui/cx';
 import { IconButton, StatusDot } from '../ui';
@@ -8,6 +8,7 @@ import { NotificationsMenu } from './NotificationsMenu';
 import { useApprovalsApi } from '../modules/approvals/api';
 import { usePrefersReducedMotion } from '../theme/motion';
 import type { Theme } from '../theme/useTheme';
+import { planAtLeast, type Plan } from '../lib/useLicence';
 
 interface SidebarProps {
   modules: OsModule[];
@@ -17,6 +18,7 @@ interface SidebarProps {
   connected: boolean;
   theme: Theme;
   onToggleTheme: () => void;
+  plan: Plan;
 }
 
 const linkBase =
@@ -33,7 +35,7 @@ function readClosed(): Record<string, boolean> {
   }
 }
 
-export function Sidebar({ modules, activeId, collapsed, onToggle, connected, theme, onToggleTheme }: SidebarProps) {
+export function Sidebar({ modules, activeId, collapsed, onToggle, connected, theme, onToggleTheme, plan }: SidebarProps) {
   const { pending } = useApprovalsApi();
   const reduced = usePrefersReducedMotion();
   const [closed, setClosed] = useState<Record<string, boolean>>(readClosed);
@@ -68,10 +70,16 @@ export function Sidebar({ modules, activeId, collapsed, onToggle, connected, the
           <Icon size={20} weight="duotone" className={active ? 'text-os-cyan' : undefined} aria-hidden />
           {!collapsed && <span className="truncate font-medium">{m.label}</span>}
           {collapsed && <span className="sr-only">{m.label}</span>}
+          {m.premium && !planAtLeast(plan, m.premium) && (
+            <>
+              <LockSimple size={14} aria-hidden className={collapsed ? 'absolute right-1.5 top-1.5' : 'ml-auto opacity-70'} />
+              <span className="sr-only">, needs the {m.premium === 'team' ? 'Team' : 'Pro'} plan</span>
+            </>
+          )}
           {m.id === 'approvals' && pending > 0 && (
             <span
               className={cx(
-                'rounded-full bg-os-cyan px-1.5 text-[10px] font-semibold leading-4 text-os-on-accent',
+                'rounded-full bg-os-cyan px-1.5 text-[11px] font-semibold leading-4 text-os-on-accent',
                 collapsed ? 'absolute right-1 top-1' : 'ml-auto',
               )}
               aria-label={`${pending} waiting`}

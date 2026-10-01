@@ -410,7 +410,7 @@ function CandidateRow({ c, active, onHover, onPick }: { c: Candidate; active: bo
       <Icon size={14} aria-hidden className="shrink-0 text-os-cyan" />
       <span className="shrink-0 truncate">{c.label}</span>
       {c.detail && <span className="min-w-0 truncate text-xs text-os-muted">{c.detail}</span>}
-      <span className="ml-auto shrink-0 text-[10px] uppercase tracking-wide text-os-muted">{KIND_LABEL[c.kind]}</span>
+      <span className="ml-auto shrink-0 text-[11px] uppercase tracking-wide text-os-muted">{KIND_LABEL[c.kind]}</span>
     </button>
   );
 }

@@ -130,7 +130,7 @@ export default function TerminalPage() {
     <PageFrame
       title="Terminal"
       leading={
-        <div role="tablist" aria-label="Terminals" className="flex items-center gap-1">
+        <div role="group" aria-label="Terminals" className="flex items-center gap-1">
           {(terms ?? []).map((t) => {
             const selected = t.id === activeId;
             return (
@@ -152,8 +152,7 @@ export default function TerminalPage() {
                 ) : (
                   <button
                     type="button"
-                    role="tab"
-                    aria-selected={selected}
+                    aria-pressed={selected}
                     title={`${t.cwd}\nDouble-click or press F2 to rename`}
                     onClick={() => pick(t.id)}
                     onDoubleClick={() => {
@@ -211,7 +210,7 @@ export default function TerminalPage() {
         {terms && terms.length === 0 && !error && <p className="p-6 text-sm text-os-muted">Opening a terminal</p>}
         <div className="min-h-0 flex-1">
           {(terms ?? []).map((t) => (
-            <div key={t.id} role="tabpanel" aria-label={t.title} className={t.id === activeId ? 'h-full' : 'hidden'}>
+            <div key={t.id} role="region" aria-label={t.title} className={t.id === activeId ? 'h-full' : 'hidden'}>
               <TerminalView
                 sessionId={t.id}
                 active={t.id === activeId}
