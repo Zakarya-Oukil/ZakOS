@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cx } from './cx';
+import { ContourGlyph } from './ContourGlyph';
 
 /** Shared class strings and small pieces so new pages look like one product. */
 export const inputCls =
@@ -24,8 +25,9 @@ export function EmptyState({ title, children, action }: { title: string; childre
   return (
     <div className="grid place-items-center px-6 py-12 text-center">
       <div className="max-w-sm">
-        <p className="font-os-sans text-[17px] font-semibold text-os-text">{title}</p>
-        {children && <p className="mt-1.5 text-sm leading-relaxed text-os-muted">{children}</p>}
+        <ContourGlyph seed={title} />
+        <p className="os-display mt-4 text-[24px] text-os-text">{title}</p>
+        {children && <p className="mt-2 text-sm leading-relaxed text-os-muted">{children}</p>}
         {action && <div className="mt-4 flex justify-center">{action}</div>}
       </div>
     </div>

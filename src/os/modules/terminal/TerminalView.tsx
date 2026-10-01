@@ -89,6 +89,8 @@ export function TerminalView({ sessionId, active, onEnded }: TerminalViewProps) 
       lineHeight: 1.25,
       cursorBlink: true,
       scrollback: 5000,
+      // Shell prompts bring their own colours; this keeps any of them readable on both themes.
+      minimumContrastRatio: 4.5,
       theme: currentTheme(),
       allowProposedApi: false,
     });

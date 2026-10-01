@@ -6,7 +6,24 @@ import { Composer } from './Composer';
 import { formatSize, type AttachRef } from './attach';
 import { usePrefersReducedMotion } from '../../theme/motion';
 import { summarizeInput, type Item } from './items';
+import { DiffView } from '../../ui/DiffView';
 import { speechSupported, useReadAloud } from './voice';
+
+/** For an edit tool, the change as a small diff, so what the agent changed reads at a glance without opening Changes. */
+function editDiff(item: Extract<Item, { kind: 'tool' }>): string | null {
+  const i = item.input as { file_path?: string; old_string?: string; new_string?: string; content?: string } | null;
+  if (!i || typeof i !== 'object') return null;
+  if ((item.name === 'Edit' || item.name === 'MultiEdit') && typeof i.old_string === 'string' && typeof i.new_string === 'string') {
+    const minus = i.old_string.split('\n').map((l) => `-${l}`).join('\n');
+    const plus = i.new_string.split('\n').map((l) => `+${l}`).join('\n');
+    return `${i.file_path ?? ''}\n${minus}\n${plus}`;
+  }
+  if (item.name === 'Write' && typeof i.content === 'string') {
+    const lines = i.content.split('\n');
+    return `${i.file_path ?? ''}\n${lines.slice(0, 40).map((l) => `+${l}`).join('\n')}${lines.length > 40 ? '\n+...' : ''}`;
+  }
+  return null;
+}
 
 function ToolCard({ item }: { item: Extract<Item, { kind: 'tool' }> }) {
   const summary = summarizeInput(item.name, item.input);
@@ -22,6 +39,7 @@ function ToolCard({ item }: { item: Extract<Item, { kind: 'tool' }> }) {
         <StatusDot status={state} label={stateLabel} className="ml-auto" />
       </summary>
       <div className="grid gap-2 border-t border-os-line p-3">
+        {editDiff(item) && <DiffView text={editDiff(item)!} maxHeight="max-h-56" />}
         <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words font-os-mono text-xs leading-relaxed text-os-muted">
           {JSON.stringify(item.input, null, 2)}
         </pre>

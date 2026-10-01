@@ -12,6 +12,7 @@ import { mountFlowRoutes } from './flows';
 import { mountGitExtras } from './gitExtras';
 import { mountBackupRoutes, mountScaffoldRoutes } from './backup';
 import { mountFileRoutes } from './files';
+import { startGraphWatch } from './graphWatch';
 import { mountIntegrationRoutes } from './integrations';
 import { mountLicenceRoutes } from './licence';
 import { mountMcpRoutes } from './mcp';
@@ -57,4 +58,5 @@ export function mountOsRoutes(app: Express, broadcast: (d: unknown) => void) {
   mountBackupRoutes(app);
   mountScaffoldRoutes(app);
   startReportScheduler();
+  startGraphWatch();
 }

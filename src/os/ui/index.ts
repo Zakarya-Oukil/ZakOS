@@ -10,3 +10,4 @@ export { CommandPalette } from './CommandPalette';
 export type { Command } from './CommandPalette';
 export { Markdown } from './Markdown';
 export * from './bits';
+export { ContourGlyph } from './ContourGlyph';

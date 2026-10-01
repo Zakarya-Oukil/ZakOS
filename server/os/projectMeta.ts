@@ -17,9 +17,13 @@ export interface ProjectMeta {
   defaultAgent: string;
   vaultFolder: string;
   notes: string;
+  /** Rebuild the project graph when a new commit lands. */
+  autoGraph: boolean;
+  /** Shown in the Pinned row on Home. */
+  pinned: boolean;
 }
 
-const DEFAULT: ProjectMeta = { group: '', tags: [], archived: false, defaultAgent: 'claude', vaultFolder: '', notes: '' };
+const DEFAULT: ProjectMeta = { group: '', tags: [], archived: false, defaultAgent: 'claude', vaultFolder: '', notes: '', autoGraph: false, pinned: false };
 const key = (id: string) => `project.meta.${id}`;
 export const metaOf = (id: string): ProjectMeta => ({ ...DEFAULT, ...kvGet<Partial<ProjectMeta>>(key(id), {}) });
 
@@ -60,6 +64,8 @@ export function mountProjectMeta(app: Express) {
       defaultAgent: ['claude', 'hermes', 'antigravity'].includes(b.defaultAgent) ? b.defaultAgent : cur.defaultAgent,
       vaultFolder,
       notes: typeof b.notes === 'string' ? b.notes.slice(0, 4000) : cur.notes,
+      autoGraph: typeof b.autoGraph === 'boolean' ? b.autoGraph : cur.autoGraph,
+      pinned: typeof b.pinned === 'boolean' ? b.pinned : cur.pinned,
     };
     kvSet(key(p.id), next);
     const idx = kvGet<string[]>('project.meta.index', []);

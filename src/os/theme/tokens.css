@@ -175,3 +175,17 @@
   transition-duration: 0.001ms !important;
 }
 :root[data-motion='calm'] .os-territory-live { animation-duration: 4.2s; }
+
+/* Display voice: Bricolage at its condensed, heavy end. Only for page titles, greetings and big figures. */
+.os-display {
+  font-stretch: 78%;
+  font-weight: 800;
+  letter-spacing: -0.012em;
+  font-variation-settings: 'opsz' 96;
+  line-height: 1.02;
+}
+
+/* The working marker: an arc travels around its ring. */
+@keyframes os-sweep { to { transform: rotate(360deg); } }
+.os-sweep { transform-origin: 6px 6px; animation: os-sweep 1.15s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .os-sweep { animation: none; } }

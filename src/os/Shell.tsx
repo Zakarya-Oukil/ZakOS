@@ -6,7 +6,8 @@ import { useHashRoute } from './lib/router';
 import { useModuleState } from './lib/useModuleState';
 import { MODULES, findModule } from './modules/registry';
 import { Sidebar } from './shell/Sidebar';
-import { Topography } from './shell/Topography';
+import { PULSE_EVENT, Topography } from './shell/Topography';
+import { agentsSocket } from './lib/agentsSocket';
 import { useTheme } from './theme/useTheme';
 import { useAppearance } from './theme/appearance';
 import { useAuth } from './lib/useAuth';
@@ -17,7 +18,7 @@ import { SetupWizard, setupDone } from './shell/SetupWizard';
 import { useShortcutListener } from './lib/shortcuts';
 import { CAPTURE_EVENT, QuickCapture } from './shell/QuickCapture';
 import { bootSequence } from './theme/gsap';
-import { pageVariants, reducedPageVariants, usePrefersReducedMotion } from './theme/motion';
+import { usePrefersReducedMotion } from './theme/motion';
 import { CommandPalette, type Command } from './ui';
 
 const LegacyApp = lazy(() => import('../legacy/App').then((m) => ({ default: m.App })));
@@ -53,6 +54,8 @@ export function Shell() {
   const remoteView = !['localhost', '127.0.0.1', '[::1]', '::1'].includes(window.location.hostname) || new URLSearchParams(window.location.search).has('phone');
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const rootRef = useRef<HTMLDivElement>(null);
+  // Where the last navigation started, so the next page opens outward from that spot.
+  const origin = useRef({ x: 60, y: 260 });
 
   const [first, ...rest] = segments;
   const visible = useMemo(() => MODULES.filter((m) => modules.isEnabled(m.id)), [modules]);
@@ -63,6 +66,35 @@ export function Shell() {
   useEffect(() => {
     if (!isLegacy && active && first !== active.id) navigate(active.id);
   }, [isLegacy, active, first, navigate]);
+
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      const a = (e.target as HTMLElement)?.closest?.('nav a[href^="#/"], nav button');
+      if (a) {
+        const r = (a as HTMLElement).getBoundingClientRect();
+        origin.current = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      }
+    };
+    window.addEventListener('pointerdown', onDown, true);
+    return () => window.removeEventListener('pointerdown', onDown, true);
+  }, []);
+
+  // The map answers what the agents do: a ripple leaves the Agents item when a run ends.
+  useEffect(() => {
+    const ping = (selector: string) => {
+      const el = document.querySelector(selector) as HTMLElement | null;
+      const r = el?.getBoundingClientRect();
+      window.dispatchEvent(new CustomEvent(PULSE_EVENT, { detail: r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: 120, y: 300 } }));
+    };
+    const off1 = agentsSocket.subscribe((m) => {
+      if (m.event.type === 'status' && (m.event.state === 'idle' || m.event.state === 'error')) ping('nav a[href="#/agents"]');
+    });
+    const off2 = agentsSocket.subscribeApprovals(() => ping('nav a[href="#/approvals"]'));
+    return () => {
+      off1();
+      off2();
+    };
+  }, []);
 
   useEffect(() => {
     const tl = bootSequence(rootRef.current);
@@ -132,7 +164,7 @@ export function Shell() {
     <ModuleContext.Provider value={modules}>
       <div ref={rootRef} className="relative flex h-[100dvh] w-full font-os-sans text-os-text">
         {appearance.backdrop !== 'none' && (
-          <Topography className="pointer-events-none fixed inset-0 h-full w-full" still={appearance.backdrop === 'still' || appearance.motion === 'off'} calm={appearance.motion === 'calm'} />
+          <Topography className="pointer-events-none fixed inset-0 h-full w-full" still={appearance.backdrop === 'still' || appearance.motion === 'off'} calm={appearance.motion === 'calm'} region={active?.id ?? 'home'} />
         )}
         <Sidebar
           modules={visible}
@@ -149,9 +181,15 @@ export function Shell() {
             <motion.div
               key={active.id}
               className="h-full"
-              variants={reduced ? reducedPageVariants : pageVariants}
-              initial="initial"
-              animate="animate"
+              initial={reduced ? { opacity: 0 } : { clipPath: `circle(0px at ${Math.max(0, origin.current.x - (collapsed ? 64 : 232))}px ${origin.current.y}px)` }}
+              animate={reduced ? { opacity: 1, transition: { duration: 0.01 } } : { clipPath: `circle(2600px at ${Math.max(0, origin.current.x - (collapsed ? 64 : 232))}px ${origin.current.y}px)`, transition: { duration: 0.6, ease: [0.65, 0, 0.35, 1] } }}
+              onAnimationComplete={(def) => {
+                // Once open, drop the clip so nothing is ever cut off.
+                const el = document.getElementById('os-page');
+                if (el && !reduced) el.style.clipPath = 'none';
+                void def;
+              }}
+              id="os-page"
             >
               <Suspense fallback={<PageFallback />}>
                 {active.premium && licence.info && !planAtLeast(licence.plan, active.premium) ? (

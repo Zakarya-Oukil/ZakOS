@@ -367,6 +367,40 @@ function Limits({ l }: { l: HomeData['limits'] }) {
   );
 }
 
+// ---- pinned projects ------------------------------------------------------------------------------
+
+function Pinned({ home, navigate }: { home: HomeData; navigate: ModuleProps['navigate'] }) {
+  const [pinned, setPinned] = useState<string[]>([]);
+  useEffect(() => {
+    fetch('/api/project-meta')
+      .then((r) => r.json())
+      .then((d) => d.success && setPinned(Object.entries(d.meta as Record<string, { pinned?: boolean; archived?: boolean }>).filter(([, m]) => m.pinned && !m.archived).map(([id]) => id)))
+      .catch(() => undefined);
+  }, []);
+  const list = home.projects.filter((p) => pinned.includes(p.id));
+  if (list.length === 0) return null;
+  return (
+    <Panel title="Pinned">
+      <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {list.map((p) => (
+          <li key={p.id} className="grid gap-2">
+            <button type="button" onClick={() => navigate('projects', p.id)} className="flex items-center gap-2 text-left focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]">
+              <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: p.color }} aria-hidden />
+              <span className="truncate text-[15px] font-medium text-os-text">{p.name}</span>
+            </button>
+            <span className="flex flex-wrap gap-1.5">
+              <Button size="sm" onClick={() => navigate('agents', 'claude')}>Session</Button>
+              <Button size="sm" onClick={() => navigate('git', p.id)}>Git</Button>
+              <Button size="sm" onClick={() => navigate('dev', p.id, 'run')}>Run</Button>
+              <Button size="sm" onClick={() => navigate('files')}>Files</Button>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </Panel>
+  );
+}
+
 // ---- catch-up ------------------------------------------------------------------------------------
 
 const VISIT_KEY = 'zakos_last_visit';
@@ -438,62 +472,62 @@ function Territory({ home }: { home: HomeData }) {
     fetch('/api/health-scores').then((r) => r.json()).then((d) => d.success && setScores(d.scores)).catch(() => undefined);
   }, []);
   const items = home.projects.filter((p) => !metas[p.id]?.archived);
-  const W = 720;
-  const H = 330;
+  const W = 1100;
+  const H = 400;
   const golden = 2.399963229728653;
+  // The land sits to the right of centre so the greeting has the open sea on the left.
+  const cx0 = W * 0.62;
+  const cy0 = H * 0.4;
   const placed = items.map((p, i) => {
     const a = i * golden + 0.6;
-    const spread = items.length === 1 ? 0 : 0.32 + 0.1 * Math.min(items.length, 4);
-    const rx = i === 0 ? 0 : Math.sqrt(i / items.length) * spread * W;
-    const ry = i === 0 ? 0 : Math.sqrt(i / items.length) * spread * H * 1.1;
+    const spread = items.length === 1 ? 0 : 0.34 + 0.07 * Math.min(items.length, 5);
+    const rx = i === 0 ? 0 : Math.sqrt(i / items.length) * spread * W * 0.7;
+    const ry = i === 0 ? 0 : Math.sqrt(i / items.length) * spread * H * 1.05;
     const running = home.running.sessions.filter((s) => norm(s.cwd).startsWith(norm(p.path))).length;
     const recent = p.lastSessionAt ? Math.max(0, 1 - (Date.now() - p.lastSessionAt) / (7 * 86_400_000)) : 0;
-    return { p, x: W / 2 + Math.cos(a) * rx, y: H / 2 + Math.sin(a) * ry, r: (34 + recent * 22 + (p.graphUpdated ? 8 : 0)) * (items.length < 3 ? 1.9 : 1), running };
+    return { p, x: cx0 + Math.cos(a) * rx, y: cy0 + Math.sin(a) * ry, r: (38 + recent * 26 + (p.graphUpdated ? 10 : 0)) * (items.length < 3 ? 2.1 : items.length < 6 ? 1.4 : 1), running };
   });
+  if (items.length === 0)
+    return (
+      <p className="absolute bottom-16 right-8 max-w-xs text-right text-sm text-os-muted">
+        No projects on the map yet. <a className={link} href="#/projects">Add a folder or clone a repo</a> and it appears here as land.
+      </p>
+    );
   return (
-    <Panel title="Territory" header={<a className="text-xs text-os-muted hover:text-os-text" href="#/projects">Manage projects</a>} padded={false} className="overflow-hidden">
-      {items.length === 0 ? (
-        <div className="grid h-[300px] place-items-center p-6 text-center">
-          <p className="max-w-xs text-sm text-os-muted">
-            No projects on the map yet. <a className={link} href="#/projects">Add a folder or clone a repo</a> and it appears here as land.
-          </p>
-        </div>
-      ) : (
-        <svg viewBox={`0 0 ${W} ${H}`} role="group" aria-label={`Map of ${items.length} project${items.length === 1 ? '' : 's'}`} className="block h-auto w-full">
-          {placed.map(({ p, x, y, r, running }) => {
-            const seed = seedOf(p.id);
-            const to = p.graphUpdated ? `#/brain/${p.id}` : '#/projects';
-            return (
-              <a key={p.id} href={to} className="group outline-none">
-                <title>{`${p.name}${scores[p.id] ? `, health ${scores[p.id]!.score} percent` : ''}${running ? `, ${running} running` : ''}`}</title>
-                {[1, 0.8, 0.6, 0.4, 0.2].map((f, k) => (
-                  <path
-                    key={k}
-                    d={ring(x, y, r * f, seed, k)}
-                    fill={k === 0 ? p.color : 'none'}
-                    fillOpacity={k === 0 ? 0.1 : 0}
-                    stroke={k === 0 ? p.color : 'var(--os-contour)'}
-                    strokeWidth={k === 0 ? 1.6 : 1}
-                    strokeOpacity={k === 0 ? 0.9 : 0.8}
-                  />
-                ))}
-                <path d={`M${x},${y} v-22`} stroke="var(--os-text)" strokeWidth={1.4} />
-                <path d={`M${x},${y - 22} l15,5 l-15,5z`} fill={p.color} />
-                {running > 0 && <circle cx={x} cy={y} r={r * 0.34} fill="none" stroke="var(--os-cyan)" strokeWidth={2} className="os-territory-live" />}
-                <text x={x} y={y + r * 0.82 + 20} textAnchor="middle" className="fill-[var(--os-text)] text-[13px] font-semibold" style={{ paintOrder: 'stroke', stroke: 'var(--os-bg)', strokeWidth: 4 }}>
-                  {p.name}{scores[p.id] ? `  ${scores[p.id]!.score}%` : ''}
-                </text>
-                {running > 0 && (
-                  <text x={x} y={y + r * 0.82 + 36} textAnchor="middle" className="fill-[var(--os-cyan)] text-xs font-medium" style={{ paintOrder: 'stroke', stroke: 'var(--os-bg)', strokeWidth: 4 }}>
-                    {running} running
-                  </text>
-                )}
-              </a>
-            );
-          })}
-        </svg>
-      )}
-    </Panel>
+    <svg viewBox={`0 0 ${W} ${H}`} role="group" aria-label={`Map of ${items.length} project${items.length === 1 ? '' : 's'}`} className="absolute inset-0 h-full w-full" preserveAspectRatio="xMaxYMid meet">
+      {placed.map(({ p, x, y, r, running }) => {
+        const seed = seedOf(p.id);
+        const to = p.graphUpdated ? `#/brain/${p.id}` : '#/projects';
+        return (
+          <a key={p.id} href={to} className="group outline-none">
+            <title>{`${p.name}${scores[p.id] ? `, health ${scores[p.id]!.score} percent` : ''}${running ? `, ${running} running` : ''}`}</title>
+            {[1, 0.8, 0.6, 0.4, 0.2].map((f, k) => (
+              <path
+                key={k}
+                d={ring(x, y, r * f, seed, k)}
+                fill={k === 0 ? p.color : 'none'}
+                fillOpacity={k === 0 ? 0.12 : 0}
+                stroke={k === 0 ? p.color : 'var(--os-contour)'}
+                strokeWidth={k === 0 ? 1.8 : 1.1}
+                strokeOpacity={k === 0 ? 0.95 : 0.85}
+                className="transition-[stroke-width] duration-200 group-hover:[stroke-width:2.4px] group-focus-visible:[stroke-width:2.4px]"
+              />
+            ))}
+            <path d={`M${x},${y} v-26`} stroke="var(--os-text)" strokeWidth={1.5} />
+            <path d={`M${x},${y - 26} l17,6 l-17,6z`} fill={p.color} />
+            {running > 0 && <circle cx={x} cy={y} r={r * 0.34} fill="none" stroke="var(--os-cyan)" strokeWidth={2.2} className="os-territory-live" />}
+            <text x={x} y={y + r * 0.84 + 22} textAnchor="middle" className="fill-[var(--os-text)] text-[15px] font-semibold" style={{ paintOrder: 'stroke', stroke: 'var(--os-bg)', strokeWidth: 5 }}>
+              {p.name}{scores[p.id] ? `  ${scores[p.id]!.score}%` : ''}
+            </text>
+            {running > 0 && (
+              <text x={x} y={y + r * 0.84 + 40} textAnchor="middle" className="fill-[var(--os-cyan)] text-[13px] font-medium" style={{ paintOrder: 'stroke', stroke: 'var(--os-bg)', strokeWidth: 5 }}>
+                {running} running
+              </text>
+            )}
+          </a>
+        );
+      })}
+    </svg>
   );
 }
 
@@ -587,34 +621,40 @@ export default function HomePage({ navigate }: ModuleProps) {
           {!home && !error && <p className="text-sm text-os-muted">Loading</p>}
           {home && (
             <>
-              <div>
-                <p className="font-os-sans text-[34px] font-extrabold leading-[1.1] tracking-tight text-os-text">{greeting()}{profileName() ? `, ${profileName()}` : ''}.</p>
-                <p className="mt-1 text-[15px] text-os-muted">{summary(home)}</p>
+              <section className="relative -mx-5 -mt-5 h-[400px] overflow-hidden" aria-label="Your projects as a map">
+                <Territory home={home} />
+                <div className="pointer-events-none absolute left-8 top-8 max-w-[34rem]">
+                  <h2 className="os-display text-[64px] leading-[0.95] text-os-text">
+                    {greeting()}
+                    {profileName() ? `, ${profileName()}` : ''}.
+                  </h2>
+                  <p className="mt-3 text-[16px] text-os-muted">{summary(home)}</p>
+                </div>
+              </section>
+              <div className="relative z-10 -mt-14">
+                <QuickStart home={home} projects={projects} navigate={navigate} />
               </div>
               <SetupChecklist home={home} />
-              <CatchUp items={home.activity} />
-              <QuickStart home={home} projects={projects} navigate={navigate} />
               <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-                <Territory home={home} />
                 <div className="grid content-start gap-5">
                   <Attention a={home.attention} />
                   <Running r={home.running} labelOf={labelOf} />
+                  <Pinned home={home} navigate={navigate} />
+                  <CatchUp items={home.activity} />
+                  <Panel title="Usage by provider">
+                    <div className="grid gap-4">
+                      {home.providers.map((p) => (
+                        <ProviderCard key={p.id} p={p} />
+                      ))}
+                    </div>
+                  </Panel>
                 </div>
-              </div>
-              <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-                <Panel title="Usage by provider">
-                  <div className="grid gap-4">
-                    {home.providers.map((p) => (
-                      <ProviderCard key={p.id} p={p} />
-                    ))}
-                  </div>
-                </Panel>
                 <div className="grid content-start gap-5">
                   <Schedules items={home.schedules} />
                   <Limits l={home.limits} />
+                  <Activity items={home.activity} />
                 </div>
               </div>
-              <Activity items={home.activity} />
             </>
           )}
         </div>

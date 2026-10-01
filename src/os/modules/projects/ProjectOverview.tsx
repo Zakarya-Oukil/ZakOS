@@ -13,6 +13,8 @@ export interface Meta {
   defaultAgent: string;
   vaultFolder: string;
   notes: string;
+  autoGraph: boolean;
+  pinned: boolean;
 }
 
 interface Gh {
@@ -131,6 +133,14 @@ export function ProjectOverview({ project, navigate }: { project: ProjectInfo; n
                   <Field label="Linked vault folder" htmlFor="pm-vault" hint="A folder inside your Obsidian vault, like 02 Coding Projects/Web Development/My App. Its newest notes show below.">
                     <input id="pm-vault" value={meta.vaultFolder} onChange={(e) => setMeta({ ...meta, vaultFolder: e.target.value })} className={inputCls} />
                   </Field>
+                  <label className="flex cursor-pointer items-center gap-2.5 text-sm text-os-text">
+                    <input type="checkbox" checked={meta.pinned} onChange={(e) => setMeta({ ...meta, pinned: e.target.checked })} />
+                    Pin to Home
+                  </label>
+                  <label className="flex cursor-pointer items-start gap-2.5 text-sm text-os-text">
+                    <input type="checkbox" checked={meta.autoGraph} onChange={(e) => setMeta({ ...meta, autoGraph: e.target.checked })} className="mt-0.5" />
+                    <span>Rebuild the graph after every commit<span className="block text-xs text-os-muted">Uses graphify's code pass: no AI credits. Needs Python and graphify installed.</span></span>
+                  </label>
                   <label className="flex cursor-pointer items-center gap-2.5 text-sm text-os-text">
                     <input type="checkbox" checked={meta.archived} onChange={(e) => setMeta({ ...meta, archived: e.target.checked })} />
                     Archived (hidden from the main list and the Home map)

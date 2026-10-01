@@ -38,7 +38,20 @@ function cssColor(name: string, fallback: string): string {
   return v || fallback;
 }
 
-export function Topography({ className, still = false, calm = false }: { className?: string; still?: boolean; calm?: boolean }) {
+export const PULSE_EVENT = 'zakos:pulse';
+
+/** A named place on the map. Each page has its own, so moving between pages is a short journey across the terrain. */
+function regionOffset(region: string): [number, number] {
+  let h = 2166136261;
+  for (let i = 0; i < region.length; i++) h = Math.imul(h ^ region.charCodeAt(i), 16777619);
+  const a = (h >>> 0) / 4294967295;
+  const b = (Math.imul(h, 2654435761) >>> 0) / 4294967295;
+  return [a * 38, b * 38];
+}
+
+export function Topography({ className, still = false, calm = false, region = 'home' }: { className?: string; still?: boolean; calm?: boolean; region?: string }) {
+  const regionRef = useRef(region);
+  regionRef.current = region;
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -60,6 +73,8 @@ export function Topography({ className, still = false, calm = false }: { classNa
     const t0 = performance.now();
     const pointer = { x: -9999, y: -9999, tx: -9999, ty: -9999 };
     let stroke = '#2f5a4a';
+    const off = { x: regionOffset(regionRef.current)[0], y: regionOffset(regionRef.current)[1] };
+    const ripples: Array<{ x: number; y: number; t: number }> = [];
     let accent = '#ff6a3d';
 
     const readColors = () => {
@@ -84,14 +99,27 @@ export function Topography({ className, still = false, calm = false }: { classNa
       // Ease the pointer so the hill glides instead of snapping.
       pointer.x += (pointer.tx - pointer.x) * 0.14;
       pointer.y += (pointer.ty - pointer.y) * 0.14;
+      // Travel: ease toward this page's region of the map.
+      const [tx, ty] = regionOffset(regionRef.current);
+      off.x += (tx - off.x) * (reduced ? 1 : 0.045);
+      off.y += (ty - off.y) * (reduced ? 1 : 0.045);
+      const wave = ripples.filter((r) => now - r.t < 2600);
+      ripples.length = 0;
+      ripples.push(...wave);
 
       for (let j = 0; j < rows; j++) {
         for (let i = 0; i < cols; i++) {
           const x = i * CELL;
           const y = j * CELL;
-          let v = noise(i * 0.075 + t * 0.03, j * 0.075 - t * 0.02) * 0.62;
-          v += noise(i * 0.17 - t * 0.04, j * 0.17 + t * 0.03 + 40) * 0.26;
-          v += noise(i * 0.4 + 90, j * 0.4 + t * 0.05) * 0.12;
+          let v = noise(i * 0.075 + off.x + t * 0.03, j * 0.075 + off.y - t * 0.02) * 0.62;
+          v += noise(i * 0.17 + off.x * 2 - t * 0.04, j * 0.17 + off.y * 2 + t * 0.03 + 40) * 0.26;
+          v += noise(i * 0.4 + 90 + off.x * 4, j * 0.4 + off.y * 4 + t * 0.05) * 0.12;
+          for (const r of ripples) {
+            const age = (now - r.t) / 1000;
+            const rad = age * 260;
+            const dd = Math.hypot(x - r.x, y - r.y) - rad;
+            v += 0.28 * Math.exp(-(dd * dd) / 1400) * Math.max(0, 1 - age / 2.6);
+          }
           const dx = x - pointer.x;
           const dy = y - pointer.y;
           v += 0.34 * Math.exp(-(dx * dx + dy * dy) / 26000);
@@ -187,6 +215,10 @@ export function Topography({ className, still = false, calm = false }: { classNa
       pointer.tx = -9999;
       pointer.ty = -9999;
     };
+    const onPulse = (e: Event) => {
+      const d = (e as CustomEvent<{ x: number; y: number }>).detail;
+      if (d && !reduced) ripples.push({ x: d.x, y: d.y, t: performance.now() });
+    };
     const onVisibility = () => {
       cancelAnimationFrame(raf);
       if (!document.hidden && !reduced) raf = requestAnimationFrame(loop);
@@ -198,6 +230,7 @@ export function Topography({ className, still = false, calm = false }: { classNa
     if (!reduced) {
       raf = requestAnimationFrame(loop);
       window.addEventListener('pointermove', onMove, { passive: true });
+      window.addEventListener(PULSE_EVENT, onPulse);
       document.documentElement.addEventListener('pointerleave', onLeave);
       document.addEventListener('visibilitychange', onVisibility);
     }
@@ -218,6 +251,7 @@ export function Topography({ className, still = false, calm = false }: { classNa
       ro.disconnect();
       mo.disconnect();
       window.removeEventListener('pointermove', onMove);
+      window.removeEventListener(PULSE_EVENT, onPulse);
       document.documentElement.removeEventListener('pointerleave', onLeave);
       document.removeEventListener('visibilitychange', onVisibility);
     };
