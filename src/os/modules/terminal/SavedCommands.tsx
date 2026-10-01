@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { BookmarkSimple, Trash } from '@phosphor-icons/react';
 import { Button, inputCls } from '../../ui';
+import { api } from '../../lib/api';
 
 /** Saved terminal commands, kept in this browser. A command is inserted at the prompt and never run for you. */
 const KEY = 'zakos_saved_commands';
@@ -27,6 +28,23 @@ export function SavedCommands({ sessionId }: { sessionId: string }) {
   const [command, setCommand] = useState('');
   const [filter, setFilter] = useState('');
   const ref = useRef<HTMLDivElement>(null);
+  const [ask, setAsk] = useState('');
+  const [proposed, setProposed] = useState<string | null>(null);
+  const [asking, setAsking] = useState(false);
+  const [askError, setAskError] = useState<string | null>(null);
+  const propose = async () => {
+    setAsking(true);
+    setAskError(null);
+    setProposed(null);
+    try {
+      const d = await api<{ command: string }>('/api/git-x/suggest-command', { method: 'POST', body: { request: ask } });
+      setProposed(d.command);
+    } catch (e) {
+      setAskError((e as Error).message);
+    } finally {
+      setAsking(false);
+    }
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -101,6 +119,18 @@ export function SavedCommands({ sessionId }: { sessionId: string }) {
             <Button type="submit" size="sm" className="justify-self-start" disabled={!name.trim() || !command.trim()}>Save command</Button>
           </form>
           <p className="mt-2 text-xs text-os-muted">Inserted at the prompt. You press Enter to run it.</p>
+          <div className="mt-3 grid gap-2 border-t border-os-line pt-3">
+            <label htmlFor="sc-ask" className="text-[13px] font-medium text-os-text">Ask for a command</label>
+            <input id="sc-ask" value={ask} onChange={(e) => setAsk(e.target.value)} placeholder="show the 5 biggest folders here" className={inputCls + ' h-9'} />
+            <Button type="button" size="sm" className="justify-self-start" disabled={asking || !ask.trim()} onClick={propose}>{asking ? 'Thinking' : 'Suggest a command'}</Button>
+            {askError && <p role="alert" className="text-xs text-os-danger">{askError}</p>}
+            {proposed && (
+              <div className="grid gap-2">
+                <pre className="max-h-32 overflow-auto whitespace-pre-wrap rounded-[var(--os-radius)] bg-os-surface-2 p-2 font-os-mono text-xs text-os-text">{proposed}</pre>
+                <Button type="button" size="sm" className="justify-self-start" onClick={() => insert({ name: 'suggested', command: proposed.split('\n').filter((l) => !l.startsWith('#')).join(' ').trim() })}>Put it at the prompt (not run)</Button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

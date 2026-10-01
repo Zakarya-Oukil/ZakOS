@@ -3,6 +3,8 @@ import type { Express, NextFunction, Request, Response } from 'express';
 import { audit } from '../audit';
 import { fail, handle, kvGet, kvSet, localOnly, osdb, str } from './common';
 import { createTask } from './tasks';
+import { fireWebhook } from '../automations/scheduler';
+import { getBroadcast } from './alerts';
 
 /**
  * Inbound webhooks and a personal API key. Each webhook has a name, an HMAC secret and an action. The
@@ -99,6 +101,8 @@ export function mountWebhookRoutes(app: Express) {
     try {
       const note = perform(row.action, name, raw);
       osdb.prepare('UPDATE webhooks SET hits = hits + 1 WHERE name = ?').run(name);
+      const bc = getBroadcast();
+      if (bc) void fireWebhook(name, bc).catch(() => undefined);
       log(name, 200, note, raw);
       audit('webhook', `hook:${name}`, note);
       res.json({ success: true });

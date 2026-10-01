@@ -35,6 +35,15 @@ const withNext = (s: Schedule) => {
 /** Returns a validated trigger, or an error message. */
 function parseTrigger(raw: any): { trigger: Trigger } | { error: string } {
   if (raw?.kind === 'commit') return { trigger: { kind: 'commit' } };
+  if (raw?.kind === 'files') return { trigger: { kind: 'files' } };
+  if (raw?.kind === 'chain') {
+    if (typeof raw.after !== 'string' || !getSchedule(raw.after)) return { error: 'Pick an existing automation to follow' };
+    return { trigger: { kind: 'chain', after: raw.after } };
+  }
+  if (raw?.kind === 'webhook') {
+    if (typeof raw.name !== 'string' || !/^[a-z0-9-]{2,40}$/.test(raw.name)) return { error: 'A webhook name uses 2 to 40 lowercase letters, numbers or dashes' };
+    return { trigger: { kind: 'webhook', name: raw.name } };
+  }
   if (raw?.kind === 'cron' && typeof raw.cron === 'string') {
     try {
       parseCron(raw.cron);
@@ -43,7 +52,7 @@ function parseTrigger(raw: any): { trigger: Trigger } | { error: string } {
     }
     return { trigger: { kind: 'cron', cron: raw.cron.trim().replace(/\s+/g, ' ') } };
   }
-  return { error: 'trigger must be { kind: "cron", cron } or { kind: "commit" }' };
+  return { error: 'Unknown trigger' };
 }
 
 export function mountScheduleRoutes(app: Express, broadcast: Broadcast) {

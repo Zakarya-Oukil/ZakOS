@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Copy, FloppyDisk, LinkSimple, Plus, Trash } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
+import { ImportSkill, TrySkill } from './SkillsExtras';
 import { cx } from '../../ui/cx';
 import { timeAgo } from '../../lib/projectsApi';
 import { skillsApi, type SkillDetail, type SkillInfo } from './api';
@@ -37,6 +38,11 @@ export default function SkillsPage({ route, navigate }: ModuleProps) {
   const [query, setQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [usage, setUsage] = useState<Record<string, number>>({});
+  useEffect(() => {
+    fetch('/api/skills-x/usage').then((r) => r.json()).then((d) => d.success && setUsage(d.counts)).catch(() => undefined);
+  }, []);
   const [form, setForm] = useState({ scope: 'user', name: '', description: '' });
 
   const [detail, setDetail] = useState<SkillDetail | null>(null);
@@ -120,13 +126,29 @@ export default function SkillsPage({ route, navigate }: ModuleProps) {
     <PageFrame
       title="Skills"
       actions={
-        <button type="button" className={btn} onClick={() => { setCreating((v) => !v); setNotice(null); }}>
-          <Plus size={14} aria-hidden /> New skill
-        </button>
+        <>
+          <button type="button" className={btn} onClick={() => { setImporting((v) => !v); setCreating(false); setNotice(null); }}>
+            Import from a link
+          </button>
+          <button type="button" className={btn} onClick={() => { setCreating((v) => !v); setImporting(false); setNotice(null); }}>
+            <Plus size={14} aria-hidden /> New skill
+          </button>
+        </>
       }
     >
       <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)]">
         <aside className="min-h-0 overflow-y-auto border-r border-os-line p-3" aria-label="Skills">
+          {importing && (
+            <ImportSkill
+              scopes={scopes}
+              onClose={() => setImporting(false)}
+              onDone={(sc, n) => {
+                setImporting(false);
+                refresh();
+                navigate('skills', sc, n);
+              }}
+            />
+          )}
           {creating && (
             <form
               className="mb-3 grid gap-2 rounded-[var(--os-radius)] border border-os-line p-3"
@@ -174,6 +196,7 @@ export default function SkillsPage({ route, navigate }: ModuleProps) {
                         {s.linked && <LinkSimple size={12} aria-label="Linked from another folder, read-only" className="shrink-0 text-os-muted" />}
                       </span>
                       <span className="mt-0.5 line-clamp-2 block text-xs text-os-muted">{s.description || 'No description'}</span>
+                      {usage[s.name] ? <span className="mt-0.5 block text-[11px] text-os-muted">Used {usage[s.name]} time{usage[s.name] === 1 ? '' : 's'} by agents</span> : null}
                     </a>
                     <Switch on={s.enabled} label={`${s.enabled ? 'Disable' : 'Enable'} ${s.name}`} disabled={s.linked} onChange={(v) => void run(() => skillsApi.setEnabled(s.scope, s.name, v))} />
                   </li>
@@ -204,6 +227,7 @@ export default function SkillsPage({ route, navigate }: ModuleProps) {
                   >
                     <Copy size={14} aria-hidden /> Copy /{name}
                   </button>
+                  <a className={btn} href={`/api/skills-x/export/${encodeURIComponent(scope)}/${encodeURIComponent(name)}`} download>Export file</a>
                   <button type="button" className={btn} disabled={readOnly || !dirty} onClick={() => void run(async () => { await skillsApi.save(scope, name, draft); setDetail({ ...detail, content: draft }); }, 'Saved.')}>
                     <FloppyDisk size={14} aria-hidden /> Save
                   </button>
@@ -227,6 +251,7 @@ export default function SkillsPage({ route, navigate }: ModuleProps) {
                 spellCheck={false}
                 className="min-h-0 flex-1 resize-none border-0 bg-os-bg p-4 font-os-mono text-[13px] leading-relaxed text-os-text focus-visible:outline-none"
               />
+              <div className="border-t border-os-line p-4"><TrySkill key={`${scope}/${name}`} scope={scope} name={name} /></div>
               <div className="grid gap-2 border-t border-os-line px-4 py-2">
                 {detail.files.length > 1 && (
                   <p className="text-xs text-os-muted">

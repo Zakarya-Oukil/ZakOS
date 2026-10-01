@@ -1,4 +1,4 @@
-export type Trigger = { kind: 'cron'; cron: string } | { kind: 'commit' };
+export type Trigger = { kind: 'cron'; cron: string } | { kind: 'commit' } | { kind: 'files' } | { kind: 'chain'; after: string } | { kind: 'webhook'; name: string };
 
 export interface Automation {
   id: string;
@@ -47,4 +47,5 @@ export const PRESETS: Array<{ label: string; cron: string }> = [
   { label: 'Every Monday at 9:00', cron: '0 9 * * 1' },
 ];
 
-export const describe = (t: Trigger) => (t.kind === 'commit' ? 'On every new commit' : (PRESETS.find((p) => p.cron === t.cron)?.label ?? `Cron ${t.cron}`));
+export const describe = (t: Trigger) =>
+  t.kind === 'commit' ? 'On every new commit' : t.kind === 'files' ? 'When files change' : t.kind === 'chain' ? 'After another automation finishes' : t.kind === 'webhook' ? `Webhook ${t.name}` : (PRESETS.find((p) => p.cron === t.cron)?.label ?? `Cron ${t.cron}`);

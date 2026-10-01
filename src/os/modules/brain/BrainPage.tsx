@@ -7,6 +7,7 @@ import { usePrefersReducedMotion } from '../../theme/motion';
 import { IconButton } from '../../ui';
 import { cx } from '../../ui/cx';
 import type { GalaxyLink } from './galaxy';
+import { useHome } from '../home/api';
 import { Terrain, type HeightMode, type TerrainNode } from './terrain';
 import { NoteReader, PanelShell } from './NotePanel';
 import { BrainTools } from './BrainTools';
@@ -135,6 +136,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
   const [webglError, setWebglError] = useState(false);
   const [tools, setTools] = useState(false);
   const [openNote, setOpenNote] = useState<string | null>(null);
+  const { home } = useHome();
   const [mode, setMode] = useState<HeightMode>('importance');
   const [flat, setFlat] = useState(reduced);
   const [range, setRange] = useState<{ min: number; max: number } | null>(null);
@@ -211,6 +213,14 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
   useEffect(() => {
     galaxy.current?.setMode(mode);
   }, [mode]);
+
+  // Live activity: a project with a running agent pulses on the terrain.
+  useEffect(() => {
+    if (!home || projectId) return;
+    const norm = (p: string) => p.split('\\').join('/').toLowerCase().replace(/\/$/, '');
+    const ids = home.projects.filter((p) => home.running.sessions.some((s) => norm(s.cwd).startsWith(norm(p.path)))).map((p) => `project:${p.id}`);
+    galaxy.current?.setActive(ids);
+  }, [home, projectId, data]);
 
   useEffect(() => {
     galaxy.current?.setFlat(flat);

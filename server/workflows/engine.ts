@@ -41,12 +41,15 @@ export interface RunOptions {
   worktrees: boolean;
   /** What happens after the report: each is opt-in, and a failure in one never blocks the others. */
   outcomes: OutcomeOptions;
+  /** Read-only first: every agent in the run may look but not change anything, so the plan can be judged safely. */
+  dryRun: boolean;
 }
 
 export const DEFAULT_OPTIONS: RunOptions = {
   approval: true,
   worktrees: true,
-  outcomes: { obsidian: true, pr: false, notify: true, graphify: false },
+  outcomes: { obsidian: true, pr: false, notify: true, graphify: false, channel: false },
+  dryRun: false,
   agents: { orchestrator: 'claude', worker: 'claude', reviewer: 'claude' },
 };
 
@@ -275,7 +278,7 @@ export function checkLimits() {
 
 export function startRun(goal: string, cwd: string, projectId: string | undefined, options: Partial<RunOptions>, broadcast: Broadcast): Run {
   const now = Date.now();
-  const run: Run = { id: randomUUID(), options: withDefaults(options), trust: trustForPath(cwd), goal, cwd, projectId, status: 'planning', created: now, updated: now, tasks: [] };
+  const run: Run = { id: randomUUID(), options: withDefaults(options), trust: options.dryRun ? 'read-only' : trustForPath(cwd), goal, cwd, projectId, status: 'planning', created: now, updated: now, tasks: [] };
   runs.set(run.id, run);
   persist();
   audit('run-start', 'workflow', `${goal} (approval ${run.options.approval ? 'on' : 'off'}, worktrees ${run.options.worktrees ? 'on' : 'off'}, trust ${run.trust})`, { runId: run.id, project: path.basename(cwd) });

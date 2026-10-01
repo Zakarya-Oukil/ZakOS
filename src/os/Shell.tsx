@@ -15,6 +15,7 @@ import { Locked, SignIn } from './shell/Gates';
 import { RemoteShell } from './shell/RemoteShell';
 import { SetupWizard, setupDone } from './shell/SetupWizard';
 import { useShortcutListener } from './lib/shortcuts';
+import { CAPTURE_EVENT, QuickCapture } from './shell/QuickCapture';
 import { bootSequence } from './theme/gsap';
 import { pageVariants, reducedPageVariants, usePrefersReducedMotion } from './theme/motion';
 import { CommandPalette, type Command } from './ui';
@@ -89,6 +90,7 @@ export function Shell() {
   const commands: Command[] = useMemo(
     () => [
       ...visible.map((m) => ({ id: `go-${m.id}`, label: `Go to ${m.label}`, hint: m.description, run: () => navigate(m.id) })),
+      { id: 'capture', label: 'Capture a note to the vault', run: () => window.dispatchEvent(new Event(CAPTURE_EVENT)) },
       { id: 'toggle-theme', label: theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme', run: toggleTheme },
       { id: 'toggle-sidebar', label: collapsed ? 'Expand sidebar' : 'Collapse sidebar', run: toggleSidebar },
       { id: 'legacy', label: 'Open legacy UI', run: () => navigate('legacy') },
@@ -100,6 +102,7 @@ export function Shell() {
   useShortcutListener({
     'toggle-sidebar': toggleSidebar,
     'toggle-theme': toggleTheme,
+    'quick-capture': () => window.dispatchEvent(new Event(CAPTURE_EVENT)),
     ...Object.fromEntries(['home', 'agents', 'tasks', 'projects', 'brain', 'approvals', 'terminal'].map((id) => [`go-${id}`, () => visible.some((m) => m.id === id) && navigate(id)])),
   });
 
@@ -161,6 +164,7 @@ export function Shell() {
           )}
         </main>
         <CommandPalette commands={commands} />
+        <QuickCapture />
         {showSetup && <SetupWizard theme={theme} onTheme={toggleTheme} onDone={() => setShowSetup(false)} />}
       </div>
     </ModuleContext.Provider>

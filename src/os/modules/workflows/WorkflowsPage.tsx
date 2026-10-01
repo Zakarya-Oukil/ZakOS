@@ -4,6 +4,7 @@ import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { Tabs } from '../../ui';
 import { CompareRuns } from './CompareRuns';
+import { RouteMap } from './RouteMap';
 import { FlowsView } from './FlowsView';
 import { agentsSocket } from '../../lib/agentsSocket';
 import { projectsApi, timeAgo, type ProjectInfo } from '../../lib/projectsApi';
@@ -17,6 +18,7 @@ import { isActive, schedulesApi, templatesApi, workflowsApi, type Outcomes, type
 const OUTCOME_LABELS: Record<OutcomeKey, string> = {
   obsidian: 'Write the report to Obsidian',
   graphify: 'Update the project graph',
+  channel: 'Post the result to my chat channel',
   pr: 'Open a pull request (pushes the branch)',
   notify: 'Notify me',
 };
@@ -226,6 +228,10 @@ function RunView({ run, onChanged }: { run: WorkflowRun; onChanged: () => void }
         <div className="mt-5">
           <Pipeline run={run} />
         </div>
+        {run.options.dryRun && <p className="mt-4 text-sm text-os-amber">Dry run: agents may only look. Nothing in the project was changed.</p>}
+        <div className="mt-4 border-t border-os-line pt-3">
+          <RouteMap run={run} />
+        </div>
         {run.summary && <p className="mt-4 max-w-[68ch] border-t border-os-line pt-3 text-sm leading-relaxed text-os-muted">{run.summary}</p>}
         {run.error && <p className="mt-3 text-sm text-os-danger" role="alert">{run.error}</p>}
         {run.undone && <p className="mt-3 text-sm text-os-muted" role="status">Undone {timeAgo(run.undone.ts)}</p>}
@@ -304,13 +310,14 @@ function NewRun({ projects, onStarted, onTemplatesChanged }: { projects: Project
   const [roles, setRoles] = useState<Record<Role, string>>({ orchestrator: 'claude', worker: 'claude', reviewer: 'claude' });
   const [approval, setApproval] = useState(true);
   const [worktrees, setWorktrees] = useState(true);
-  const [outcomes, setOutcomes] = useState<Outcomes>({ obsidian: true, notify: true, graphify: false, pr: false });
+  const [dryRun, setDryRun] = useState(false);
+  const [outcomes, setOutcomes] = useState<Outcomes>({ obsidian: true, notify: true, graphify: false, pr: false, channel: false });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const project = projects.find((p) => p.id === projectId);
   const [tplName, setTplName] = useState('');
   const [saved, setSaved] = useState(false);
-  const opts = { approval, agents: roles, worktrees, outcomes };
+  const opts = { approval, agents: roles, worktrees, outcomes, dryRun };
 
   const saveTemplate = async () => {
     if (!goal.trim() || !tplName.trim()) return;
@@ -331,7 +338,7 @@ function NewRun({ projects, onStarted, onTemplatesChanged }: { projects: Project
     setBusy(true);
     setError(null);
     try {
-      onStarted(await workflowsApi.start(goal.trim(), project?.path ?? '', project?.id, { approval, agents: roles, worktrees, outcomes }));
+      onStarted(await workflowsApi.start(goal.trim(), project?.path ?? '', project?.id, { approval, agents: roles, worktrees, outcomes, dryRun }));
       setGoal('');
     } catch (err) {
       setError((err as Error).message);
@@ -382,6 +389,10 @@ function NewRun({ projects, onStarted, onTemplatesChanged }: { projects: Project
       <label className="flex items-center gap-2 text-sm text-os-text">
         <input type="checkbox" checked={approval} onChange={(e) => setApproval(e.target.checked)} />
         Ask me to approve the plan first
+      </label>
+      <label className="flex items-start gap-2 text-sm text-os-text">
+        <input type="checkbox" checked={dryRun} onChange={(e) => setDryRun(e.target.checked)} className="mt-0.5" />
+        <span>Dry run first<span className="block text-xs text-os-muted">Agents plan and report but cannot change anything.</span></span>
       </label>
       <label className="flex items-center gap-2 text-sm text-os-text">
         <input type="checkbox" checked={worktrees} onChange={(e) => setWorktrees(e.target.checked)} />

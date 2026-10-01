@@ -201,6 +201,7 @@ export class Terrain {
   private selected = -1;
   private hovered = -1;
   private searchHits: Set<number> | null = null;
+  private activeSet = new Set<number>();
   private dispTarget = 1;
   private disp = 1;
   private fly: Fly | null = null;
@@ -317,6 +318,12 @@ export class Terrain {
   setMode(mode: HeightMode) {
     this.mode = mode;
     this.recompute();
+  }
+
+  /** Project nodes with an agent working right now: their flag pulses and their marker glows. */
+  setActive(ids: string[]) {
+    this.activeSet = new Set(ids.map((id) => this.index.get(id)).filter((i): i is number => i !== undefined));
+    this.refreshStates();
   }
 
   /** Show only notes created on or before `ms`; null shows everything. */
@@ -661,6 +668,7 @@ export class Terrain {
       if (!this.visible[i]) s = -2;
       else if (this.searchHits) s = this.searchHits.has(i) ? 1 : -1;
       else if (this.selected >= 0) s = i === this.selected ? 1 : focus.has(i) ? 0 : -1;
+      if (this.activeSet.has(i) && s >= 0) s = 1;
       st.setX(i, s < -1 ? -1 : s);
     }
     st.needsUpdate = true;
@@ -849,6 +857,15 @@ export class Terrain {
       });
     } else if (this.flags.children.length && !this.flagsPlaced) {
       this.placeFlags();
+    }
+
+    // A working project breathes: its flag swells and settles.
+    if (this.activeSet.size && !this.reduced) {
+      const pulse = 1 + 0.2 * Math.sin(now / 280);
+      this.flags.children.forEach((g) => {
+        const i = g.userData.node as number;
+        g.scale.setScalar(Math.max(0.001, this.disp) * (this.activeSet.has(i) ? pulse : 1));
+      });
     }
 
     if (this.fly) {

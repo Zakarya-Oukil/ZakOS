@@ -7,10 +7,13 @@ import { scrubSecrets } from '../secrets';
 import { vaultService } from '../vault';
 import type { Broadcast } from '../agents/runner';
 import type { Run } from './engine';
+import { SERVICES, sendMessage } from '../os/integrations';
+import { kvGet } from '../os/common';
+import { unlocked } from '../os/secretStore';
 
 const exec = promisify(execFile);
 
-export type OutcomeKey = 'obsidian' | 'pr' | 'notify' | 'graphify';
+export type OutcomeKey = 'obsidian' | 'pr' | 'notify' | 'graphify' | 'channel';
 export interface OutcomeResult {
   state: 'done' | 'error' | 'skipped';
   detail: string;
@@ -146,12 +149,37 @@ async function toPullRequest(r: Run): Promise<OutcomeResult> {
     const ahead = Number((await run('git', ['rev-list', '--count', `origin/${base}..HEAD`], r.cwd)).stdout.trim());
     if (!ahead) return { state: 'error', detail: `${branch} has no commits beyond ${base}. Commit the changes first.` };
     await run('git', ['push', '-u', 'origin', branch], r.cwd, 180_000);
-    const body = scrubSecrets(`${r.report ?? r.goal}\n\n(Opened by a Zak OS workflow run.)`);
+    const rows = r.tasks.map((t) => `| ${t.title.replace(/\|/g, '/')} | ${t.state}${t.merge ? `, ${t.merge}` : ''} | ${t.filesChanged ?? 0} |`).join('\n');
+    const body = scrubSecrets(
+      `## Summary\n${r.report ?? r.goal}\n\n## Tasks\n| Task | Result | Files |\n| --- | --- | --- |\n${rows}\n\n## Review\nVerdict: ${r.verdict === 'pass' ? 'passed' : 'needs work'}\n\n${(r.review ?? '').slice(0, 2500)}\n\n(Opened by a Zak OS workflow run.)`,
+    );
     const out = await run('gh', ['pr', 'create', '--base', base, '--head', branch, '--title', `Zak OS: ${slug(r.goal)}`, '--body', body], r.cwd, 60_000);
     return { state: 'done', detail: out.stdout.trim().split('\n').pop() ?? 'Pull request opened' };
   } catch (e) {
     return { state: 'error', detail: errText(e) };
   }
+}
+
+
+// ---- channel (Telegram, Discord, Slack) ---------------------------------------------------------
+
+async function toChannel(r: Run, projectName: string): Promise<OutcomeResult> {
+  if (!unlocked()) return { state: 'skipped', detail: 'The secrets store is locked, so nothing was posted. Unlock it in Integrations.' };
+  const sent: string[] = [];
+  const failed: string[] = [];
+  const text = `${r.verdict === 'pass' ? 'Workflow passed' : 'Workflow needs review'}: ${slug(r.goal)}\nProject: ${projectName}\n${r.tasks.filter((t) => t.state === 'done').length} of ${r.tasks.length} tasks done.`;
+  for (const svc of SERVICES.filter((x) => x.id !== 'github')) {
+    const has = svc.fields.every((f) => (f.secret ? kvGet<boolean>(`integration.${svc.id}.has.${f.key}`, false) : !!kvGet<Record<string, string>>(`integration.${svc.id}`, {})[f.key]));
+    if (!has) continue;
+    try {
+      await sendMessage(svc.id as 'telegram' | 'discord' | 'slack', scrubSecrets(text));
+      sent.push(svc.label);
+    } catch (e) {
+      failed.push(`${svc.label}: ${errText(e)}`);
+    }
+  }
+  if (sent.length === 0 && failed.length === 0) return { state: 'skipped', detail: 'No channel is set up. Add one in Integrations.' };
+  return { state: failed.length ? 'error' : 'done', detail: [sent.length ? `Posted to ${sent.join(', ')}` : '', ...failed].filter(Boolean).join('. ') };
 }
 
 // ---- entry point ------------------------------------------------------------------------------
@@ -161,6 +189,7 @@ export interface OutcomeOptions {
   pr: boolean;
   notify: boolean;
   graphify: boolean;
+  channel: boolean;
 }
 
 /** Runs every outcome the owner switched on. One failing never blocks the others. */
@@ -178,6 +207,7 @@ export async function runOutcomes(r: Run, projectName: string, broadcast: Broadc
   await attempt('obsidian', () => toObsidian(r, projectName));
   await attempt('graphify', () => toGraphify(r));
   await attempt('pr', () => toPullRequest(r));
+  await attempt('channel', () => toChannel(r, projectName));
   await attempt('notify', async () => {
     const failed = Object.values(results).filter((x) => x?.state === 'error').length;
     notify(

@@ -20,7 +20,7 @@ function projectOf(req: Request, res: Response): { id: string; name: string; cwd
 const HASH = /^[0-9a-f]{7,40}$/i;
 
 /** Asks Claude Code for a one-shot answer with no tools. The prompt travels over stdin so nothing is parsed as a flag. */
-function askClaude(prompt: string, cwd: string): Promise<string> {
+export function askClaude(prompt: string, cwd: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn('claude', ['-p', '--output-format', 'text', '--permission-mode', 'plan'], { cwd, windowsHide: true, shell: process.platform === 'win32' });
     let out = '';
@@ -54,6 +54,20 @@ export function mountGitExtras(app: Express) {
       if (!(await g.isRepo(p.cwd))) return fail(res, 409, 'This project is not a git repository');
       await fn(p, req, res);
     });
+
+  // ---- terminal: ask for a command ------------------------------------------------------------------
+  /** Claude proposes one shell command for a request. It is only shown: the owner inserts it and presses Enter themselves. */
+  app.post('/api/git-x/suggest-command', handle(async (req: Request, res: Response) => {
+    const ask = (str(req.body?.request, 500) ?? '').trim();
+    if (!ask) return fail(res, 400, 'Say what you want to do');
+    const shell = process.platform === 'win32' ? 'PowerShell on Windows' : 'a POSIX shell';
+    const prompt =
+      `Write one single-line command for ${shell} that does the following. Output only the command, with no explanation, no code fences and no leading prompt symbol. ` +
+      'If the request is destructive (deleting, overwriting, force-pushing), prefix the line with the comment "# CAUTION: " on a line of its own before the command.\n\nRequest: ' + ask;
+    const out = (await askClaude(prompt, process.cwd())).replace(/^```[a-z]*\n?|```$/g, '').trim();
+    audit('terminal-suggest', 'owner', `Asked for a command: ${ask.slice(0, 120)}`);
+    res.json({ success: true, command: out.slice(0, 600) });
+  }));
 
   // ---- stash ---------------------------------------------------------------------------------------
   app.get('/api/git-x/:projectId/stash', repo(async (p, _req, res) => {

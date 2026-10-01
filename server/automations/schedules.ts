@@ -3,7 +3,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 /** Runs a saved template on a cron schedule, or whenever a new commit lands in its project. */
-export type Trigger = { kind: 'cron'; cron: string } | { kind: 'commit' };
+export type Trigger =
+  | { kind: 'cron'; cron: string }
+  | { kind: 'commit' }
+  /** Files in the project folder changed and then stayed quiet for a minute. */
+  | { kind: 'files' }
+  /** After another automation's run finished successfully. */
+  | { kind: 'chain'; after: string }
+  /** When the webhook with this name receives a signed request. */
+  | { kind: 'webhook'; name: string };
 
 export interface Schedule {
   id: string;
@@ -17,6 +25,12 @@ export interface Schedule {
   lastError?: string;
   /** Commit trigger only: the HEAD last seen, so a new commit is one that differs from it. */
   lastHead?: string;
+  /** Files trigger: the newest modification time seen, and when a change was first noticed. */
+  lastMtime?: number;
+  pendingSince?: number;
+  pendingMtime?: number;
+  /** Chain trigger: the last run of the earlier automation that already triggered this one. */
+  lastSeenRun?: string;
   /** The most recent runs this automation started, newest first. */
   history?: Array<{ runId: string; at: number; why: string }>;
 }
@@ -65,7 +79,7 @@ export function updateSchedule(id: string, patch: Partial<Pick<Schedule, 'name' 
 /** Records what the scheduler just did; fields set to undefined are cleared. */
 export function recordSchedule(
   id: string,
-  patch: Partial<Pick<Schedule, 'lastRunAt' | 'lastRunId' | 'lastError' | 'lastHead'>> & { addRun?: { runId: string; at: number; why: string } },
+  patch: Partial<Pick<Schedule, 'lastRunAt' | 'lastRunId' | 'lastError' | 'lastHead' | 'lastMtime' | 'pendingSince' | 'pendingMtime' | 'lastSeenRun'>> & { addRun?: { runId: string; at: number; why: string } },
 ) {
   const list = read();
   const s = list.find((x) => x.id === id);

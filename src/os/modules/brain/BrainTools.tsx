@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { X } from '@phosphor-icons/react';
 import { IconButton, Markdown, Tabs } from '../../ui';
+import { AgentMemoryTab, TidyTab, TimelineTab } from './BrainMore';
 import { cx } from '../../ui/cx';
 import { timeAgo } from '../../lib/projectsApi';
 import { brainApi, type Answer, type GraphDiff, type SearchHit, type Snapshot } from './api';
 
-type ToolTab = 'search' | 'ask' | 'changes' | 'memory';
+type ToolTab = 'search' | 'ask' | 'changes' | 'memory' | 'tidy' | 'timeline' | 'agents';
 
 const btn =
   'inline-flex h-9 items-center gap-2 rounded-full border border-os-line bg-os-surface-2 px-4 text-sm text-os-text transition-colors ' +
@@ -268,11 +269,16 @@ export function BrainTools({ projectId, onOpenNote, onClose }: Props) {
     { id: 'ask', label: 'Ask' },
     { id: 'changes', label: 'Changes' },
     { id: 'memory', label: 'Memory' },
+    { id: 'tidy', label: 'Tidy' },
+    { id: 'timeline', label: 'Timeline' },
+    { id: 'agents', label: 'Agents' },
   ];
   return (
     <aside aria-label="Brain tools" className="absolute inset-y-0 left-0 z-10 flex w-full flex-col border-r border-os-line bg-os-surface md:w-[400px]">
       <div className="flex min-h-12 items-center justify-between gap-3 border-b border-os-line px-3">
-        <Tabs aria-label="Brain tools" tabs={tabs} value={tab} onChange={(id) => setTab(id as ToolTab)} />
+        <div className="min-w-0 flex-1 overflow-x-auto">
+          <Tabs aria-label="Brain tools" tabs={tabs} value={tab} onChange={(id) => setTab(id as ToolTab)} className="border-b-0" />
+        </div>
         <IconButton aria-label="Close tools" onClick={onClose}>
           <X size={16} />
         </IconButton>
@@ -282,6 +288,9 @@ export function BrainTools({ projectId, onOpenNote, onClose }: Props) {
         {tab === 'ask' && <AskTab onOpenNote={onOpenNote} />}
         {tab === 'changes' && <ChangesTab projectId={projectId} />}
         {tab === 'memory' && <MemoryTab />}
+        {tab === 'tidy' && <TidyTab onOpenNote={onOpenNote} />}
+        {tab === 'timeline' && <TimelineTab onOpenNote={onOpenNote} />}
+        {tab === 'agents' && <AgentMemoryTab onOpenNote={onOpenNote} />}
       </div>
     </aside>
   );

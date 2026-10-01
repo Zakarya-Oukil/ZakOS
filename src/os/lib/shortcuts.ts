@@ -10,6 +10,7 @@ export interface ShortcutAction {
 export const ACTIONS: ShortcutAction[] = [
   { id: 'toggle-sidebar', label: 'Collapse or expand the sidebar', default: 'ctrl+b' },
   { id: 'toggle-theme', label: 'Switch between dark and light', default: 'ctrl+shift+l' },
+  { id: 'quick-capture', label: 'Capture a note to the vault', default: 'alt+n' },
   { id: 'go-home', label: 'Go to Home', default: 'alt+1' },
   { id: 'go-agents', label: 'Go to Agents', default: 'alt+2' },
   { id: 'go-tasks', label: 'Go to Tasks', default: 'alt+3' },

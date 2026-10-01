@@ -18,11 +18,11 @@ const when = (ts: number) => new Date(ts).toLocaleString([], { weekday: 'short',
 const STATUS_TONE: Record<string, string> = { done: 'text-os-cyan', error: 'text-os-danger', stopped: 'text-os-muted', deleted: 'text-os-muted' };
 
 /** One trigger editor, used both to create an automation and to change an existing one. */
-function TriggerEditor({ value, onChange }: { value: Trigger; onChange: (t: Trigger) => void }) {
+function TriggerEditor({ value, onChange, others }: { value: Trigger; onChange: (t: Trigger) => void; others: Array<{ id: string; name: string }> }) {
   const [times, setTimes] = useState<number[] | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const cron = value.kind === 'cron' ? value.cron : '';
-  const preset = value.kind === 'cron' && PRESETS.some((p) => p.cron === cron) ? cron : value.kind === 'commit' ? 'commit' : 'custom';
+  const preset = value.kind === 'cron' ? (PRESETS.some((p) => p.cron === cron) ? cron : 'custom') : value.kind;
 
   // The preview doubles as validation: it shows the next runs, or says what is wrong with the expression.
   useEffect(() => {
@@ -49,6 +49,9 @@ function TriggerEditor({ value, onChange }: { value: Trigger; onChange: (t: Trig
         onChange={(e) => {
           const v = e.target.value;
           if (v === 'commit') onChange({ kind: 'commit' });
+          else if (v === 'files') onChange({ kind: 'files' });
+          else if (v === 'chain') onChange({ kind: 'chain', after: others[0]?.id ?? '' });
+          else if (v === 'webhook') onChange({ kind: 'webhook', name: '' });
           else if (v === 'custom') onChange({ kind: 'cron', cron: cron || '0 9 * * 1-5' });
           else onChange({ kind: 'cron', cron: v });
         }}
@@ -58,6 +61,9 @@ function TriggerEditor({ value, onChange }: { value: Trigger; onChange: (t: Trig
           <option key={p.cron} value={p.cron}>{p.label}</option>
         ))}
         <option value="commit">Whenever a new commit lands in the project</option>
+        <option value="files">When files in the project change</option>
+        <option value="chain" disabled={others.length === 0}>After another automation finishes</option>
+        <option value="webhook">When a webhook arrives</option>
         <option value="custom">On a custom schedule (cron)</option>
       </select>
       {preset === 'custom' && (
@@ -66,6 +72,25 @@ function TriggerEditor({ value, onChange }: { value: Trigger; onChange: (t: Trig
           <input id="trg-cron" value={cron} onChange={(e) => onChange({ kind: 'cron', cron: e.target.value })} spellCheck={false} className={cx(field, 'h-8 font-os-mono')} />
         </>
       )}
+      {value.kind === 'chain' && (
+        <>
+          <label htmlFor="trg-after" className="text-xs text-os-muted">Run after</label>
+          <select id="trg-after" value={value.after} onChange={(e) => onChange({ kind: 'chain', after: e.target.value })} className={cx(field, 'h-8')}>
+            {others.map((o) => (
+              <option key={o.id} value={o.id}>{o.name}</option>
+            ))}
+          </select>
+          <p className="text-xs text-os-muted">Starts when that automation's run finishes successfully.</p>
+        </>
+      )}
+      {value.kind === 'webhook' && (
+        <>
+          <label htmlFor="trg-hook" className="text-xs text-os-muted">Webhook name</label>
+          <input id="trg-hook" value={value.name} onChange={(e) => onChange({ kind: 'webhook', name: e.target.value.toLowerCase() })} placeholder="deploy-finished" spellCheck={false} className={cx(field, 'h-8 font-os-mono')} />
+          <p className="text-xs text-os-muted">Create a webhook with this name on the Webhooks and keys page. Its signed requests start this automation.</p>
+        </>
+      )}
+      {value.kind === 'files' && <p className="text-xs text-os-muted">Checked once a minute. It runs after the project folder has been quiet for a minute, so one editing session starts one run.</p>}
       {problem && <p className="text-xs text-os-danger" role="alert">{problem}</p>}
       {times && times.length > 0 && (
         <p className="text-xs text-os-muted">
@@ -73,6 +98,39 @@ function TriggerEditor({ value, onChange }: { value: Trigger; onChange: (t: Trig
         </p>
       )}
       {value.kind === 'commit' && <p className="text-xs text-os-muted">Checked once a minute while Zak OS is open. The first check only records where the project is now.</p>}
+    </div>
+  );
+}
+
+/** Scheduled runs wait while quiet hours are on. Run now is never held back. */
+function QuietHours() {
+  const [q, setQ] = useState<{ enabled: boolean; from: string; to: string } | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+  useEffect(() => {
+    fetch('/api/automation-quiet').then((r) => r.json()).then((d) => d.success && setQ(d.quiet)).catch(() => undefined);
+  }, []);
+  if (!q) return null;
+  const save = async (next: typeof q) => {
+    setQ(next);
+    const r = await fetch('/api/automation-quiet', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(next) });
+    const d = await r.json().catch(() => ({}));
+    setNote(r.ok ? null : d.error ?? 'Could not save');
+  };
+  return (
+    <div className="mb-3 grid gap-2 rounded-[var(--os-radius)] border border-os-line p-3">
+      <label className="flex cursor-pointer items-center gap-2 text-sm text-os-text">
+        <input type="checkbox" checked={q.enabled} onChange={(e) => void save({ ...q, enabled: e.target.checked })} />
+        Quiet hours
+      </label>
+      <div className="flex items-center gap-2 text-xs text-os-muted">
+        <label htmlFor="qh-from" className="sr-only">From</label>
+        <input id="qh-from" type="time" value={q.from} onChange={(e) => void save({ ...q, from: e.target.value })} className={cx(field, 'h-8')} />
+        to
+        <label htmlFor="qh-to" className="sr-only">To</label>
+        <input id="qh-to" type="time" value={q.to} onChange={(e) => void save({ ...q, to: e.target.value })} className={cx(field, 'h-8')} />
+      </div>
+      <p className="text-xs text-os-muted">Scheduled and triggered runs wait until after these hours. Run now still works.</p>
+      {note && <p role="alert" className="text-xs text-os-danger">{note}</p>}
     </div>
   );
 }
@@ -154,6 +212,7 @@ export default function AutomationsPage({ route, navigate }: ModuleProps) {
       ) : (
       <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)]">
         <aside className="min-h-0 overflow-y-auto border-r border-os-line p-3" aria-label="Automations">
+          <QuietHours />
           {creating && (
             <form
               className="mb-3 grid gap-2 rounded-[var(--os-radius)] border border-os-line p-3"
@@ -168,7 +227,7 @@ export default function AutomationsPage({ route, navigate }: ModuleProps) {
                   <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
               </select>
-              <TriggerEditor value={newTrigger} onChange={setNewTrigger} />
+              <TriggerEditor value={newTrigger} onChange={setNewTrigger} others={(items ?? []).map((a) => ({ id: a.id, name: a.name }))} />
               <div className="flex gap-2">
                 <button type="submit" className={btn} disabled={busy}>Create</button>
                 <button type="button" className={btn} onClick={() => setCreating(false)}>Cancel</button>
@@ -242,7 +301,7 @@ export default function AutomationsPage({ route, navigate }: ModuleProps) {
 
               <div className="grid gap-3 rounded-[var(--os-radius)] border border-os-line p-4">
                 <h3 className="text-sm font-medium text-os-text">When it runs</h3>
-                <TriggerEditor value={edit ?? selected.trigger} onChange={setEdit} />
+                <TriggerEditor value={edit ?? selected.trigger} onChange={setEdit} others={(items ?? []).filter((a) => a.id !== selected.id).map((a) => ({ id: a.id, name: a.name }))} />
                 <div className="flex gap-2">
                   <button type="button" className={btn} disabled={busy || !triggerChanged} onClick={() => void act(async () => { await automationsApi.update(selected.id, { trigger: edit! }); setEdit(null); }, 'Saved.')}>
                     Save schedule

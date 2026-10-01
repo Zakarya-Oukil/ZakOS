@@ -21,6 +21,7 @@ const KEY = 'audit.alerts';
 export const listAlerts = (): AlertRule[] => kvGet<AlertRule[]>(KEY, []);
 
 let broadcastFn: ((d: unknown) => void) | null = null;
+export const getBroadcast = () => broadcastFn;
 export const setAlertBroadcast = (b: (d: unknown) => void) => {
   broadcastFn = b;
 };

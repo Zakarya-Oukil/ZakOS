@@ -367,6 +367,47 @@ function Limits({ l }: { l: HomeData['limits'] }) {
   );
 }
 
+// ---- catch-up ------------------------------------------------------------------------------------
+
+const VISIT_KEY = 'zakos_last_visit';
+
+/** What happened while you were away, from the audit log. The visit time moves forward a few seconds after you arrive. */
+function CatchUp({ items }: { items: HomeData['activity'] }) {
+  const [since] = useState(() => {
+    try {
+      return Number(window.localStorage.getItem(VISIT_KEY)) || 0;
+    } catch {
+      return 0;
+    }
+  });
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        window.localStorage.setItem(VISIT_KEY, String(Date.now()));
+      } catch {
+        /* storage blocked */
+      }
+    }, 6000);
+    return () => clearTimeout(t);
+  }, []);
+  const news = items.filter((e) => e.ts > since && !['tool', 'prompt'].includes(e.kind));
+  if (since === 0 || news.length === 0) return null;
+  const hours = Math.round((Date.now() - since) / 3_600_000);
+  return (
+    <Panel title={`Since you were last here${hours >= 1 ? `, ${hours >= 48 ? `${Math.round(hours / 24)} days` : `${hours} h`} ago` : ''}`}>
+      <ul className="grid gap-1.5 text-sm">
+        {news.slice(0, 6).map((e) => (
+          <li key={e.id} className="flex items-baseline gap-3">
+            <span className="w-24 shrink-0 text-xs text-os-muted">{timeAgo(e.ts)}</span>
+            <span className="min-w-0 flex-1 truncate text-os-text">{e.detail}</span>
+          </li>
+        ))}
+      </ul>
+      {news.length > 6 && <p className="mt-2 text-xs text-os-muted">and {news.length - 6} more in the <a className={link} href="#/audit">audit log</a></p>}
+    </Panel>
+  );
+}
+
 // ---- territory ---------------------------------------------------------------------------------
 
 const norm = (p: string) => p.replace(/\\/g, '/').toLowerCase().replace(/\/$/, '');
@@ -390,7 +431,13 @@ function seedOf(id: string): number {
 }
 
 function Territory({ home }: { home: HomeData }) {
-  const items = home.projects;
+  const [metas, setMetas] = useState<Record<string, { archived: boolean }>>({});
+  const [scores, setScores] = useState<Record<string, { score: number } | null>>({});
+  useEffect(() => {
+    fetch('/api/project-meta').then((r) => r.json()).then((d) => d.success && setMetas(d.meta)).catch(() => undefined);
+    fetch('/api/health-scores').then((r) => r.json()).then((d) => d.success && setScores(d.scores)).catch(() => undefined);
+  }, []);
+  const items = home.projects.filter((p) => !metas[p.id]?.archived);
   const W = 720;
   const H = 330;
   const golden = 2.399963229728653;
@@ -418,7 +465,7 @@ function Territory({ home }: { home: HomeData }) {
             const to = p.graphUpdated ? `#/brain/${p.id}` : '#/projects';
             return (
               <a key={p.id} href={to} className="group outline-none">
-                <title>{`${p.name}${running ? `, ${running} running` : ''}`}</title>
+                <title>{`${p.name}${scores[p.id] ? `, health ${scores[p.id]!.score} percent` : ''}${running ? `, ${running} running` : ''}`}</title>
                 {[1, 0.8, 0.6, 0.4, 0.2].map((f, k) => (
                   <path
                     key={k}
@@ -434,7 +481,7 @@ function Territory({ home }: { home: HomeData }) {
                 <path d={`M${x},${y - 22} l15,5 l-15,5z`} fill={p.color} />
                 {running > 0 && <circle cx={x} cy={y} r={r * 0.34} fill="none" stroke="var(--os-cyan)" strokeWidth={2} className="os-territory-live" />}
                 <text x={x} y={y + r * 0.82 + 20} textAnchor="middle" className="fill-[var(--os-text)] text-[13px] font-semibold" style={{ paintOrder: 'stroke', stroke: 'var(--os-bg)', strokeWidth: 4 }}>
-                  {p.name}
+                  {p.name}{scores[p.id] ? `  ${scores[p.id]!.score}%` : ''}
                 </text>
                 {running > 0 && (
                   <text x={x} y={y + r * 0.82 + 36} textAnchor="middle" className="fill-[var(--os-cyan)] text-xs font-medium" style={{ paintOrder: 'stroke', stroke: 'var(--os-bg)', strokeWidth: 4 }}>
@@ -545,6 +592,7 @@ export default function HomePage({ navigate }: ModuleProps) {
                 <p className="mt-1 text-[15px] text-os-muted">{summary(home)}</p>
               </div>
               <SetupChecklist home={home} />
+              <CatchUp items={home.activity} />
               <QuickStart home={home} projects={projects} navigate={navigate} />
               <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
                 <Territory home={home} />
