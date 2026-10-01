@@ -5,6 +5,7 @@ import { PageFrame } from '../../shell/PageFrame';
 import { Panel, Tabs } from '../../ui';
 import { cx } from '../../ui/cx';
 import { projectsApi, type ProjectInfo } from '../../lib/projectsApi';
+import { DeployTab, EnvProfiles, PortMap } from './DevExtras';
 import { devApi, type AppState, type Check, type HeavyCheck, type HeavyResult, type Level, type ScriptInfo } from './api';
 
 const btn =
@@ -13,10 +14,12 @@ const btn =
 const field =
   'rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
-type Tab = 'run' | 'health';
+type Tab = 'run' | 'health' | 'deploy' | 'ports';
 const TABS = [
   { id: 'run', label: 'Run and preview' },
   { id: 'health', label: 'Health' },
+  { id: 'deploy', label: 'Deploy' },
+  { id: 'ports', label: 'Running apps' },
 ];
 
 const LEVEL: Record<Level, { icon: typeof Info; tone: string; word: string }> = {
@@ -37,6 +40,9 @@ function RunTab({ projectId }: { projectId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [frameKey, setFrameKey] = useState(0);
+  const [profile, setProfile] = useState('');
+  const [filter, setFilter] = useState('');
+  const [onlyProblems, setOnlyProblems] = useState(false);
   const offset = useRef(0);
   const logEl = useRef<HTMLPreElement>(null);
   const stick = useRef(true);
@@ -83,6 +89,14 @@ function RunTab({ projectId }: { projectId: string }) {
   }, [log]);
 
   const running = state?.state === 'running';
+  const shownLog = useMemo(() => {
+    if (!filter.trim() && !onlyProblems) return log;
+    const f = filter.trim().toLowerCase();
+    return log
+      .split('\n')
+      .filter((l) => (!f || l.toLowerCase().includes(f)) && (!onlyProblems || /\b(error|warn|warning|fail(ed)?|exception|fatal|ERR!)\b/i.test(l)))
+      .join('\n');
+  }, [log, filter, onlyProblems]);
 
   const start = async () => {
     setBusy(true);
@@ -90,7 +104,7 @@ function RunTab({ projectId }: { projectId: string }) {
     try {
       setLog('');
       offset.current = 0;
-      setState(await devApi.start(projectId, custom.trim() ? { command: custom.trim() } : { script }));
+      setState(await devApi.start(projectId, { ...(custom.trim() ? { command: custom.trim() } : { script }), profile: profile || undefined }));
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -113,6 +127,7 @@ function RunTab({ projectId }: { projectId: string }) {
     <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[minmax(340px,44%)_minmax(0,1fr)]">
       <div className="flex min-h-0 flex-col border-r border-os-line">
         <div className="grid gap-2 border-b border-os-line p-3">
+          <EnvProfiles projectId={projectId} profile={profile} onProfile={setProfile} disabled={running} />
           {scripts.length > 0 && (
             <>
               <label htmlFor="dev-script" className="text-xs text-os-muted">Script from package.json</label>
@@ -141,6 +156,14 @@ function RunTab({ projectId }: { projectId: string }) {
           </div>
           {error && <p className="text-xs text-os-danger" role="alert">{error}</p>}
         </div>
+        <div className="flex flex-wrap items-center gap-3 border-b border-os-line px-3 py-2">
+          <label htmlFor="log-filter" className="sr-only">Filter the output</label>
+          <input id="log-filter" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter the output" className="h-8 min-w-0 flex-1 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-[13px] text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]" />
+          <label className="flex cursor-pointer items-center gap-2 text-[13px] text-os-muted">
+            <input type="checkbox" checked={onlyProblems} onChange={(e) => setOnlyProblems(e.target.checked)} />
+            Errors and warnings
+          </label>
+        </div>
         <pre
           ref={logEl}
           aria-label="Output"
@@ -151,7 +174,7 @@ function RunTab({ projectId }: { projectId: string }) {
           }}
           className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words bg-os-bg p-3 font-os-mono text-xs leading-relaxed text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
         >
-          {log || <span className="text-os-muted">Output appears here once the app starts.</span>}
+          {shownLog || <span className="text-os-muted">{log ? 'No lines match the filter.' : 'Output appears here once the app starts.'}</span>}
         </pre>
       </div>
 
@@ -301,7 +324,7 @@ function HealthTab({ projectId }: { projectId: string }) {
 export default function DevPage({ route, navigate }: ModuleProps) {
   const [projects, setProjects] = useState<ProjectInfo[] | null>(null);
   const projectId = route[0] ?? projects?.[0]?.id;
-  const tab: Tab = route[1] === 'health' ? 'health' : 'run';
+  const tab: Tab = route[1] === 'health' ? 'health' : route[1] === 'deploy' ? 'deploy' : route[1] === 'ports' ? 'ports' : 'run';
 
   useEffect(() => {
     projectsApi.list().then((l) => setProjects(l.filter((p) => p.exists))).catch(() => setProjects([]));
@@ -328,6 +351,8 @@ export default function DevPage({ route, navigate }: ModuleProps) {
       {!projects && <p className="p-6 text-sm text-os-muted">Loading</p>}
       {projectId && tab === 'run' && <RunTab key={projectId} projectId={projectId} />}
       {projectId && tab === 'health' && <HealthTab key={projectId} projectId={projectId} />}
+      {projectId && tab === 'deploy' && <DeployTab key={projectId} projectId={projectId} />}
+      {tab === 'ports' && <PortMap onOpen={(id) => navigate('dev', id, 'run')} />}
     </PageFrame>
   );
 }

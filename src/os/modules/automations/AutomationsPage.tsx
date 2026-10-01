@@ -4,6 +4,8 @@ import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { cx } from '../../ui/cx';
 import { timeAgo } from '../../lib/projectsApi';
+import { AutomationCalendar } from './AutomationCalendar';
+import { Segmented } from '../../ui';
 import { automationsApi, describe, PRESETS, type Automation, type TemplateInfo, type Trigger } from './api';
 
 const btn =
@@ -132,17 +134,24 @@ export default function AutomationsPage({ route, navigate }: ModuleProps) {
       navigate('automations', a.id);
     });
 
+  const [view, setView] = useState<'list' | 'calendar'>('list');
   const triggerChanged = selected && edit && JSON.stringify(edit) !== JSON.stringify(selected.trigger);
 
   return (
     <PageFrame
       title="Automations"
       actions={
+        <>
+        <Segmented<'list' | 'calendar'> label="View" value={view} onChange={setView} options={[{ id: 'list', label: 'List' }, { id: 'calendar', label: 'Calendar' }]} />
         <button type="button" className={btn} disabled={templates.length === 0} title={templates.length === 0 ? 'Save a workflow as a template first' : undefined} onClick={() => setCreating((v) => !v)}>
           <Plus size={14} aria-hidden /> New automation
         </button>
+        </>
       }
     >
+      {view === 'calendar' ? (
+        <AutomationCalendar onOpen={(id) => { setView('list'); navigate('automations', id); }} />
+      ) : (
       <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)]">
         <aside className="min-h-0 overflow-y-auto border-r border-os-line p-3" aria-label="Automations">
           {creating && (
@@ -296,6 +305,7 @@ export default function AutomationsPage({ route, navigate }: ModuleProps) {
           )}
         </section>
       </div>
+      )}
     </PageFrame>
   );
 }

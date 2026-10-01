@@ -8,6 +8,7 @@ import { isRunning, SessionBusyError, sendMessage, type Broadcast } from './runn
 import { isTrust } from './settings';
 import * as store from './store';
 import { remoteGuard } from '../os/remote';
+import { addRule as addAlways } from '../os/alwaysAllow';
 
 /** Approving lets an agent run a command or edit a file, so these routes are local-only like the terminal. */
 function localOnly(req: Request, res: Response, next: NextFunction) {
@@ -57,6 +58,14 @@ export function mountApprovalRoutes(app: Express, broadcast: Broadcast) {
       return fail(res, 500, err instanceof Error ? err.message : String(err));
     }
     resolveApproval(a.id, 'approved');
+    // "Always allow" is a local decision: the phone view cannot create standing permissions.
+    if (req.body?.always === true && isTrustedLocalRequest(req)) {
+      try {
+        addAlways(session.cwd, a.rule);
+      } catch {
+        /* too broad to keep: the one-off approval still stands */
+      }
+    }
     audit('approval', actorOf(req), `Approved ${a.rule}`, { sessionId: a.sessionId, project: a.project });
     res.json({ success: true });
   };

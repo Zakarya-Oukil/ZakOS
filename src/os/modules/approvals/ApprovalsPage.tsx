@@ -6,6 +6,7 @@ import { Button, EmptyState, ErrorNote, Segmented } from '../../ui';
 import { timeAgo } from '../../lib/projectsApi';
 import { cx } from '../../ui/cx';
 import { approvalsApi, useApprovalsApi, type ApprovalItem } from './api';
+import { api, useResource } from '../../lib/api';
 import { RISK_LABEL, RISK_ORDER, assess, type Risk } from './risk';
 
 const RISK_TEXT: Record<Risk, string> = { safe: 'text-os-ok', caution: 'text-os-amber', dangerous: 'text-os-danger' };
@@ -18,6 +19,7 @@ function Row({
   busy,
   onSelect,
   onApprove,
+  onAlways,
   onDismiss,
   onOpen,
 }: {
@@ -28,6 +30,7 @@ function Row({
   busy: boolean;
   onSelect: (v: boolean) => void;
   onApprove: () => void;
+  onAlways: () => void;
   onDismiss: () => void;
   onOpen: () => void;
 }) {
@@ -67,6 +70,11 @@ function Row({
                 <Button size="sm" variant={risk === 'dangerous' ? 'outline' : 'primary'} disabled={busy} onClick={onApprove}>
                   <Check size={14} aria-hidden /> Approve
                 </Button>
+                {risk !== 'dangerous' && (
+                  <Button size="sm" variant="ghost" disabled={busy} onClick={onAlways} title="Allow this exact action in this project from now on">
+                    Always allow here
+                  </Button>
+                )}
                 <Button size="sm" disabled={busy} onClick={onDismiss}>
                   <X size={14} aria-hidden /> Dismiss
                 </Button>
@@ -79,6 +87,32 @@ function Row({
         </div>
       </div>
     </li>
+  );
+}
+
+function AlwaysRules() {
+  const { data, reload } = useResource<{ rules: Array<{ rule: string; cwd: string; created: number }> }>('/api/always-allow');
+  const revoke = async (r: { rule: string; cwd: string }) => {
+    await api('/api/always-allow', { method: 'DELETE', body: { rule: r.rule, cwd: r.cwd } }).catch(() => undefined);
+    reload();
+  };
+  if (!data || data.rules.length === 0) return null;
+  return (
+    <section className="mt-8" aria-label="Always-allow rules">
+      <h2 className="mb-1 text-sm font-semibold text-os-text">Always allowed ({data.rules.length})</h2>
+      <p className="mb-2 max-w-[68ch] text-xs text-os-muted">These actions no longer ask, in the project folder shown. Revoke any of them whenever you like.</p>
+      <ul className="grid gap-2">
+        {data.rules.map((r) => (
+          <li key={`${r.cwd}|${r.rule}`} className="flex items-center gap-3 rounded-[var(--os-radius)] border border-os-line bg-os-surface px-4 py-2.5">
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-os-mono text-sm text-os-text">{r.rule}</p>
+              <p className="truncate text-xs text-os-muted">{r.cwd}</p>
+            </div>
+            <Button size="sm" variant="ghost" onClick={() => revoke(r)}>Revoke</Button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -192,6 +226,7 @@ export default function ApprovalsPage({ navigate }: ModuleProps) {
                     })
                   }
                   onApprove={() => act(a.id, approvalsApi.approve)}
+                  onAlways={() => act(a.id, (id) => api(`/api/approvals/${id}/approve`, { method: 'POST', body: { always: true } }))}
                   onDismiss={() => act(a.id, approvalsApi.dismiss)}
                   onOpen={() => open(a)}
                 />
@@ -209,11 +244,13 @@ export default function ApprovalsPage({ navigate }: ModuleProps) {
               </div>
               <ul className="grid gap-2.5">
                 {done.map((a) => (
-                  <Row key={a.id} a={a} risk="safe" reason="" selected={false} busy={false} onSelect={() => {}} onApprove={() => {}} onDismiss={() => {}} onOpen={() => open(a)} />
+                  <Row key={a.id} a={a} risk="safe" reason="" selected={false} busy={false} onSelect={() => {}} onApprove={() => {}} onAlways={() => {}} onDismiss={() => {}} onOpen={() => open(a)} />
                 ))}
               </ul>
             </>
           )}
+
+          <AlwaysRules />
         </div>
       </div>
     </PageFrame>

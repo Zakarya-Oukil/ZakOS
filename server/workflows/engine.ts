@@ -266,6 +266,11 @@ export function checkLimits() {
   if (today >= limits.maxRunsPerDay) {
     throw new LimitError(`Daily limit of ${limits.maxRunsPerDay} runs reached. It resets at midnight, or raise the limit.`);
   }
+  // Auto-stop: three failures in a row within two hours means something is wrong that another run will not fix.
+  const recent = [...runs.values()].sort((a, b) => b.created - a.created).slice(0, 3);
+  if (recent.length === 3 && recent.every((r) => r.status === 'error') && Date.now() - recent[0].updated < 2 * 3_600_000) {
+    throw new LimitError('Paused: the last 3 runs all failed. Look at why, fix it, then start again. This pause lifts by itself two hours after the last failure.');
+  }
 }
 
 export function startRun(goal: string, cwd: string, projectId: string | undefined, options: Partial<RunOptions>, broadcast: Broadcast): Run {

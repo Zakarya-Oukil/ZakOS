@@ -5,6 +5,7 @@ import { PageFrame } from '../../shell/PageFrame';
 import { agentsApi } from '../agents/api';
 import { projectsApi, timeAgo, type Job, type ProjectInfo, type Trust } from '../../lib/projectsApi';
 import { Panel } from '../../ui';
+import { ProjectOverview, type Meta } from './ProjectOverview';
 import { cx } from '../../ui/cx';
 
 const btn =
@@ -50,8 +51,14 @@ function useJobPolling(jobs: Job[], onUpdate: (job: Job) => void) {
   }, [running]);
 }
 
-export default function ProjectsPage({ navigate }: ModuleProps) {
+export default function ProjectsPage({ navigate, route }: ModuleProps) {
   const { projects, loading, error, refresh } = useProjects();
+  const [metas, setMetas] = useState<Record<string, Meta>>({});
+  const [showArchived, setShowArchived] = useState(false);
+  const [groupFilter, setGroupFilter] = useState('');
+  useEffect(() => {
+    fetch('/api/project-meta').then((r) => r.json()).then((d) => d.success && setMetas(d.meta)).catch(() => undefined);
+  }, [route.length, projects.length]);
   const [notice, setNotice] = useState<string | null>(null);
   const [addPath, setAddPath] = useState('');
   const [showAdd, setShowAdd] = useState(false);
@@ -157,6 +164,12 @@ export default function ProjectsPage({ navigate }: ModuleProps) {
   };
 
   const cloning = cloneJob?.state === 'running';
+
+  const openProject = route[0] ? projects.find((p) => p.id === route[0]) : undefined;
+  if (openProject) return <ProjectOverview project={openProject} navigate={navigate} />;
+
+  const groups = [...new Set(Object.values(metas).map((m) => m.group).filter(Boolean))];
+  const visibleProjects = projects.filter((p) => (showArchived || !metas[p.id]?.archived) && (!groupFilter || metas[p.id]?.group === groupFilter));
 
   return (
     <PageFrame
@@ -280,9 +293,24 @@ export default function ProjectsPage({ navigate }: ModuleProps) {
             </Panel>
           )}
 
+          {projects.length > 0 && (groups.length > 0 || Object.values(metas).some((m) => m.archived)) && (
+            <div className="flex flex-wrap items-center gap-3">
+              {groups.length > 0 && (
+                <select aria-label="Filter by group" value={groupFilter} onChange={(e) => setGroupFilter(e.target.value)} className="h-8 text-[13px]">
+                  <option value="">All groups</option>
+                  {groups.map((g) => <option key={g} value={g}>{g}</option>)}
+                </select>
+              )}
+              <label className="flex cursor-pointer items-center gap-2 text-[13px] text-os-muted">
+                <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
+                Show archived
+              </label>
+            </div>
+          )}
+
           {projects.length > 0 && (
             <ul className="grid gap-2">
-              {projects.map((p) => {
+              {visibleProjects.map((p) => {
                 const job = graphJobs[p.id];
                 const building = job?.state === 'running';
                 return (
@@ -299,8 +327,16 @@ export default function ProjectsPage({ navigate }: ModuleProps) {
                           {' \u00b7 '}
                           {!p.exists ? <span className="text-os-danger">Folder missing</span> : p.hasGraph && p.graphUpdated ? `Graph built ${timeAgo(p.graphUpdated)}` : 'No graph yet'}
                         </p>
+                        {(metas[p.id]?.group || metas[p.id]?.tags?.length || metas[p.id]?.archived) ? (
+                          <p className="mt-1 flex flex-wrap gap-1.5 text-xs">
+                            {metas[p.id]?.group && <span className="rounded-full border border-os-line px-2 py-0.5 text-os-text">{metas[p.id].group}</span>}
+                            {metas[p.id]?.tags?.map((t) => <span key={t} className="rounded-full bg-os-surface-2 px-2 py-0.5 text-os-muted">{t}</span>)}
+                            {metas[p.id]?.archived && <span className="rounded-full bg-os-surface-2 px-2 py-0.5 text-os-muted">archived</span>}
+                          </p>
+                        ) : null}
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
+                        <button type="button" className={btn} onClick={() => navigate('projects', p.id)}>Overview</button>
                         <label className="flex items-center gap-1.5 text-xs text-os-muted">
                           Agents may
                           <select

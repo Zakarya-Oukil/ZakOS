@@ -2,6 +2,7 @@ import type { Express, NextFunction, Request, Response } from 'express';
 import { auditKinds, insertAudit, queryAudit } from './agents/store';
 import { scrubSecrets } from './secrets';
 import { isTrustedLocalRequest } from './terminal/pty';
+import { checkAlerts } from './os/alerts';
 
 export interface AuditRefs {
   sessionId?: string;
@@ -23,6 +24,7 @@ export function audit(kind: string, actor: string, detail: string, refs: AuditRe
       run_id: refs.runId ?? null,
       project: refs.project?.slice(0, 120) ?? null,
     });
+    checkAlerts(kind, actor, scrubSecrets(detail).slice(0, 600));
   } catch (err) {
     console.error('[audit] could not write:', err instanceof Error ? err.message : err);
   }

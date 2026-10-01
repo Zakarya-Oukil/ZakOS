@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { ArrowUUpLeft, BookmarkSimple, CalendarCheck, Check, Folder, Play, Plus, Stop, Trash, X } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
+import { Tabs } from '../../ui';
+import { CompareRuns } from './CompareRuns';
+import { FlowsView } from './FlowsView';
 import { agentsSocket } from '../../lib/agentsSocket';
 import { projectsApi, timeAgo, type ProjectInfo } from '../../lib/projectsApi';
 import { Markdown, Panel, StatusDot } from '../../ui';
@@ -279,6 +282,21 @@ function RunView({ run, onChanged }: { run: WorkflowRun; onChanged: () => void }
   );
 }
 
+/** What past runs cost, from the usage Claude reported. A guide, since every goal is different. */
+function RunEstimate() {
+  const [e, setE] = useState<{ samples: number; avg?: number; min?: number; max?: number } | null>(null);
+  useEffect(() => {
+    fetch('/api/flows/estimate').then((r) => r.json()).then((d) => d.success && setE(d)).catch(() => undefined);
+  }, []);
+  if (!e || e.samples === 0) return <p className="text-xs text-os-muted">No cost history yet. After a few runs this shows what a typical run costs.</p>;
+  const m = (n: number) => (n < 0.01 ? '<$0.01' : `$${n.toFixed(2)}`);
+  return (
+    <p className="text-xs leading-relaxed text-os-muted">
+      Typical run: about {m(e.avg!)}, from {m(e.min!)} to {m(e.max!)} across your last {e.samples} run{e.samples === 1 ? '' : 's'}.
+    </p>
+  );
+}
+
 function NewRun({ projects, onStarted, onTemplatesChanged }: { projects: ProjectInfo[]; onStarted: (run: WorkflowRun) => void; onTemplatesChanged: () => void }) {
   const [goal, setGoal] = useState('');
   const [projectId, setProjectId] = useState('');
@@ -370,6 +388,7 @@ function NewRun({ projects, onStarted, onTemplatesChanged }: { projects: Project
         Isolate each sub-agent in a git worktree
       </label>
       {error && <p className="text-xs text-os-danger">{error}</p>}
+      <RunEstimate />
       <button type="submit" className={btn} disabled={busy || !goal.trim()}>
         <Play size={14} aria-hidden /> Start workflow
       </button>
@@ -531,7 +550,8 @@ export default function WorkflowsPage({ route, navigate }: ModuleProps) {
     const t = setInterval(refreshSchedules, 30_000); // picks up last-run times from the scheduler
     return () => clearInterval(t);
   }, [refreshSchedules]);
-  const selectedId = route[0];
+  const view = route[0] === 'flows' ? 'flows' : route[0] === 'compare' ? 'compare' : 'runs';
+  const selectedId = view === 'runs' ? route[0] : undefined;
   const run = useMemo(() => runs.find((r) => r.id === selectedId), [runs, selectedId]);
 
   useEffect(() => {
@@ -539,8 +559,21 @@ export default function WorkflowsPage({ route, navigate }: ModuleProps) {
   }, []);
 
   return (
-    <PageFrame title="Workflows">
-      <div className="grid h-full min-h-0 grid-cols-1 content-start overflow-y-auto lg:grid-cols-[320px_minmax(0,1fr)] lg:overflow-hidden">
+    <PageFrame
+      title="Workflows"
+      leading={
+        <Tabs
+          aria-label="Workflow views"
+          tabs={[{ id: 'runs', label: 'Runs' }, { id: 'flows', label: 'Flows' }, { id: 'compare', label: 'Compare' }]}
+          value={view}
+          onChange={(id) => (id === 'runs' ? navigate('workflows') : navigate('workflows', id))}
+          className="border-b-0"
+        />
+      }
+    >
+      {view === 'flows' && <FlowsView />}
+      {view === 'compare' && <CompareRuns runs={runs} />}
+      {view === 'runs' && <div className="grid h-full min-h-0 grid-cols-1 content-start overflow-y-auto lg:grid-cols-[320px_minmax(0,1fr)] lg:overflow-hidden">
         <aside className={cx('min-w-0 border-b border-os-line p-3 lg:order-1 lg:min-h-0 lg:overflow-y-auto lg:border-b-0 lg:border-r', selectedId ? 'order-2' : 'order-1')}>
           <NewRun
             projects={projects}
@@ -604,7 +637,7 @@ export default function WorkflowsPage({ route, navigate }: ModuleProps) {
             <p className="p-2 text-sm text-os-muted">Start a workflow, or pick a run to watch it.</p>
           )}
         </div>
-      </div>
+      </div>}
     </PageFrame>
   );
 }

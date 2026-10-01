@@ -40,7 +40,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const devApi = {
   app: (id: string) => call<{ scripts: ScriptInfo[]; state: AppState | null }>(`/api/apps/${id}`),
-  start: (id: string, body: { script?: string; command?: string }) => call<{ state: AppState }>(`/api/apps/${id}/start`, { method: 'POST', body: JSON.stringify(body) }).then((r) => r.state),
+  start: (id: string, body: { script?: string; command?: string; profile?: string }) => call<{ state: AppState }>(`/api/apps/${id}/start`, { method: 'POST', body: JSON.stringify(body) }).then((r) => r.state),
   stop: (id: string) => call<unknown>(`/api/apps/${id}/stop`, { method: 'POST' }),
   log: (id: string, since: number) => call<{ text: string; next: number; reset: boolean; state: AppState | null }>(`/api/apps/${id}/log?since=${since}`),
   checks: (id: string) => call<{ checks: Check[] }>(`/api/health/${id}`).then((r) => r.checks),

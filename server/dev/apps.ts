@@ -67,7 +67,7 @@ function append(p: Proc, chunk: string) {
   }
 }
 
-export function startApp(projectId: string, opts: { script?: string; command?: string }): AppState {
+export function startApp(projectId: string, opts: { script?: string; command?: string; env?: Record<string, string> }): AppState {
   const project = projects.getProject(projectId);
   if (!project) throw new Error('Project not found');
   if (!fs.existsSync(project.path)) throw new Error('The project folder no longer exists');
@@ -87,8 +87,8 @@ export function startApp(projectId: string, opts: { script?: string; command?: s
   }
 
   // The app picks its own port: inheriting ours would make it collide with this server.
-  const env: NodeJS.ProcessEnv = { ...process.env, FORCE_COLOR: '0', BROWSER: 'none' };
-  delete env.PORT;
+  const env: NodeJS.ProcessEnv = { ...process.env, ...(opts.env ?? {}), FORCE_COLOR: '0', BROWSER: 'none' };
+  if (!opts.env?.PORT) delete env.PORT;
   const child = spawn(command, { cwd: project.path, shell: true, windowsHide: true, env });
   const proc: Proc = { child, log: '', written: 0, state: { projectId, state: 'running', command, startedAt: Date.now(), exitCode: null, url: null } };
   apps.set(projectId, proc);

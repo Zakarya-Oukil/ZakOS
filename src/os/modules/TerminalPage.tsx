@@ -5,6 +5,7 @@ import { cx } from '../ui/cx';
 import { projectsApi, type ProjectInfo } from '../lib/projectsApi';
 import { TerminalView } from './terminal/TerminalView';
 import { SavedCommands } from './terminal/SavedCommands';
+import { RecorderControls } from './terminal/recorder';
 
 interface Term {
   id: string;
@@ -35,6 +36,7 @@ const iconBtn =
   'inline-flex h-7 w-7 items-center justify-center rounded-full text-os-muted transition-colors hover:bg-os-surface-2 hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
 export default function TerminalPage() {
+  const [splitWith, setSplitWith] = useState('');
   const [terms, setTerms] = useState<Term[] | null>(null);
   const [activeId, setActiveId] = useState<string>(() => {
     try {
@@ -127,6 +129,8 @@ export default function TerminalPage() {
 
   const startPath = projects.find((p) => p.id === startIn)?.path ?? '';
 
+  const second = (terms ?? []).some((t) => t.id === splitWith && t.id !== activeId) ? splitWith : '';
+
   return (
     <PageFrame
       title="Terminal"
@@ -182,6 +186,15 @@ export default function TerminalPage() {
       }
       actions={
         <>
+          {activeId && <RecorderControls sessionId={activeId} title={(terms ?? []).find((t) => t.id === activeId)?.title ?? 'Terminal'} />}
+          {(terms ?? []).length > 1 && (
+            <select aria-label="Show a second terminal beside this one" value={splitWith} onChange={(e) => setSplitWith(e.target.value)} className="hidden h-7 max-w-[10rem] text-xs md:block">
+              <option value="">Single pane</option>
+              {(terms ?? []).filter((t) => t.id !== activeId).map((t) => (
+                <option key={t.id} value={t.id}>Beside: {t.title}</option>
+              ))}
+            </select>
+          )}
           {activeId && <SavedCommands sessionId={activeId} />}
           <label htmlFor="term-start" className="sr-only">
             Start the next terminal in
@@ -210,12 +223,12 @@ export default function TerminalPage() {
           </p>
         )}
         {terms && terms.length === 0 && !error && <p className="p-6 text-sm text-os-muted">Opening a terminal</p>}
-        <div className="min-h-0 flex-1">
+        <div className={cx('min-h-0 flex-1', second && 'grid grid-cols-2 gap-px bg-os-line')}>
           {(terms ?? []).map((t) => (
-            <div key={t.id} role="region" aria-label={t.title} className={t.id === activeId ? 'h-full' : 'hidden'}>
+            <div key={t.id} role="region" aria-label={t.title} className={t.id === activeId || t.id === second ? 'h-full min-w-0 bg-os-bg' : 'hidden'}>
               <TerminalView
                 sessionId={t.id}
-                active={t.id === activeId}
+                active={t.id === activeId || t.id === second}
                 onEnded={(why) => why.exitCode !== undefined && setTerms((prev) => (prev ?? []).map((x) => (x.id === t.id ? { ...x, exitCode: why.exitCode ?? 0 } : x)))}
               />
             </div>

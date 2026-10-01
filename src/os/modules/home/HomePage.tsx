@@ -50,15 +50,21 @@ function Empty({ children }: { children: ReactNode }) {
 
 function QuickStart({ home, projects, navigate }: { home: HomeData; projects: ProjectInfo[]; navigate: ModuleProps['navigate'] }) {
   const agents = home.providers.filter((p) => p.available);
-  const [agent, setAgent] = useState('claude');
+  const [picked, setPicked] = useState<string[]>(['claude']);
+  const [saved, setSaved] = useState<Array<{ id: string; name: string; text: string }>>([]);
+  useEffect(() => {
+    api<{ prompts: Array<{ id: string; name: string; text: string }> }>('/api/prompts').then((d) => setSaved(d.prompts)).catch(() => undefined);
+  }, []);
   const [projectId, setProjectId] = useState('');
   const [prompt, setPrompt] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!agents.some((a) => a.id === agent) && agents[0]) setAgent(agents[0].id);
-  }, [agents, agent]);
+    const ok = picked.filter((id) => agents.some((a) => a.id === id));
+    if (ok.length === 0 && agents[0]) setPicked([agents[0].id]);
+    else if (ok.length !== picked.length) setPicked(ok);
+  }, [agents, picked]);
   useEffect(() => {
     if (!projectId && projects[0]) setProjectId(projects[0].id);
   }, [projects, projectId]);
@@ -71,9 +77,15 @@ function QuickStart({ home, projects, navigate }: { home: HomeData; projects: Pr
     setError(null);
     try {
       const cwd = projects.find((p) => p.id === projectId)?.path;
-      const session = await agentsApi.create(agent, cwd, text.replace(/\s+/g, ' ').slice(0, 60));
-      await agentsApi.send(session.id, text);
-      navigate('agents', agent, session.id);
+      // One session per chosen agent, all given the same prompt, so their answers can be compared side by side.
+      const made: Array<{ agent: string; id: string }> = [];
+      for (const a of picked) {
+        const session = await agentsApi.create(a, cwd, text.replace(/\s+/g, ' ').slice(0, 60));
+        await agentsApi.send(session.id, text);
+        made.push({ agent: a, id: session.id });
+      }
+      if (made.length > 1) navigate('agents', made[0].agent, made[0].id, 'beside', made[1].agent, made[1].id);
+      else navigate('agents', made[0].agent, made[0].id);
     } catch (err) {
       setError((err as Error).message);
       setBusy(false);
@@ -96,11 +108,33 @@ function QuickStart({ home, projects, navigate }: { home: HomeData; projects: Pr
           className={cx(field, 'w-full resize-y py-2 leading-relaxed')}
         />
         <div className="flex flex-wrap items-center gap-2">
-          <select aria-label="Agent" value={agent} onChange={(e) => setAgent(e.target.value)} className={cx(field, 'h-8')}>
-            {agents.map((a) => (
-              <option key={a.id} value={a.id}>{a.label}</option>
-            ))}
-          </select>
+          <div role="group" aria-label="Agents to ask" className="flex flex-wrap items-center gap-1.5">
+            {agents.map((a) => {
+              const on = picked.includes(a.id);
+              return (
+                <button
+                  key={a.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => setPicked((p) => (on ? (p.length > 1 ? p.filter((x) => x !== a.id) : p) : [...p, a.id]))}
+                  className={cx(
+                    'h-9 rounded-full border px-3.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]',
+                    on ? 'border-os-cyan text-os-text' : 'border-os-line text-os-muted hover:text-os-text',
+                  )}
+                >
+                  {a.label}
+                </button>
+              );
+            })}
+          </div>
+          {saved.length > 0 && (
+            <select aria-label="Insert a saved prompt" value="" onChange={(e) => { const t = saved.find((x) => x.id === e.target.value); if (t) setPrompt(t.text); }} className={cx(field, 'h-9 max-w-[12rem]')}>
+              <option value="">Saved prompts</option>
+              {saved.map((x) => (
+                <option key={x.id} value={x.id}>{x.name}</option>
+              ))}
+            </select>
+          )}
           <select aria-label="Project" value={projectId} onChange={(e) => setProjectId(e.target.value)} className={cx(field, 'h-8 min-w-0 max-w-[14rem]')}>
             {projects.length === 0 && <option value="">Zak OS folder</option>}
             {projects.map((p) => (
@@ -108,10 +142,10 @@ function QuickStart({ home, projects, navigate }: { home: HomeData; projects: Pr
             ))}
           </select>
           <button type="submit" className={cx(primary, 'ml-auto')} disabled={!prompt.trim() || busy}>
-            <ArrowUp size={14} aria-hidden /> {busy ? 'Starting' : 'Start'}
+            <ArrowUp size={14} aria-hidden /> {busy ? 'Starting' : picked.length > 1 ? `Ask ${picked.length} agents` : 'Start'}
           </button>
         </div>
-        <p className="text-xs text-os-muted">Starts a real session you can keep using in Agents. Ctrl+Enter also starts it.</p>
+        <p className="text-xs text-os-muted">Starts a real session you can keep using in Agents. Pick more than one agent to ask them all and compare. Ctrl+Enter also starts it.</p>
         {error && <p className="text-xs text-os-danger" role="alert">{error}</p>}
       </form>
     </Panel>

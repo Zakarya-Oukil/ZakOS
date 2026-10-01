@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowUUpLeft, ArrowsClockwise, CaretDown, CaretRight } from '@phosphor-icons/react';
 import { Panel } from '../../ui';
+import { DiffView } from '../../ui/DiffView';
 import { cx } from '../../ui/cx';
 import { agentsApi, type ActionInfo, type FileChange, type SessionInfo } from './api';
 import { ago } from './format';
@@ -15,26 +16,7 @@ const LABEL: Record<FileChange['status'], { text: string; tone: string; hint: st
 const small =
   'rounded-[var(--os-radius-sm)] px-1.5 py-0.5 text-xs text-os-muted hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-40';
 
-export function DiffView({ text }: { text: string }) {
-  const lines = text.split('\n');
-  return (
-    <pre className="max-h-72 overflow-auto border-t border-os-line bg-os-bg px-3 py-2 font-os-mono text-xs leading-[1.5]">
-      {lines.map((l, i) => (
-        <span
-          key={i}
-          className={cx(
-            'block whitespace-pre',
-            l.startsWith('+') && !l.startsWith('+++') && 'bg-[rgba(var(--os-cyan-rgb),0.1)] text-os-cyan',
-            l.startsWith('-') && !l.startsWith('---') && 'bg-[rgba(255,107,107,0.08)] text-os-danger',
-            l.startsWith('@@') && 'text-os-muted',
-          )}
-        >
-          {l || ' '}
-        </span>
-      ))}
-    </pre>
-  );
-}
+export { DiffView } from '../../ui/DiffView';
 
 function FileRow({ session, refId, change, running, onReverted }: { session: SessionInfo; refId: string; change: FileChange; running: boolean; onReverted: () => void }) {
   const [open, setOpen] = useState(false);

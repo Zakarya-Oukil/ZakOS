@@ -1,10 +1,20 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Columns, Plus, Trash } from '@phosphor-icons/react';
 import { cx } from '../../ui/cx';
 import { StatusDot, type Status } from '../../ui';
 import type { SessionInfo } from './api';
 import type { ProjectInfo } from '../../lib/projectsApi';
 import { ago, basename } from './format';
+import { GlobalSearch } from './SessionExtras';
+
+export interface SessionTemplate {
+  id: string;
+  name: string;
+  agent: string;
+  prompt: string;
+  trust: string | null;
+  model: string;
+}
 
 interface SessionListProps {
   agent: string;
@@ -15,6 +25,7 @@ interface SessionListProps {
   disabledReason?: string;
   projects: ProjectInfo[];
   onCreate: (cwd: string, title?: string) => Promise<void>;
+  onCreateFromTemplate?: (cwd: string, title: string, t: SessionTemplate) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   /** Show a session in a second pane next to the open one. Omitted when nothing is open to sit beside. */
   onOpenBeside?: (id: string) => void;
@@ -29,7 +40,7 @@ function statusOf(s: SessionInfo): Status {
   return s.status === 'error' ? 'error' : 'idle';
 }
 
-export function SessionList({ agent, sessions, loading, error, activeId, disabledReason, projects, onCreate, onDelete, onOpenBeside, besideId, linkSuffix = '' }: SessionListProps) {
+export function SessionList({ agent, sessions, loading, error, activeId, disabledReason, projects, onCreate, onCreateFromTemplate, onDelete, onOpenBeside, besideId, linkSuffix = '' }: SessionListProps) {
   const [creating, setCreating] = useState(false);
   const [cwd, setCwd] = useState('');
   const [choice, setChoice] = useState<string>(() => {
@@ -45,13 +56,40 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [templates, setTemplates] = useState<SessionTemplate[]>([]);
+  const [templateId, setTemplateId] = useState('');
+  useEffect(() => {
+    if (!creating) return;
+    fetch('/api/agents-x/templates').then((r) => r.json()).then((d) => d.success && setTemplates(d.templates)).catch(() => undefined);
+  }, [creating]);
+  const [grouped, setGrouped] = useState(() => {
+    try {
+      return window.localStorage.getItem('zakos_sessions_grouped') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const toggleGroup = () =>
+    setGrouped((g) => {
+      try {
+        window.localStorage.setItem('zakos_sessions_grouped', g ? '0' : '1');
+      } catch {
+        /* storage blocked */
+      }
+      return !g;
+    });
+  const projectOf = (s: SessionInfo) => projects.find((p) => p.path.toLowerCase() === s.cwd.toLowerCase())?.name ?? basename(s.cwd);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setFormError(null);
     try {
-      if (useOther) await onCreate(cwd.trim());
+      const tpl = templates.find((t) => t.id === templateId);
+      if (tpl && onCreateFromTemplate) {
+        await onCreateFromTemplate(useOther ? cwd.trim() : (picked?.path ?? ''), useOther ? tpl.name : (picked?.name ?? tpl.name), tpl);
+      } else if (useOther) await onCreate(cwd.trim());
       else if (picked) {
         try {
           window.localStorage.setItem('zakos_last_project', picked.id);
@@ -150,7 +188,7 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
   );
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="relative flex h-full min-h-0 flex-col">
       <div className="border-b border-os-line p-2">
         {!creating ? (
           <button
@@ -182,6 +220,17 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
                     </option>
                   ))}
                   <option value="__other">Another folder</option>
+                </select>
+              </>
+            )}
+            {templates.length > 0 && onCreateFromTemplate && (
+              <>
+                <label htmlFor="new-session-template" className="text-xs text-os-muted">Start from a template</label>
+                <select id="new-session-template" value={templateId} onChange={(e) => setTemplateId(e.target.value)} className="h-8 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]">
+                  <option value="">Empty session</option>
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
                 </select>
               </>
             )}
@@ -229,7 +278,11 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
+      <div className="pt-2">
+        <GlobalSearch onActive={setSearching} linkSuffix={linkSuffix} />
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto p-1.5" aria-hidden={searching}>
         {loading && <p className="px-2.5 py-3 text-sm text-os-muted">Loading sessions</p>}
         {error && (
           <p role="alert" className="px-2.5 py-3 text-sm text-os-danger">
@@ -249,8 +302,22 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
         )}
         {rest.length > 0 && (
           <>
-            {active.length > 0 && <h3 className="px-2.5 pb-1 pt-3 text-xs text-os-muted">Recent</h3>}
-            <ul className="grid grid-cols-[minmax(0,1fr)] gap-0.5">{rest.map(row)}</ul>
+            <div className="flex items-center justify-between px-2.5 pb-1 pt-3">
+              <h3 className="text-xs text-os-muted">{active.length > 0 ? 'Recent' : 'Sessions'}</h3>
+              <button type="button" aria-pressed={grouped} onClick={toggleGroup} className="rounded-full px-2 py-0.5 text-xs text-os-muted hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]">
+                {grouped ? 'Ungroup' : 'Group by project'}
+              </button>
+            </div>
+            {grouped ? (
+              [...new Set(rest.map(projectOf))].map((name) => (
+                <div key={name} className="mb-2">
+                  <h4 className="px-2.5 pb-0.5 pt-1 text-xs font-semibold text-os-text">{name}</h4>
+                  <ul className="grid grid-cols-[minmax(0,1fr)] gap-0.5">{rest.filter((s) => projectOf(s) === name).map(row)}</ul>
+                </div>
+              ))
+            ) : (
+              <ul className="grid grid-cols-[minmax(0,1fr)] gap-0.5">{rest.map(row)}</ul>
+            )}
           </>
         )}
       </div>

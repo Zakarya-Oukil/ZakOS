@@ -1,11 +1,12 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { CaretRight, Paperclip } from '@phosphor-icons/react';
+import { CaretRight, Copy, Paperclip, SpeakerHigh, SpeakerSlash } from '@phosphor-icons/react';
 import { cx } from '../../ui/cx';
 import { Markdown, StatusDot } from '../../ui';
 import { Composer } from './Composer';
 import { formatSize, type AttachRef } from './attach';
 import { usePrefersReducedMotion } from '../../theme/motion';
 import { summarizeInput, type Item } from './items';
+import { speechSupported, useReadAloud } from './voice';
 
 function ToolCard({ item }: { item: Extract<Item, { kind: 'tool' }> }) {
   const summary = summarizeInput(item.name, item.input);
@@ -39,7 +40,7 @@ function ToolCard({ item }: { item: Extract<Item, { kind: 'tool' }> }) {
   );
 }
 
-function ItemView({ item }: { item: Item }) {
+function ItemView({ item, speaking, onSpeak }: { item: Item; speaking: string | null; onSpeak: (key: string, text: string) => void }) {
   switch (item.kind) {
     case 'user':
       return (
@@ -59,7 +60,33 @@ function ItemView({ item }: { item: Item }) {
         </div>
       );
     case 'text':
-      return <Markdown text={item.text} />;
+      return (
+        <div className="group/answer">
+          <Markdown text={item.text} />
+          {!item.open && (
+            <div className="mt-1.5 flex items-center gap-1 opacity-0 transition-opacity group-hover/answer:opacity-100 focus-within:opacity-100">
+              {speechSupported() && (
+                <button
+                  type="button"
+                  aria-pressed={speaking === item.key}
+                  onClick={() => onSpeak(item.key, item.text)}
+                  className="inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-xs text-os-muted hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+                >
+                  {speaking === item.key ? <SpeakerSlash size={14} aria-hidden /> : <SpeakerHigh size={14} aria-hidden />}
+                  {speaking === item.key ? 'Stop' : 'Read aloud'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => void navigator.clipboard?.writeText(item.text)}
+                className="inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-xs text-os-muted hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+              >
+                <Copy size={14} aria-hidden /> Copy
+              </button>
+            </div>
+          )}
+        </div>
+      );
     case 'tool':
       return <ToolCard item={item} />;
     case 'error':
@@ -88,6 +115,7 @@ export function Conversation({ items, running, loading, error, sessionKey, sessi
   const stick = useRef(true);
   const reduced = usePrefersReducedMotion();
   const [sendError, setSendError] = useState<string | null>(null);
+  const aloud = useReadAloud();
 
   // A new session always opens at the latest message.
   useLayoutEffect(() => {
@@ -129,7 +157,7 @@ export function Conversation({ items, running, loading, error, sessionKey, sessi
             </p>
           )}
           {items.map((it) => (
-            <ItemView key={it.key} item={it} />
+            <ItemView key={it.key} item={it} speaking={aloud.speaking} onSpeak={aloud.toggle} />
           ))}
           {showWorking && (
             <p className="flex items-center gap-2 text-sm text-os-muted" role="status">

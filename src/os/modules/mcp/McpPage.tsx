@@ -81,6 +81,12 @@ export default function McpPage(_props: ModuleProps) {
     }
   };
 
+  const usage = useResource<{ entries: Array<{ id: number; ts: number; detail: string }> }>('/api/audit?q=mcp__&limit=100');
+  const calls = (usage.data?.entries ?? []).map((e) => {
+    const m = /^(mcp__([^_]+(?:_[^_]+)*?)__(\S+))/.exec(e.detail);
+    return m ? { id: e.id, ts: e.ts, server: m[2], tool: m[3] } : null;
+  }).filter((x): x is { id: number; ts: number; server: string; tool: string } => x !== null);
+  const perServer = [...calls.reduce((m, c) => m.set(c.server, (m.get(c.server) ?? 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1]);
   const installed = new Set(data?.servers.map((s) => s.name));
 
   return (
@@ -160,6 +166,32 @@ export default function McpPage(_props: ModuleProps) {
                   </li>
                 ))}
               </ul>
+            )}
+          </Panel>
+
+          <Panel title="Usage log" padded={false}>
+            {calls.length === 0 ? (
+              <p className="p-4 text-sm text-os-muted">No MCP tool calls recorded yet. Calls made by agents through Zak OS appear here.</p>
+            ) : (
+              <div className="grid gap-0 lg:grid-cols-[220px_minmax(0,1fr)]">
+                <ul className="border-b border-os-line p-4 lg:border-b-0 lg:border-r">
+                  {perServer.map(([name, n]) => (
+                    <li key={name} className="flex justify-between gap-3 py-1 text-sm text-os-text">
+                      <span className="truncate">{name}</span>
+                      <span className="tabular-nums text-os-muted">{n}</span>
+                    </li>
+                  ))}
+                </ul>
+                <ul className="max-h-60 overflow-y-auto">
+                  {calls.slice(0, 25).map((c) => (
+                    <li key={c.id} className="flex items-baseline gap-3 border-t border-os-line px-4 py-2 first:border-t-0">
+                      <span className="w-24 shrink-0 text-xs text-os-muted">{new Date(c.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="font-os-mono text-xs text-os-text">{c.server}</span>
+                      <span className="min-w-0 flex-1 truncate font-os-mono text-xs text-os-muted">{c.tool}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </Panel>
 

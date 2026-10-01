@@ -1,3 +1,5 @@
+import { clearFork, modelFor, pendingFork } from '../os/agentsExtras';
+import { rulesFor } from '../os/alwaysAllow';
 import { randomUUID } from 'node:crypto';
 import { getAdapter } from './adapters';
 import type { AgentEvent } from './adapters/types';
@@ -53,6 +55,10 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
   const cliSessionId = session.cli_session_id ?? (session.agent === 'claude' ? randomUUID() : undefined);
   if (!resume && cliSessionId) store.setCliSessionId(sessionId, cliSessionId);
 
+  // A forked session's first message resumes the original conversation as a copy.
+  const forkOf = pendingFork(sessionId);
+  const forking = resume && forkOf !== null && forkOf === session.cli_session_id;
+
   const checkpoint = await createCheckpoint(session.cwd);
   store.logAction(sessionId, 'prompt', prompt.slice(0, 500), checkpoint);
   const project = path.basename(session.cwd);
@@ -73,7 +79,9 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
         trust: isTrust(session.trust) ? session.trust : trustForPath(session.cwd),
         cliSessionId,
         resume,
-        allowedTools: grant.allowedTools,
+        fork: forking,
+        model: modelFor(sessionId),
+        allowedTools: [...(grant.allowedTools ?? []), ...rulesFor(session.cwd)],
         signal: ctl.signal,
       })) {
         // Accounting events feed the usage tracker and never appear in the conversation.
@@ -98,7 +106,10 @@ export async function sendMessage(sessionId: string, prompt: string, broadcast: 
             notify(`Approval needed: ${project}`, added[0].summary, broadcast, { module: 'approvals', route: [] }, { native: false });
           }
         }
-        if (event.type === 'done' && event.cliSessionId) store.setCliSessionId(sessionId, event.cliSessionId);
+        if (event.type === 'done' && event.cliSessionId) {
+          store.setCliSessionId(sessionId, event.cliSessionId);
+          if (forking) clearFork(sessionId);
+        }
         // Text deltas are high-volume; persist them merged when the run ends.
         if (event.type === 'text') {
           answer += event.delta;

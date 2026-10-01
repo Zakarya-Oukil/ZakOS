@@ -3,6 +3,7 @@ import { audit } from '../audit';
 import * as projects from '../projects/store';
 import { isTrustedLocalRequest } from '../terminal/pty';
 import { allStates, readLog, scriptsOf, startApp, stateOf, stopApp } from './apps';
+import { varsFor } from '../os/devExtras';
 import { quickChecks, runHeavy, type HeavyCheck } from './health';
 
 /** These start processes and run builds in project folders, so they are local-only like the terminal. */
@@ -41,8 +42,9 @@ export function mountDevRoutes(app: Express) {
     const p = projectOf(req, res);
     if (!p) return;
     try {
-      const state = startApp(p.id, { script: str(req.body?.script), command: str(req.body?.command) });
-      audit('app-start', 'owner', state.command, { project: p.name });
+      const profile = str(req.body?.profile);
+      const state = startApp(p.id, { script: str(req.body?.script), command: str(req.body?.command), env: profile ? varsFor(p.id, profile) : undefined });
+      audit('app-start', 'owner', profile ? `${state.command} (profile ${profile})` : state.command, { project: p.name });
       res.status(201).json({ success: true, state });
     } catch (err) {
       fail(res, 400, err instanceof Error ? err.message : String(err));

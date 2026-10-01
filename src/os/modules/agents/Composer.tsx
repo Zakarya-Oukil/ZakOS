@@ -1,5 +1,6 @@
+import { dictationSupported, useDictation } from './voice';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { ArrowUp, BookmarkSimple, FileText, Folder, Globe, Notebook, Paperclip, Stop, Trash, TreeStructure, X } from '@phosphor-icons/react';
+import { ArrowUp, BookmarkSimple, FileText, Folder, Globe, Notebook, Paperclip, Stop, Trash, TreeStructure, X, Microphone } from '@phosphor-icons/react';
 import { cx } from '../../ui/cx';
 import { Kbd } from '../../ui';
 import {
@@ -54,6 +55,7 @@ export function Composer({ sessionId, running, agentLabel, onSend, onStop, sessi
   const [saving, setSaving] = useState(false);
   const [saveName, setSaveName] = useState('');
   const input = useRef<HTMLTextAreaElement>(null);
+  const dictation = useDictation((text) => setDraft((d) => (d && !d.endsWith(' ') ? `${d} ${text}` : `${d}${text}`)));
 
   useEffect(() => {
     setDraft('');
@@ -339,6 +341,19 @@ export function Composer({ sessionId, running, agentLabel, onSend, onStop, sessi
         >
           <Paperclip size={16} aria-hidden />
         </button>
+        {dictationSupported() && (
+          <button
+            type="button"
+            aria-label={dictation.listening ? 'Stop dictation' : 'Dictate a message'}
+            aria-pressed={dictation.listening}
+            disabled={running}
+            onClick={() => (dictation.listening ? dictation.stop() : dictation.start())}
+            title={dictation.error ?? (dictation.listening ? 'Listening. Click to stop.' : 'Dictate (uses the browser speech service)')}
+            className={'grid h-8 w-8 shrink-0 place-items-center rounded-full transition-colors focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:opacity-40 ' + (dictation.listening ? 'bg-os-cyan text-os-on-accent' : 'text-os-muted hover:text-os-text')}
+          >
+            <Microphone size={16} aria-hidden />
+          </button>
+        )}
         <textarea
           ref={input}
           value={draft}
@@ -351,6 +366,7 @@ export function Composer({ sessionId, running, agentLabel, onSend, onStop, sessi
           disabled={running}
           className="max-h-[200px] min-h-[28px] flex-1 resize-none bg-transparent px-1.5 py-1 text-[15px] leading-relaxed text-os-text placeholder:text-os-muted focus:outline-none disabled:opacity-60"
         />
+        {dictation.error && <span role="alert" className="sr-only">{dictation.error}</span>}
         {running ? (
           <button
             type="button"

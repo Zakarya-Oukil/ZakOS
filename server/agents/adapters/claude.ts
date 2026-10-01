@@ -121,6 +121,8 @@ export const claudeAdapter: AgentAdapter = {
     ];
     for (const rule of opts.allowedTools ?? []) args.push('--allowedTools', rule);
     if (opts.cliSessionId) args.push(opts.resume ? '--resume' : '--session-id', opts.cliSessionId);
+    if (opts.resume && opts.fork) args.push('--fork-session');
+    if (opts.model && /^[a-z0-9][a-z0-9.\-\[\]]{0,60}$/i.test(opts.model)) args.push('--model', opts.model);
 
     // Prompt goes over stdin so it can never be parsed as a flag.
     const proc = spawnLines('claude', args, { cwd: opts.cwd, signal: opts.signal, stdin: opts.prompt });

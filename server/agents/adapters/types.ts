@@ -41,6 +41,10 @@ export interface AgentRunOptions {
   cwd: string;
   cliSessionId?: string;
   resume: boolean;
+  /** Resume `cliSessionId` as a copy: the conversation continues under a new id (Claude only). */
+  fork?: boolean;
+  /** Model for this session (Claude only): an alias like opus or a full model id. */
+  model?: string;
   /** Claude permission rules granted for this turn only, e.g. `Bash(npm test)`. */
   allowedTools?: string[];
   signal: AbortSignal;

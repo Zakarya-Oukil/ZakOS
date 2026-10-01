@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
+import { feedRecording } from './recorder';
 import '@xterm/xterm/css/xterm.css';
 
 type Phase = 'connecting' | 'ready' | 'closed';
@@ -121,6 +122,7 @@ export function TerminalView({ sessionId, active, onEnded }: TerminalViewProps) 
           ws.send(JSON.stringify({ type: 'resize', cols: term.cols, rows: term.rows }));
         } else if (msg.type === 'output') {
           term.write(msg.data);
+          feedRecording(sessionId, msg.data);
         } else if (msg.type === 'exit') {
           setNote(`The shell exited with code ${msg.code}. Close this tab or open a new terminal.`);
           onEndedRef.current?.({ exitCode: msg.code });

@@ -6,6 +6,7 @@ import { agentsSocket } from '../../lib/agentsSocket';
 import { api } from '../../lib/api';
 import { Button, ErrorNote, SuccessNote, inputCls } from '../../ui';
 import { cx } from '../../ui/cx';
+import { AlertRules } from './AlertRules';
 
 interface AuditEntry {
   id: number;
@@ -109,6 +110,7 @@ export default function AuditPage(_props: ModuleProps) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [saved, setSaved] = useState<SavedFilter[]>(readSaved);
   const [archive, setArchive] = useState(false);
+  const [showAlerts, setShowAlerts] = useState(false);
   const live = useRef({ kind, query, archive });
   live.current = { kind, query, archive };
 
@@ -232,6 +234,7 @@ export default function AuditPage(_props: ModuleProps) {
         <>
           <Button size="sm" onClick={() => exportAll('csv')}><DownloadSimple size={15} aria-hidden /> CSV</Button>
           <Button size="sm" onClick={() => exportAll('json')}><DownloadSimple size={15} aria-hidden /> JSON</Button>
+          <Button size="sm" variant={showAlerts ? 'primary' : 'outline'} onClick={() => setShowAlerts((v) => !v)}>Alert rules</Button>
           <Button size="sm" variant="ghost" onClick={() => { load(); loadStats(); }}>Refresh</Button>
         </>
       }
@@ -289,6 +292,7 @@ export default function AuditPage(_props: ModuleProps) {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          {showAlerts && <div className="mb-4"><AlertRules kinds={kinds} /></div>}
           {error && <div className="mb-3"><ErrorNote>{error}</ErrorNote></div>}
           {notice && <div className="mb-3"><SuccessNote>{notice}</SuccessNote></div>}
           {loading && entries.length === 0 && <p className="text-sm text-os-muted" role="status">Loading</p>}

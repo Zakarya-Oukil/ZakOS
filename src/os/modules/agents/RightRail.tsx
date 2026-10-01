@@ -4,15 +4,30 @@ import { Panel } from '../../ui';
 import { agentsApi, type ActionInfo, type SessionInfo } from './api';
 import { ago, resumeCommand } from './format';
 import { Changes } from './Changes';
+import { SessionSettings, ToolTimeline } from './SessionExtras';
+import type { Item } from './items';
 
 interface RightRailProps {
   session: SessionInfo;
   actions: ActionInfo[];
   running: boolean;
   onChanged: () => void;
+  onFork?: () => void;
+  items?: Item[];
 }
 
-export function RightRail({ session, actions, running, onChanged }: RightRailProps) {
+export function RightRail({ session, actions, running, onChanged, onFork, items }: RightRailProps) {
+  const [cost, setCost] = useState<{ cost: number; input: number; output: number; runs: number } | null>(null);
+  useEffect(() => {
+    let live = true;
+    fetch(`/api/agents-x/sessions/${session.id}/usage`)
+      .then((r) => r.json())
+      .then((d) => live && d.usage && setCost(d.usage))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [session.id, running]);
   const [title, setTitle] = useState(session.title);
   const [copied, setCopied] = useState(false);
   const [confirmRef, setConfirmRef] = useState<string | null>(null);
@@ -74,6 +89,10 @@ export function RightRail({ session, actions, running, onChanged }: RightRailPro
 
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-4 p-3">
+      <Panel title="This session">
+        <SessionSettings sessionId={session.id} agent={session.agent} onChanged={onChanged} firstPrompt={items?.find((i) => i.kind === 'user')?.kind === 'user' ? (items.find((i) => i.kind === 'user') as { text: string }).text : undefined} />
+      </Panel>
+      {items && <ToolTimeline items={items} />}
       <Panel title="Session">
         <div className="grid gap-3 text-sm">
           <div className="grid gap-1">
@@ -115,6 +134,23 @@ export function RightRail({ session, actions, running, onChanged }: RightRailPro
               <span className="text-xs text-os-muted">Available after the first reply.</span>
             )}
           </div>
+          <div className="grid gap-1">
+            <span className="text-xs text-os-muted">Cost so far</span>
+            <span className="text-sm text-os-text">
+              {cost && cost.runs > 0 ? `${cost.cost < 0.01 ? '<$0.01' : `$${cost.cost.toFixed(2)}`}, ${Math.round((cost.input + cost.output) / 1000)}k tokens, ${cost.runs} run${cost.runs === 1 ? '' : 's'}` : 'Nothing counted yet'}
+            </span>
+          </div>
+          {onFork && session.agent === 'claude' && (
+            <button
+              type="button"
+              disabled={running || !session.cli_session_id}
+              onClick={onFork}
+              title="Start a copy of this conversation that goes its own way"
+              className="inline-flex h-9 items-center justify-center rounded-full border border-os-line px-4 text-sm text-os-text transition-colors hover:border-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Fork this session
+            </button>
+          )}
         </div>
       </Panel>
 

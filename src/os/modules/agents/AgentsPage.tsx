@@ -6,6 +6,7 @@ import { IconButton, StatusDot, Tabs, type TabItem } from '../../ui';
 import { cx } from '../../ui/cx';
 import { agentsApi } from './api';
 import { projectsApi, type ProjectInfo } from '../../lib/projectsApi';
+import { CompareAnswers, lastAnswer } from './CompareAnswers';
 import { Conversation } from './Conversation';
 import { useAgents, useSession, useSessions } from './hooks';
 import { RightRail } from './RightRail';
@@ -33,6 +34,7 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
   const current = useSession(sessionId);
   const beside = useSession(split?.id);
   const [railOpen, setRailOpen] = useState(true);
+  const [comparing, setComparing] = useState(false);
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
 
   useEffect(() => {
@@ -84,6 +86,18 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
     [agentId, list, go],
   );
 
+  const createFromTemplate = useCallback(
+    async (cwd: string, title: string, t: { agent: string; prompt: string; trust: string | null; model: string }) => {
+      const s = await agentsApi.create(t.agent, cwd || undefined, title);
+      if (t.trust) await fetch(`/api/agents-x/sessions/${s.id}/trust`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ trust: t.trust }) });
+      if (t.model) await fetch(`/api/agents-x/sessions/${s.id}/model`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ model: t.model }) });
+      await agentsApi.send(s.id, t.prompt);
+      list.refresh();
+      go(t.agent, s.id);
+    },
+    [list, go],
+  );
+
   const remove = useCallback(
     async (id: string) => {
       await agentsApi.remove(id);
@@ -106,6 +120,19 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
 
   const sessionOpen = Boolean(sessionId);
 
+  const fork = async () => {
+    if (!sessionId) return;
+    try {
+      const res = await fetch(`/api/agents-x/sessions/${sessionId}/fork`, { method: 'POST' });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok || d.success === false) throw new Error(d.error || 'Could not fork');
+      list.refresh();
+      go(agentId, d.session.id);
+    } catch (e) {
+      window.alert((e as Error).message);
+    }
+  };
+
   return (
     <PageFrame
       title="Agents"
@@ -117,6 +144,15 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
               <StatusDot status="live" label="Running" />
               {runningCount} running
             </span>
+          )}
+          {split && (
+            <button
+              type="button"
+              onClick={() => setComparing(true)}
+              className="hidden h-8 items-center rounded-full border border-os-line px-3.5 text-[13px] font-medium text-os-text transition-colors hover:border-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] lg:inline-flex"
+            >
+              Compare answers
+            </button>
           )}
           <IconButton
             aria-label={railOpen ? 'Hide session details' : 'Show session details'}
@@ -143,6 +179,7 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
             disabledReason={unavailable}
             projects={projects}
             onCreate={create}
+            onCreateFromTemplate={createFromTemplate}
             onDelete={remove}
             onOpenBeside={sessionId ? (id) => go(agentId, sessionId, { agent: agentId, id }) : undefined}
             besideId={split?.id}
@@ -238,6 +275,8 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
               session={current.session}
               actions={current.actions}
               running={current.running}
+              onFork={fork}
+              items={current.items}
               onChanged={() => {
                 current.reload();
                 list.refresh();
@@ -246,6 +285,13 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
           </aside>
         )}
       </div>
+      {comparing && split && (
+        <CompareAnswers
+          labels={[`${agentLabel}: ${current.session?.title ?? 'Session'}`, `${labelOf(split.agent)}: ${beside.session?.title ?? 'Session'}`]}
+          answers={[lastAnswer(current.items), lastAnswer(beside.items)]}
+          onClose={() => setComparing(false)}
+        />
+      )}
     </PageFrame>
   );
 }

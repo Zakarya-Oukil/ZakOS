@@ -6,6 +6,7 @@ import { Panel, Tabs } from '../../ui';
 import { cx } from '../../ui/cx';
 import { projectsApi, timeAgo, type ProjectInfo } from '../../lib/projectsApi';
 import { DiffView } from '../agents/Changes';
+import { CherryPick, MergeBox, PullRequests, StashPanel, SuggestMessage } from './GitExtras';
 import { gitApi, STATE_TONE, STATE_WORD, type Branch, type Commit, type DiffResult, type GitFile, type GitStatus } from './api';
 
 const btn =
@@ -16,11 +17,13 @@ const tiny =
 const field =
   'rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
-type Tab = 'changes' | 'history' | 'branches';
+type Tab = 'changes' | 'history' | 'branches' | 'stash' | 'prs';
 const TABS = [
   { id: 'changes', label: 'Changes' },
   { id: 'history', label: 'History' },
   { id: 'branches', label: 'Branches' },
+  { id: 'stash', label: 'Stash' },
+  { id: 'prs', label: 'Pull requests' },
 ];
 
 const stagedOf = (f: GitFile) => f.index !== ' ' && f.index !== '?';
@@ -265,6 +268,7 @@ export default function GitPage({ route, navigate }: ModuleProps) {
                       }}
                     >
                       <label htmlFor="commit-msg" className="text-xs text-os-muted">Commit message</label>
+                      <SuggestMessage projectId={projectId} disabled={staged.length === 0} onMessage={setMessage} />
                       <textarea
                         id="commit-msg"
                         value={message}
@@ -308,6 +312,9 @@ export default function GitPage({ route, navigate }: ModuleProps) {
                   </ul>
                 )}
 
+                {tab === 'stash' && <StashPanel projectId={projectId} onChanged={refresh} />}
+                {tab === 'prs' && <PullRequests projectId={projectId} branch={status.branch} hasUpstream={!!status.upstream} />}
+
                 {tab === 'branches' && (
                   <div className="grid gap-3">
                     <form
@@ -342,6 +349,7 @@ export default function GitPage({ route, navigate }: ModuleProps) {
                       ))}
                     </ul>
                     <p className="text-xs text-os-muted">Switching is refused by git when it would overwrite uncommitted work.</p>
+                    <MergeBox projectId={projectId} branches={branches.map((b) => b.name)} current={status.branch} onChanged={refresh} />
                   </div>
                 )}
               </div>
@@ -364,8 +372,16 @@ export default function GitPage({ route, navigate }: ModuleProps) {
                   </div>
                 )}
                 {tab === 'history' && !commitDiff && <p className="p-6 text-sm text-os-muted">Select a commit to read it.</p>}
-                {tab === 'history' && commitDiff && <DiffView text={commitDiff.diff} />}
-                {tab === 'branches' && <p className="p-6 text-sm text-os-muted">Pick a branch to work on. Commits made here stay on the branch until you merge them.</p>}
+                {tab === 'history' && commitDiff && (
+                  <div>
+                    <div className="flex items-center justify-between gap-2 border-b border-os-line px-4 py-2">
+                      <span className="font-os-mono text-xs text-os-muted">{commitDiff.hash.slice(0, 7)}</span>
+                      <CherryPick projectId={projectId} hash={commitDiff.hash} onDone={(m) => { setNotice(m); refresh(); }} />
+                    </div>
+                    <DiffView text={commitDiff.diff} maxHeight="max-h-[70vh]" />
+                  </div>
+                )}
+                {(tab === 'branches' || tab === 'stash' || tab === 'prs') && <p className="p-6 text-sm text-os-muted">{tab === 'branches' ? 'Pick a branch to work on. Commits made here stay on the branch until you merge them.' : tab === 'stash' ? 'A stash holds work in progress so you can switch tasks without committing.' : 'Pull requests are read and opened through the GitHub CLI you are signed in with.'}</p>}
               </div>
             </div>
           </>

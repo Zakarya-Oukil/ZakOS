@@ -128,7 +128,7 @@ mountBrainRoutes(app);
 mountSkillRoutes(app);
 mountTerminalRoutes(app);
 mountScheduleRoutes(app, broadcast);
-mountOsRoutes(app);
+mountOsRoutes(app, broadcast);
 startScheduler(broadcast);
 
 // ==========================================
