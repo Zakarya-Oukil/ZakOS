@@ -8,6 +8,8 @@ import { SETUP_KEY } from '../../shell/SetupWizard';
 import { cx } from '../../ui/cx';
 import { projectsApi, timeAgo, type ProjectInfo } from '../../lib/projectsApi';
 import { agentsApi } from '../agents/api';
+import { WorldHero } from '../../worlds/heroes';
+import { useWorld } from '../../worlds/worlds';
 import { useHome, type HomeData, type Provider, type Window as Win } from './api';
 
 const fmtTokens = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
@@ -604,6 +606,7 @@ function summary(h: HomeData): string {
 
 export default function HomePage({ navigate }: ModuleProps) {
   const { home, error } = useHome();
+  const world = useWorld();
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
   useEffect(() => {
     projectsApi.list().then(setProjects).catch(() => setProjects([]));
@@ -615,25 +618,36 @@ export default function HomePage({ navigate }: ModuleProps) {
 
   return (
     <PageFrame title="Home">
-      <div className="h-full overflow-y-auto p-5">
+      <div className="h-full overflow-y-auto overflow-x-hidden p-5">
         <div className="mx-auto grid max-w-[1280px] grid-cols-[minmax(0,1fr)] gap-5">
           {error && !home && <p className="text-sm text-os-danger" role="alert">{error}</p>}
           {!home && !error && <p className="text-sm text-os-muted">Loading</p>}
           {home && (
             <>
-              <section className="relative -mx-5 -mt-5 h-[400px] overflow-hidden" aria-label="Your projects as a map">
-                <Territory home={home} />
-                <div className="pointer-events-none absolute left-8 top-8 max-w-[34rem]">
-                  <h2 className="os-display text-[64px] leading-[0.95] text-os-text">
-                    {greeting()}
-                    {profileName() ? `, ${profileName()}` : ''}.
-                  </h2>
-                  <p className="mt-3 text-[16px] text-os-muted">{summary(home)}</p>
-                </div>
-              </section>
-              <div className="relative z-10 -mt-14">
-                <QuickStart home={home} projects={projects} navigate={navigate} />
-              </div>
+              {world.id === 'atlas' ? (
+                <>
+                  <section className="relative -mx-5 -mt-5 h-[400px] overflow-hidden" aria-label="Your projects as a map">
+                    <Territory home={home} />
+                    <div className="pointer-events-none absolute left-8 top-8 max-w-[34rem]">
+                      <h2 className="os-display text-[64px] leading-[0.95] text-os-text">
+                        {greeting()}
+                        {profileName() ? `, ${profileName()}` : ''}.
+                      </h2>
+                      <p className="mt-3 text-[16px] text-os-muted">{summary(home)}</p>
+                    </div>
+                  </section>
+                  <div className="relative z-10 -mt-14">
+                    <QuickStart home={home} projects={projects} navigate={navigate} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <WorldHero world={world.id} home={home} hello={`${greeting()}${profileName() ? `, ${profileName()}` : ''}.`} summary={summary(home)} />
+                  <div className="relative z-10">
+                    <QuickStart home={home} projects={projects} navigate={navigate} />
+                  </div>
+                </>
+              )}
               <SetupChecklist home={home} />
               <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
                 <div className="grid content-start gap-5">

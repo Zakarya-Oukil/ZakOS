@@ -12,7 +12,7 @@ interface PageFrameProps {
 export function PageFrame({ title, leading, actions, children }: PageFrameProps) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="relative z-20 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-os-line bg-os-surface px-5">
+      <header className="os-pageheader relative z-20 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-os-line bg-os-surface px-5">
         <div className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto">
           <h1 className="os-display shrink-0 py-1 text-[26px] leading-[1.2] text-os-text">{title}</h1>
           {leading}

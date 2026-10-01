@@ -9,6 +9,7 @@ import { useApprovalsApi } from '../modules/approvals/api';
 import { usePrefersReducedMotion } from '../theme/motion';
 import type { Theme } from '../theme/useTheme';
 import { planAtLeast, type Plan } from '../lib/useLicence';
+import { WorldSwitcher } from '../worlds/WorldSwitcher';
 
 interface SidebarProps {
   modules: OsModule[];
@@ -156,6 +157,7 @@ export function Sidebar({ modules, activeId, collapsed, onToggle, connected, the
           {!collapsed && <span className="truncate">{theme === 'dark' ? 'Light theme' : 'Dark theme'}</span>}
           {collapsed && <span className="sr-only">Switch theme</span>}
         </button>
+        <WorldSwitcher placement="right" label={!collapsed} className="w-full" buttonClassName={cx('w-full', collapsed ? 'justify-center px-0' : 'justify-start gap-3')} />
         <a
           href="#/legacy"
           title={collapsed ? 'Legacy UI' : undefined}

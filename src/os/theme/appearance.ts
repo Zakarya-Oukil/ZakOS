@@ -40,8 +40,14 @@ export function applyAppearance(a: Appearance) {
   const root = document.documentElement;
   const accent = ACCENTS.find((x) => x.id === a.accent) ?? ACCENTS[0];
   const light = root.dataset.theme === 'light';
-  root.style.setProperty('--os-cyan', light ? accent.light : accent.dark);
-  root.style.setProperty('--os-cyan-rgb', light ? accent.lightRgb : accent.darkRgb);
+  // The accent picker belongs to Atlas. Every other world carries its own palette.
+  if (!root.dataset.world || root.dataset.world === 'atlas') {
+    root.style.setProperty('--os-cyan', light ? accent.light : accent.dark);
+    root.style.setProperty('--os-cyan-rgb', light ? accent.lightRgb : accent.darkRgb);
+  } else {
+    root.style.removeProperty('--os-cyan');
+    root.style.removeProperty('--os-cyan-rgb');
+  }
   root.dataset.motion = a.motion;
   root.dataset.backdrop = a.backdrop;
   root.dataset.density = a.density;
@@ -80,7 +86,7 @@ export function useAppearance() {
     applyAppearance(appearance);
     // Accents differ per theme, so re-apply when the theme flips.
     const mo = new MutationObserver(() => applyAppearance(getCurrent()));
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-world'] });
     return () => mo.disconnect();
   }, [appearance]);
 

@@ -134,8 +134,8 @@ export default {
         mono: ['"Fira Code"', '"JetBrains Mono"', 'Consolas', 'monospace'],
         sans: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
         // Agentic OS shell fonts (separate keys so src/legacy typography is unchanged)
-        'os-sans': ['"Bricolage Grotesque Variable"', '"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
-        'os-mono': ['"Geist Mono"', 'ui-monospace', 'Consolas', 'monospace'],
+        'os-sans': ['var(--os-font-sans)'],
+        'os-mono': ['var(--os-font-mono)'],
       }
     },
   },

@@ -6,6 +6,7 @@ import { mountAlwaysAllowRoutes } from './alwaysAllow';
 import { mountAuditExtras } from './auditExtras';
 import { mountBrainExtras } from './brainExtras';
 import { mountCalendarRoutes } from './calendar';
+import { mountCyberlabRoutes } from './cyberlab';
 import { mountDeployRoutes } from './deploy';
 import { mountDevExtras } from './devExtras';
 import { mountFlowRoutes } from './flows';
@@ -42,6 +43,7 @@ export function mountOsRoutes(app: Express, broadcast: (d: unknown) => void) {
   mountDevExtras(app);
   mountProjectMeta(app);
   mountCalendarRoutes(app);
+  mountCyberlabRoutes(app);
   mountBrainExtras(app);
   mountSkillsExtras(app);
   mountAuditExtras(app);

@@ -11,7 +11,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // Heavy libraries the lazy pages need are bundled at startup, so the first visit to Brain or Files does not stall on a re-optimise.
+  optimizeDeps: {
+    include: ['three', 'three/examples/jsm/controls/OrbitControls.js', '@phosphor-icons/react', 'motion/react', 'gsap', '@monaco-editor/react', '@xterm/xterm', '@xterm/addon-fit', 'marked'],
+  },
   server: {
+    warmup: { clientFiles: ['./src/main.tsx', './src/os/Shell.tsx', './src/os/modules/*/*.tsx', './src/os/modules/*.tsx'] },
     port: 5173,
     strictPort: true,
     proxy: {

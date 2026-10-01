@@ -8,7 +8,7 @@ const linkBase =
   'group flex h-9 w-full items-center gap-3 rounded-full px-3 text-sm transition-colors ' +
   'focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
-export function NotificationsMenu({ collapsed }: { collapsed: boolean }) {
+export function NotificationsMenu({ collapsed, placement = 'side' }: { collapsed: boolean; placement?: 'side' | 'below' | 'above' }) {
   const { items, unread, markAllRead } = useNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -34,7 +34,7 @@ export function NotificationsMenu({ collapsed }: { collapsed: boolean }) {
         aria-expanded={open}
         aria-haspopup="dialog"
         onClick={() => setOpen((o) => !o)}
-        className={cx(linkBase, 'text-os-muted hover:bg-os-surface-2 hover:text-os-text', collapsed ? 'justify-center px-0' : 'justify-start')}
+        className={cx(linkBase, 'text-os-muted hover:bg-os-surface-2 hover:text-os-text', collapsed ? 'justify-center px-0' : 'justify-start', collapsed && placement !== 'side' && '!w-9')}
       >
         <span className="relative">
           <Bell size={19} weight="duotone" aria-hidden />
@@ -48,7 +48,7 @@ export function NotificationsMenu({ collapsed }: { collapsed: boolean }) {
         <div
           role="dialog"
           aria-label="Notifications"
-          className="absolute bottom-0 left-full z-40 ml-2 w-80 rounded-[var(--os-radius-lg)] border border-os-line bg-os-bg shadow-[var(--os-shadow-panel)]"
+          className={cx('absolute z-[70] w-80 rounded-[var(--os-radius-lg)] border border-os-line bg-os-bg shadow-[var(--os-shadow-panel)]', placement === 'side' ? 'bottom-0 left-full ml-2' : placement === 'below' ? 'right-0 top-full mt-2' : 'bottom-full right-0 mb-2')}
         >
           <div className="flex items-center justify-between border-b border-os-line px-3 py-2">
             <span className="text-sm font-medium text-os-text">Notifications</span>

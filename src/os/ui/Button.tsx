@@ -30,7 +30,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     <button
       ref={ref}
       type={type}
+      data-variant={variant}
       className={cx(
+        'os-btn',
         'inline-flex items-center justify-center gap-2 rounded-full font-os-sans font-medium transition-[background-color,border-color,filter,transform] duration-150',
         'focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] active:scale-[0.98]',
         'disabled:pointer-events-none disabled:opacity-40',

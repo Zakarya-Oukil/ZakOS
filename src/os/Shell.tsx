@@ -19,7 +19,12 @@ import { useShortcutListener } from './lib/shortcuts';
 import { CAPTURE_EVENT, QuickCapture } from './shell/QuickCapture';
 import { bootSequence } from './theme/gsap';
 import { usePrefersReducedMotion } from './theme/motion';
-import { CommandPalette, type Command } from './ui';
+import { CommandPalette, ContourGlyph, type Command } from './ui';
+import { WORLDS, useWorld } from './worlds/worlds';
+import { chooseWorld } from './worlds/WorldSwitcher';
+import { WorldBackdrop } from './worlds/WorldBackdrop';
+import { WorldTransition } from './worlds/WorldTransition';
+import { DockNav, HudNav, RackNav, RailNav, SheetNav, type NavProps } from './worlds/navs';
 
 const LegacyApp = lazy(() => import('../legacy/App').then((m) => ({ default: m.App })));
 
@@ -34,9 +39,17 @@ function readCollapsed(): boolean {
 }
 
 function PageFallback() {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 6000);
+    return () => clearTimeout(t);
+  }, []);
   return (
-    <div className="grid h-full place-items-center text-sm text-os-muted" role="status">
-      Loading
+    <div className="grid h-full place-items-center p-6 text-center" role="status">
+      <div className="max-w-xs">
+        <ContourGlyph seed="loading" size={96} />
+        <p className="mt-3 text-sm text-os-muted">{slow ? 'This is taking longer than usual. The dev server may still be preparing the page. If it does not appear in a few seconds, reload.' : 'Opening the page'}</p>
+      </div>
     </div>
   );
 }
@@ -48,6 +61,8 @@ export function Shell() {
   const reduced = usePrefersReducedMotion();
   const { theme, toggle: toggleTheme } = useTheme();
   const { appearance } = useAppearance();
+  const world = useWorld();
+  const mainRef = useRef<HTMLElement>(null);
   const auth = useAuth();
   const licence = useLicence();
   const [showSetup, setShowSetup] = useState(() => !setupDone());
@@ -123,12 +138,13 @@ export function Shell() {
     () => [
       ...visible.map((m) => ({ id: `go-${m.id}`, label: `Go to ${m.label}`, hint: m.description, run: () => navigate(m.id) })),
       { id: 'capture', label: 'Capture a note to the vault', run: () => window.dispatchEvent(new Event(CAPTURE_EVENT)) },
+      ...WORLDS.filter((w) => w.id !== world.id).map((w) => ({ id: `world-${w.id}`, label: `Switch world to ${w.label}`, hint: w.tagline, run: () => chooseWorld(w.id) })),
       { id: 'toggle-theme', label: theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme', run: toggleTheme },
       { id: 'toggle-sidebar', label: collapsed ? 'Expand sidebar' : 'Collapse sidebar', run: toggleSidebar },
       { id: 'legacy', label: 'Open legacy UI', run: () => navigate('legacy') },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [visible, collapsed, navigate, theme],
+    [visible, collapsed, navigate, theme, world.id],
   );
 
   useShortcutListener({
@@ -159,30 +175,41 @@ export function Shell() {
   }
 
   const Page = active?.component;
+  const mainLeft = () => mainRef.current?.getBoundingClientRect().left ?? 0;
+  const mainTop = () => mainRef.current?.getBoundingClientRect().top ?? 0;
+  const navProps: NavProps = { modules: visible, activeId: active?.id, connected, theme, onToggleTheme: toggleTheme, plan: licence.plan, navigate };
+  const WorldNav = world.nav === 'sheet' ? SheetNav : world.nav === 'hud' ? HudNav : world.nav === 'rail' ? RailNav : world.nav === 'rack' ? RackNav : DockNav;
 
   return (
     <ModuleContext.Provider value={modules}>
-      <div ref={rootRef} className="relative flex h-[100dvh] w-full font-os-sans text-os-text">
-        {appearance.backdrop !== 'none' && (
+      <div ref={rootRef} data-nav={world.nav} className="world-root relative flex h-[100dvh] w-full font-os-sans text-os-text">
+        {appearance.backdrop !== 'none' && world.id === 'atlas' && (
           <Topography className="pointer-events-none fixed inset-0 h-full w-full" still={appearance.backdrop === 'still' || appearance.motion === 'off'} calm={appearance.motion === 'calm'} region={active?.id ?? 'home'} />
         )}
-        <Sidebar
-          modules={visible}
-          activeId={active?.id}
-          collapsed={collapsed}
-          onToggle={toggleSidebar}
-          connected={connected}
-          theme={theme}
-          onToggleTheme={toggleTheme}
-          plan={licence.plan}
-        />
-        <main className="relative min-w-0 flex-1">
+        {appearance.backdrop !== 'none' && world.id !== 'atlas' && (
+          <WorldBackdrop world={world.id} theme={theme} still={reduced || appearance.backdrop === 'still' || appearance.motion === 'off'} />
+        )}
+        {world.id === 'atlas' ? (
+          <Sidebar
+            modules={visible}
+            activeId={active?.id}
+            collapsed={collapsed}
+            onToggle={toggleSidebar}
+            connected={connected}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            plan={licence.plan}
+          />
+        ) : (
+          <WorldNav {...navProps} />
+        )}
+        <main ref={mainRef} className="relative min-h-0 min-w-0 flex-1">
           {Page && (
             <motion.div
               key={active.id}
               className="h-full"
-              initial={reduced ? { opacity: 0 } : { clipPath: `circle(0px at ${Math.max(0, origin.current.x - (collapsed ? 64 : 232))}px ${origin.current.y}px)` }}
-              animate={reduced ? { opacity: 1, transition: { duration: 0.01 } } : { clipPath: `circle(2600px at ${Math.max(0, origin.current.x - (collapsed ? 64 : 232))}px ${origin.current.y}px)`, transition: { duration: 0.6, ease: [0.65, 0, 0.35, 1] } }}
+              initial={reduced ? { opacity: 0 } : { clipPath: `circle(0px at ${Math.max(0, origin.current.x - mainLeft())}px ${Math.max(0, origin.current.y - mainTop())}px)` }}
+              animate={reduced ? { opacity: 1, transition: { duration: 0.01 } } : { clipPath: `circle(2600px at ${Math.max(0, origin.current.x - mainLeft())}px ${Math.max(0, origin.current.y - mainTop())}px)`, transition: { duration: 0.6, ease: [0.65, 0, 0.35, 1] } }}
               onAnimationComplete={(def) => {
                 // Once open, drop the clip so nothing is ever cut off.
                 const el = document.getElementById('os-page');
@@ -201,6 +228,7 @@ export function Shell() {
             </motion.div>
           )}
         </main>
+        <WorldTransition />
         <CommandPalette commands={commands} />
         <QuickCapture />
         {showSetup && <SetupWizard theme={theme} onTheme={toggleTheme} onDone={() => setShowSetup(false)} />}

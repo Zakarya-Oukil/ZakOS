@@ -1,0 +1,4130 @@
+{
+ "source": "https://github.com/jivoi/awesome-osint",
+ "licence": "CC BY-SA 4.0",
+ "fetched": "2026-10-01",
+ "entries": [
+  {
+   "name": "CheckLeaked",
+   "url": "https://checkleaked.cc/",
+   "note": "Check if an email, username or phone appears in a data breach, showing the sources; free searches, developer API and chat bots.",
+   "phase": "identity",
+   "group": "Breach and leak"
+  },
+  {
+   "name": "CredenShow",
+   "url": "https://credenshow.com/",
+   "note": "Identify your compromised credentials before others do.",
+   "phase": "identity",
+   "group": "Breach and leak"
+  },
+  {
+   "name": "HIB Ransomed",
+   "url": "https://haveibeenransom.com/",
+   "note": "Because people have the right to know if their data has been leaked.",
+   "phase": "identity",
+   "group": "Breach and leak"
+  },
+  {
+   "name": "HEROIC.NOW",
+   "url": "https://heroic.com/",
+   "note": "Has your data been leaked on the dark web? Scan your identities for FREE.",
+   "phase": "identity",
+   "group": "Breach and leak"
+  },
+  {
+   "name": "IKnowYour.Dad",
+   "url": "https://iknowyour.dad/",
+   "note": "Data Breach Search Engine.",
+   "phase": "identity",
+   "group": "Breach and leak"
+  },
+  {
+   "name": "Leaker",
+   "url": "https://github.com/vflame6/leaker",
+   "note": "Passive leak enumeration CLI tool that searches across 10 breach databases simultaneously.",
+   "phase": "identity",
+   "group": "Breach and leak"
+  },
+  {
+   "name": "NOX",
+   "url": "https://github.com/nox-project/nox-framework",
+   "note": "Recursive async framework for deep breach analysis and identity pivoting.",
+   "phase": "identity",
+   "group": "Breach and leak"
+  },
+  {
+   "name": "OsintCat",
+   "url": "https://www.osintcat.net/",
+   "note": "Check if an email address has been exposed in known data breaches. Fast lookup across multiple breach databases, with a simple API available.",
+   "phase": "identity",
+   "group": "Breach and leak"
+  },
+  {
+   "name": "StealSeek",
+   "url": "https://stealseek.io/",
+   "note": "Powerful search engine designed to help you find and analyze data breaches.",
+   "phase": "identity",
+   "group": "Breach and leak"
+  },
+  {
+   "name": "Venacus",
+   "url": "https://venacus.com/",
+   "note": "Search for your data breaches and get notified when your data is compromised.",
+   "phase": "identity",
+   "group": "Breach and leak"
+  },
+  {
+   "name": "2lingual Search",
+   "url": "https://www.2lingual.com",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Abusech",
+   "url": "https://hunting.abuse.ch",
+   "note": "Hunt across all abuse.ch platforms with one simple query",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Abuseipdb",
+   "url": "https://www.abuseipdb.com/",
+   "note": "Repository of abuses reported by system administrators for IPs, Domains, and subnets",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "BeVigil",
+   "url": "https://bevigil.com/search",
+   "note": "Search for assets like Subdomains, URLs, Parameters in mobile applications",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "BGP.tools",
+   "url": "https://bgp.tools",
+   "note": "Modern BGP toolkit for network reconnaissance and analysis.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "BGP.he.net",
+   "url": "https://bgp.he.net",
+   "note": "Free BGP and network intelligence toolkit",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Biznar",
+   "url": "https://biznar.com",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "BrightCloud",
+   "url": "https://brightcloud.com/tools/url-ip-lookup.php",
+   "note": "Checks the reputation, category, and potential threats associated with a URL or IP address.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Browserleaks",
+   "url": "https://browserleaks.com/",
+   "note": "BrowserLeaks tests your browser for privacy and fingerprinting leaks",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Censys",
+   "url": "https://search.censys.io/",
+   "note": "Searcher that monitors and analyzes devices.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "CertKit Certificate Search",
+   "url": "https://www.certkit.io/tools/ct-logs/",
+   "note": "Fast search for public SSL/TLS certificate records.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Cisco Talos Intelligence",
+   "url": "https://talosintelligence.com/reputation_center",
+   "note": "IP and Domain Reputation Center for real-time threat detection",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "CiteSeerX",
+   "url": "https://citeseer.ist.psu.edu",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Cloudflare Radar",
+   "url": "https://radar.cloudflare.com",
+   "note": "Internet traffic patterns, attacks, and technology trends.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Criminal IP",
+   "url": "https://www.criminalip.io/",
+   "note": "Cyber Threat Intelligence Search Engine and Attack Surface Management(ASM) platform",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "CRT Certificate Search",
+   "url": "https://crt.sh",
+   "note": "Allows you to search for public SSL/TLS certificates recorded in Certificate Transparency logs",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "FOFA",
+   "url": "https://en.fofa.info/",
+   "note": "Asset search and analysis tool.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "FullHunt",
+   "url": "https://fullhunt.io/",
+   "note": "FullHunt identifies and secures your External Attack Surface.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Google Custom Search",
+   "url": "https://www.google.com/cse",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "GrayhatWarfare",
+   "url": "https://grayhatwarfare.com/",
+   "note": "Searches and indexes open Amazon S3 buckets, allowing users to find and explore potentially exposed data.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "GreyNoise",
+   "url": "https://viz.greynoise.io/",
+   "note": "Search Exposed Internet assets, Malicious IP's.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Harmari (Unified Listings Search)",
+   "url": "https://www.harmari.com/search/unified",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Hunter Search Engine",
+   "url": "https://hunter.how/",
+   "note": "Search Exposed Internet assets, open web directories and many more.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Intelligence X",
+   "url": "https://intelx.io/tools",
+   "note": "Paid OSINT Tool Allowing users to search for information across various sources including the dark web and public data leaks.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Internet Archive",
+   "url": "https://archive.org/",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Islegitsite",
+   "url": "https://www.islegitsite.com/",
+   "note": "Checks if a website is trustworthy by analyzing its reputation, domain, and security based on public sources.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "MalwareBazaar",
+   "url": "https://bazaar.abuse.ch/browse/",
+   "note": "Search and download confirmed malware samples by hash, family, tag, and other criteria.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Mamont",
+   "url": "https://www.mmnt.ru/",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Million Short",
+   "url": "https://millionshort.com",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Netlas.io",
+   "url": "https://app.netlas.io/",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "ODIN",
+   "url": "https://search.odin.io/",
+   "note": "Used to search for Hosts, CVEs & Exposed Buckets/Files and shows a website is vulnerable or not. 10 Free Searches Per Day.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "OCCRP Aleph",
+   "url": "https://aleph.occrp.org/",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "ONYPHE",
+   "url": "https://search.onyphe.io/",
+   "note": "OSINT engine indexing exposed assets and services across the internet.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "packet.guru",
+   "url": "https://packet.guru/",
+   "note": "Browser-fingerprint and connection-trust audit: WebRTC/DNS leak tests, JA4/JA3 TLS and passive TCP/IP fingerprints, ECH state, and IP reputation (VPN, proxy, datacenter, Tor), returning two independent 0–100 Privacy & Trust scores. No signup, runs client-side.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Shadowserver",
+   "url": "https://dashboard.shadowserver.org/",
+   "note": "Dashboard with global statistics on cyber threats collected by the Shadowserver Foundation.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Shodan",
+   "url": "https://www.shodan.io/",
+   "note": "Shodan is a search engine for the IOT(Internet of Things) that allows you to search variety of servers that are connected to the internet using various searching filters.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "SikkerAPI",
+   "url": "https://www.sikkerapi.com/",
+   "note": "SikkerAPI is a free IP and threat intelligence provider, that publishes IP reputation scores, behavioral data and full attack sessions across 16+ different protocols.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "WIPO",
+   "url": "https://www3.wipo.int/branddb/en/",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "WorldWideScience.org",
+   "url": "https://worldwidescience.org",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Wpscan",
+   "url": "https://wpscan.com",
+   "note": "Scan your WordPress site and get an instant report on its security.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "YARAif",
+   "url": "https://yaraify.abuse.ch/scan/",
+   "note": "Collaborative YARA engine providing open threat intelligence through file pattern matching.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "Zanran",
+   "url": "https://zanran.com",
+   "note": "",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "ZoomEye",
+   "url": "https://www.zoomeye.ai/",
+   "note": "ZoomEye is a cyberspace search engine for IPs, domains, internet asset discovery, and exposure analysis of servers, routers, and webcams.",
+   "phase": "search",
+   "group": "Specialist search"
+  },
+  {
+   "name": "DocumentCloud",
+   "url": "https://www.documentcloud.org",
+   "note": "Platform for analyzing, annotating, and publishing documents.",
+   "phase": "files",
+   "group": "Documents"
+  },
+  {
+   "name": "Epstein Exposed",
+   "url": "https://epsteinexposed.com",
+   "note": "Comprehensive searchable database of 2M+ DOJ Epstein case documents, 1,700+ persons, flight logs, emails, and network graph visualization.",
+   "phase": "files",
+   "group": "Documents"
+  },
+  {
+   "name": "Find-pdf-doc",
+   "url": "https://www.findpdfdoc.com",
+   "note": "",
+   "phase": "files",
+   "group": "Documents"
+  },
+  {
+   "name": "Free Full PDF",
+   "url": "https://www.freefullpdf.com",
+   "note": "",
+   "phase": "files",
+   "group": "Documents"
+  },
+  {
+   "name": "Offshore Leak Database",
+   "url": "https://offshoreleaks.icij.org",
+   "note": "",
+   "phase": "files",
+   "group": "Documents"
+  },
+  {
+   "name": "RECAP Archive",
+   "url": "https://www.courtlistener.com/recap/",
+   "note": "Public archive of PACER court documents.",
+   "phase": "files",
+   "group": "Documents"
+  },
+  {
+   "name": "Scribd",
+   "url": "https://www.scribd.com",
+   "note": "",
+   "phase": "files",
+   "group": "Documents"
+  },
+  {
+   "name": "SlideShare",
+   "url": "https://www.slideshare.net",
+   "note": "",
+   "phase": "files",
+   "group": "Documents"
+  },
+  {
+   "name": "APT Groups and Operations",
+   "url": "https://docs.google.com/spreadsheets/u/0/d/1H9_xaxQHpWaa4O_Son4Gx0YOIzlcBWMsdvePFX68EKU/pubhtml?pli=1#",
+   "note": "Know about Threat Actors, sponsored countries, their tools, methods, etc.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "Bi.Zone",
+   "url": "https://gti.bi.zone/",
+   "note": "148 threat groups with detailed TTPs.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "BreachHQ",
+   "url": "https://breach-hq.com/threat-actors",
+   "note": "Provides a list of all known cyber threat actors also referred to as malicious actors, APT groups or hackers.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "Dark Web Informer",
+   "url": "https://darkwebinformer.com/threat-actor-database/",
+   "note": "Tracking 854 Threat Actors as of 29th of May 2025.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "ETDA",
+   "url": "https://apt.etda.or.th/cgi-bin/listgroups.cgi",
+   "note": "Search for Threat Actor groups and their tools.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "FortiGuard Labs",
+   "url": "https://www.fortiguard.com/threat-actor",
+   "note": "Powered by FortiGuard Labs, our Threat Actor Encyclopedia provides actionable insights, helping security teams prepare and streamline advanced threat hunting and response.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "KNOWLEDGENOW",
+   "url": "https://know.netenrich.com/content/track/threat-actor",
+   "note": "Trending Threats.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "lazarusholic",
+   "url": "https://lazarus.day/actors/",
+   "note": "Total 203 threat actors.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "Malpedia",
+   "url": "https://malpedia.caad.fkie.fraunhofer.de/actors",
+   "note": "Get List of threat actor groups.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "MISP Galaxy",
+   "url": "https://www.misp-galaxy.org/360net/",
+   "note": "Known or estimated adversary groups as identified by 360.net.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "OPENHUNTING.IO",
+   "url": "https://openhunting.io/threat-library",
+   "note": "Threat Library Collecting Information.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "SOCRadar LABS",
+   "url": "https://socradar.io/labs/threat-actor/",
+   "note": "Know threat actor tactics, techniques, and past activities. Access detailed profiles and track their activities.Keep up with the latest threats and Tactics, Techniques, and Procedures (TTPs).",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "Thales",
+   "url": "https://cds.thalesgroup.com/en/cyberthreat/attacks-page",
+   "note": "Find Threat actor groups in a graphical attack explorer.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "Threat Actor Usernames Scrape",
+   "url": "https://github.com/spmedia/Threat-Actor-Usernames-Scrape",
+   "note": "A collection of fresh intel and 900k+ threat actor usernames scraped from various cybercrime sources & forums.",
+   "phase": "threat",
+   "group": "Threat actors"
+  },
+  {
+   "name": "eyedex",
+   "url": "https://www.eyedex.org/",
+   "note": "Open directory search engine.",
+   "phase": "files",
+   "group": "File search"
+  },
+  {
+   "name": "de digger",
+   "url": "https://www.dedigger.com/",
+   "note": "is a website that allows you to find any types of files that are publicly available in a Google Drive.",
+   "phase": "files",
+   "group": "File search"
+  },
+  {
+   "name": "Filesec.io",
+   "url": "https://filesec.io/",
+   "note": "Central resource cataloging malicious file extensions, their risks, OS and mitigations.",
+   "phase": "files",
+   "group": "File search"
+  },
+  {
+   "name": "Find Security Contacts",
+   "url": "https://findsecuritycontacts.com",
+   "note": "Public index listing security contacts (emails, policies, etc.) extracted from domains security.txt files.",
+   "phase": "files",
+   "group": "File search"
+  },
+  {
+   "name": "Meawfy",
+   "url": "https://meawfy.com/",
+   "note": "Advanced Mega.nz File Search Engine. Search and discover files from Mega.nz with our intelligent crawler technology. Access over 9 million indexed files instantly.",
+   "phase": "files",
+   "group": "File search"
+  },
+  {
+   "name": "NAPALM FTP Indexer",
+   "url": "https://www.searchftps.net/",
+   "note": "",
+   "phase": "files",
+   "group": "File search"
+  },
+  {
+   "name": "ODCrawler",
+   "url": "https://odcrawler.xyz/",
+   "note": "A search engine for open directories. Find millions of publicly available files!",
+   "phase": "files",
+   "group": "File search"
+  },
+  {
+   "name": "SearchFiles.de",
+   "url": "https://searchfiles.de/",
+   "note": "",
+   "phase": "files",
+   "group": "File search"
+  },
+  {
+   "name": "BeanPaste",
+   "url": "https://beanpaste.fun/",
+   "note": "A tiny way to share text.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "bpaste",
+   "url": "https://bpa.st/",
+   "note": "Welcome to bpaste, this site is a pastebin. It allows you to share code with others.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "CentOS Pastebin Service",
+   "url": "https://paste.centos.org/",
+   "note": "Stikked is an Open-Source PHP Pastebin, with the aim of keeping a simple and easy to use user interface.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "cl1p",
+   "url": "https://Cl1p.net",
+   "note": "The Internet Clipboard.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "commie",
+   "url": "https://commie.io/",
+   "note": "commie is a pastebin script with line commenting support.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Context",
+   "url": "https://ctxt.io/",
+   "note": "Share whatever you see with others in seconds.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "ControlC Pastebin",
+   "url": "https://Controlc.com",
+   "note": "The easiest way to host your text.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Cutapaste",
+   "url": "https://cutapaste.net/",
+   "note": "Short Code and Share.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Defuse",
+   "url": "https://defuse.ca/pastebin.htm",
+   "note": "Encrypted Pastebin - Keep your data private and secure!",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "doxbin",
+   "url": "https://doxbin.net/",
+   "note": "A dox style pastebin ran by hackers.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "dpaste",
+   "url": "https://Dpaste.com",
+   "note": "",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Etusivu",
+   "url": "https://pastebin.fi/",
+   "note": "It's an open source clone of pastebin.com. Default Language is Finnish.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Friendpaste",
+   "url": "https://friendpaste.com/",
+   "note": "Paste stuff to your friends.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "GitHub gist",
+   "url": "https://gist.github.com",
+   "note": "",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "HashBin",
+   "url": "https://hashb.in/#Q===",
+   "note": "HashBin is a paste bin that never sees the contents of its pastes.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "hastebin",
+   "url": "https://www.toptal.com/developers/hastebin/",
+   "note": "",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "ideone",
+   "url": "https://Ideone.com",
+   "note": "",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "ivpaste",
+   "url": "https://Ivpaste.com",
+   "note": "",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "jsbin",
+   "url": "https://Jsbin.com",
+   "note": "",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "justpaste",
+   "url": "https://Justpaste.it",
+   "note": "",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Katbin",
+   "url": "https://katb.in",
+   "note": "Small, lightweight pastebin.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Linkode(alpha)",
+   "url": "https://linkode.org/",
+   "note": "Linkode is the useful pastebin!",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Logpasta",
+   "url": "https://logpasta.com/",
+   "note": "Simple, secure log paste service. Command line mode based.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "lesma.eu",
+   "url": "https://lesma.eu/",
+   "note": "Simple paste app friendly with browser and command line.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Nachricht",
+   "url": "https://nachricht.co/",
+   "note": "With Nachricht.co you can send self-destructive and encrypted one-way messages over the Internet. You don't even need to miss out the messenger or social network of your choice. We are an independent, secure and fully free service!",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "NoPaste",
+   "url": "https://nopaste.boris.sh/",
+   "note": "NoPaste is an open-source website similar to Pastebin where you can store any piece of code, and generate links for easy sharing.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "nopaste.net",
+   "url": "https://nopaste.net/",
+   "note": "nopaste.net is a temporary file host, nopaste and clipboard across machines. You can upload files or text and share the link with others.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Notes",
+   "url": "https://notes.io/",
+   "note": "fast.easy.short.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "nekobin",
+   "url": "https://nekobin.com/",
+   "note": "Paste code, save and share the link!",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "New Paste",
+   "url": "https://paste1.com/",
+   "note": "I wanna paste because typing is so boring!",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "n0paste",
+   "url": "https://n0paste.eu/",
+   "note": "Paste and share your code online.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "paaster",
+   "url": "https://paaster.io/",
+   "note": "Paaster is a secure and user-friendly pastebin application that prioritizes privacy and simplicity. With end-to-end encryption and paste history, Paaster ensures that your pasted code remains confidential and accessible.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Pastebin.cz",
+   "url": "https://www.pastebin.cz/en/",
+   "note": "A simple Pastebin.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Paste.Cash",
+   "url": "https://www.paste.cash/",
+   "note": "Paste.CASH Is a privacy respected and encrypted pastebin hosted by Cash Hosting. Every paste are encrypted using 256 bits AES.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "paste.centos",
+   "url": "https://paste.centos.org",
+   "note": "",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "paste.debian",
+   "url": "https://Paste.debian.net",
+   "note": "",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "paste.in.ua",
+   "url": "https://paste.in.ua/",
+   "note": "Simple pastebin.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "paste.kde",
+   "url": "https://Paste.kde.org",
+   "note": "",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Paste.Monster",
+   "url": "https://paste.monster/",
+   "note": "Share your thoughts online. API Available.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "paste.ubuntu",
+   "url": "https://paste.ubuntu.com",
+   "note": "",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Paste.Quest",
+   "url": "https://pastequest.com/",
+   "note": "Copy and Paste text online to share with anyone anywhere. Use the password option to add a password to the pasted information.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Pastery",
+   "url": "https://www.pastery.net/",
+   "note": "The sweetest pastebin in the world!",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "PasteSite.Net",
+   "url": "https://pastesite.net/",
+   "note": "The new generation pastebin.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "paste.sh",
+   "url": "https://paste.sh/",
+   "note": "This is an encrypted paste site. Simply type or paste code here and share the URL. Saving is Automatic.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "PasteShr",
+   "url": "https://www.pasteshr.com/",
+   "note": "Store any text online for easy sharing. Search option available!",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Rentry",
+   "url": "https://rentry.co/",
+   "note": "Rentry.co is a markdown paste service service with preview, custom urls and editing. Fast, simple and free.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "SafeNote",
+   "url": "https://safenote.co/",
+   "note": "SafeNote is a free web-based service that allows you to share a note or a file with confidentiality. There is no way to spying on you even to a hacker.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "scrt.link",
+   "url": "https://scrt.link/",
+   "note": "Share a Secret with a link that only works one time and then self-destructs.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "snippet.host",
+   "url": "https://snippet.host/",
+   "note": "Minimal text and code snippet hosting.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Spacebin",
+   "url": "https://spaceb.in/",
+   "note": "Spacebin is a modern Pastebin server implemented in Go and is capable of serving notes, novels, code, or any other form of text.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "TextBin",
+   "url": "https://textbin.net/",
+   "note": "Secure pastebin where you can paste and store any type of text or code snippets online and share it with your friends.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Textbin-Code",
+   "url": "https://textbin.online/",
+   "note": "SECURE YOUR CODE!",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "TutPaste",
+   "url": "https://tutpaste.com/",
+   "note": "Welcome to our fast and free online paste tool. Paste and share your text or code snippets with anyone, anywhere, no registration required.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "vaultbin",
+   "url": "https://vaultb.in/",
+   "note": "Vaultbin is a blazingly fast and secure alternative to Pastebin and Hastebin.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Verybin",
+   "url": "https://www.verybin.com/",
+   "note": "Anonymous and encrypted pastebin. Data is encrypted/decrypted in the browser using 256 bits AES and no IP address logged.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "Write.as",
+   "url": "https://write.as/",
+   "note": "Type words, put them on the internet.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "ZBin",
+   "url": "https://zbin.dev/",
+   "note": "Private & Secure Pastebin.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "ZeroBin",
+   "url": "https://sebsauvage.net/paste/",
+   "note": "ZeroBin is a minimalist, opensource online pastebin where the server has zero knowledge of pasted data. Data is encrypted/decrypted in the browser using 256 bits AES.",
+   "phase": "code",
+   "group": "Pastes"
+  },
+  {
+   "name": "AnalyzeID",
+   "url": "https://analyzeid.com/",
+   "note": "Find Other Websites Owned By The Same Person",
+   "phase": "code",
+   "group": "Code search"
+  },
+  {
+   "name": "Code Finder",
+   "url": "https://codefinder.dev/",
+   "note": "The ultimate search engine for finding GitHub repositories",
+   "phase": "code",
+   "group": "Code search"
+  },
+  {
+   "name": "GitHub Code Search",
+   "url": "https://github.com/search?type=code",
+   "note": "GitHub's enhanced code search with advanced filtering.",
+   "phase": "code",
+   "group": "Code search"
+  },
+  {
+   "name": "grep.app",
+   "url": "https://grep.app/",
+   "note": "Searches code from the entire github public repositories for a given specific string or using regular expression.",
+   "phase": "code",
+   "group": "Code search"
+  },
+  {
+   "name": "NerdyData",
+   "url": "https://nerdydata.com",
+   "note": "Search engine for source code.",
+   "phase": "code",
+   "group": "Code search"
+  },
+  {
+   "name": "PublicWWW",
+   "url": "https://publicwww.com/",
+   "note": "",
+   "phase": "code",
+   "group": "Code search"
+  },
+  {
+   "name": "SearchCode",
+   "url": "https://searchcode.com",
+   "note": "Help find real world examples of functions, API's and libraries across 10+ sources.",
+   "phase": "code",
+   "group": "Code search"
+  },
+  {
+   "name": "Sourcebot",
+   "url": "https://www.sourcebot.dev/",
+   "note": "Index thousands of repos on your machine and search through them in a fast, powerful, and modern web interface.",
+   "phase": "code",
+   "group": "Code search"
+  },
+  {
+   "name": "SourceGraph",
+   "url": "https://sourcegraph.com/search",
+   "note": "Search code from millions of open source repositories.",
+   "phase": "code",
+   "group": "Code search"
+  },
+  {
+   "name": "GHNames",
+   "url": "https://ghnames.com/",
+   "note": "GitHub lookup tool to search for username history, associated emails, and deleted repositories.",
+   "phase": "code",
+   "group": "GitHub"
+  },
+  {
+   "name": "github_monitor",
+   "url": "https://github.com/misiektoja/github_monitor",
+   "note": "Tool for real-time tracking of GitHub users' activities including profile and repository changes with support for email alerts, CSV logging, detection when a user blocks or unblocks you and more",
+   "phase": "code",
+   "group": "GitHub"
+  },
+  {
+   "name": "GithubRecon",
+   "url": "https://kriztalz.sh/github-recon/",
+   "note": "Lookup Github users by username or email and gather associated data.",
+   "phase": "code",
+   "group": "GitHub"
+  },
+  {
+   "name": "GitLeak",
+   "url": "https://gitleak.io",
+   "note": "An OSINT tool for GitHub that extracts hidden email addresses, commit timezones, and activity patterns via .patch metadata.",
+   "phase": "code",
+   "group": "GitHub"
+  },
+  {
+   "name": "Related Repos",
+   "url": "https://relatedrepos.com/",
+   "note": "Discover related open source projects. Find alternatives and other similar repositories. Updated daily.",
+   "phase": "code",
+   "group": "GitHub"
+  },
+  {
+   "name": "Shotstars",
+   "url": "https://github.com/snooppr/shotstars",
+   "note": "An advanced tool for checking GitHub repositories, with star statistics, including fake star analysis and data visualization.",
+   "phase": "code",
+   "group": "GitHub"
+  },
+  {
+   "name": "Antisocial",
+   "url": "https://github.com/lukeslp/antisocial",
+   "note": "Find forgotten accounts across 30+ platforms using three-tier verification: official APIs first, then browser automation, then HTTP content analysis. Reduces false positives to around 5%. Deep search mode adds 500+ platforms via the WhatsMyName database.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "Blackbird",
+   "url": "https://github.com/p1ngul1n0/blackbird",
+   "note": "Search a username across over 600+ websites.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "CheckUser",
+   "url": "https://checkuser.vercel.app/",
+   "note": "search username across social networks",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "Cupidcr4wl",
+   "url": "https://github.com/OSINTI4L/cupidcr4wl",
+   "note": "Username and phone number search tool that crawls adult content platforms to see if a targeted account or person is present.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "Digital Footprint Check",
+   "url": "https://www.digitalfootprintcheck.com/free-checker.html",
+   "note": "Check for registered username on 100s of sites for free.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "IDCrawl",
+   "url": "https://www.idcrawl.com/username",
+   "note": "Search for a username in popular social networks.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "Maigret",
+   "url": "https://github.com/soxoj/maigret",
+   "note": "Collect a dossier on a person by username.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "Name Chk",
+   "url": "https://www.namechk.com",
+   "note": "Check over 30 domains and more than 90 social media account platforms.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "Name Checkr",
+   "url": "https://www.namecheckr.com",
+   "note": "checks a domain and username across many platforms.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "Name Checkup",
+   "url": "https://namecheckup.com",
+   "note": "is a search tool that allows you to check the avilability of a givrn username from all over the social media. Inaddition it also sllows you to check the avilability of a given domain name.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "NameKetchup",
+   "url": "https://nameketchup.com",
+   "note": "checks domain name and username in popular social media sites and platforms.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "NexFil",
+   "url": "https://github.com/thewhiteh4t/nexfil",
+   "note": "checks username from almost all social network sites.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "Sherlock",
+   "url": "https://github.com/sherlock-project/sherlock",
+   "note": "Search for a username in multiple platforms/websites.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "SherlockEye",
+   "url": "https://sherlockeye.io/",
+   "note": "Search for publicly available information connected to a username, uncovering associated profiles and activities across the web.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "Trace",
+   "url": "https://trace.manus.space",
+   "note": "Real-time OSINT platform to search usernames, emails, phone numbers, and full names across 600+ platforms with breach detection and AI risk scoring.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "TraceFind",
+   "url": "https://tracefind.info",
+   "note": "Uncover the Truth Behind Any Username — Instantly. Scans thousands of sites for username presence.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "Snoop",
+   "url": "https://github.com/snooppr/snoop/blob/master/README.en.md",
+   "note": "Search for a nickname on the web (OSINT world)",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "Social Analyzer",
+   "url": "https://github.com/qeeqbox/social-analyzer",
+   "note": "API, CLI, and Web App for analyzing and finding a person's profile in 1000 social media \\ websites",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "User Search",
+   "url": "https://www.usersearch.org",
+   "note": "Find someone by username, email, phone number or picture across Social Networks, Dating Sites, Forums, Crypto Forums, Chat Sites and Blogs, 3000+ sites Supported!",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "User Searcher",
+   "url": "https://www.user-searcher.com",
+   "note": "User-Searcher is a powerful and free tool to help you search username in 2000+ websites.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "WhatsMyName",
+   "url": "https://whatsmyname.app/",
+   "note": "check for usernames across many different platforms.",
+   "phase": "identity",
+   "group": "Username"
+  },
+  {
+   "name": "192 (UK)",
+   "url": "https://www.192.com",
+   "note": "Search by person, business, address. Limited free info, premium data upsell.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "411 (US)",
+   "url": "https://www.411.com",
+   "note": "Search by person, phone number, address, and business. Limited free info, premium data upsell.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Ancestry",
+   "url": "https://www.ancestry.com",
+   "note": "Premium data, free trial with credit card.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Apollo.io",
+   "url": "https://www.apollo.io/",
+   "note": "Free B2B Phone Number & Email Finder. 1200 credits per user/year for free plan.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "BeenVerified",
+   "url": "https://www.backgroundchecks.com/solutions/beenverified",
+   "note": "",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Black Book Online",
+   "url": "https://www.blackbookonline.info",
+   "note": "Free. Nationwide directory of public record lookups.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "BuscaPaginasBlancas",
+   "url": "https://github.com/GeiserX/BuscaPaginasBlancas",
+   "note": "OSINT tool for extracting contact information from Spanish white pages (Paginas Blancas).",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "California Justice Watch",
+   "url": "https://cajusticewatch.com",
+   "note": "Free. Public-records accountability data for California: 58 district attorneys, 196 public defenders, 1,620 sitting judges, 1,500 law-enforcement officers with documented misconduct, 247 Commission on Judicial Performance discipline records (plus full-text search over 250 CJP decision PDFs), and 671",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Canada411",
+   "url": "https://www.canada411.ca",
+   "note": "Search by person, phone number, and business. Free.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Classmates",
+   "url": "https://www.classmates.com",
+   "note": "High-school focused people search. Free acounts allow creating a profile and viewing other members. Premium account required to contact other members.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "ContactOut",
+   "url": "https://contactout.com/",
+   "note": "Unlock the world's most accurate contact data. Find emails & phone for 300M professionals.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Clustermaps",
+   "url": "https://clustrmaps.com/",
+   "note": "Find people and address information associated with them",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "CrunchBase",
+   "url": "https://www.crunchbase.com",
+   "note": "Business information database, with a focus on investment, acquisition, and executive data. Ancillary focus on market research and connecting founders and investors.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "FaceCheck.ID",
+   "url": "https://facecheck.id",
+   "note": "Search the internet by face.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Family Search",
+   "url": "https://familysearch.org",
+   "note": "Popular genealogy site. Free, but registration required. Funded by The Church Of Jesus Christ of Latter-day Saints.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "FamilyTreeNow",
+   "url": "https://familytreenow.com",
+   "note": "Research family and geneology, no registration required, can search addresses, phone numbers, and email addresses as well as associations.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "FinalNotes Obituary Research Guide",
+   "url": "https://www.finalnotes.page/obituary-research-guide/",
+   "note": "Guide for finding obituary records, preserving source trails, and turning obituary clues into sourced family-history stories.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Federal Bureau of Prisons - Inmate Locator (US)",
+   "url": "https://www.bop.gov/inmateloc",
+   "note": "Search federal inmates incarcerated from 1982 to the present.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Fold3 (US Military Records)",
+   "url": "https://www.fold3.com",
+   "note": "Search military records. Search filters limited with free access. Premium access requires subscription.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Genealogy Bank",
+   "url": "https://www.genealogybank.com",
+   "note": "Premium data, free trial with credit card.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Genealogy Links",
+   "url": "https://www.genealogylinks.net",
+   "note": "Genealogy directory with over 50K links.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Homemetry",
+   "url": "https://homemetry.com",
+   "note": "Reverse address search and allows searching for properties for sale/rent..",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "InfoTracer",
+   "url": "https://infotracer.com/",
+   "note": "Search for people. (Searches are paid)",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Judyrecords",
+   "url": "https://www.judyrecords.com/",
+   "note": "Free. Nationwide search of 400 million+ United States court cases.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Kompass",
+   "url": "https://www.kompass.com",
+   "note": "Business directory and search.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "LERS Portal Directory (Ministry of Cyber Affairs)",
+   "url": "https://ministryofcyberaffairs.com/lers",
+   "note": "Directory of platform law-enforcement data-request (LERS) portals (WhatsApp, Google, Apple, Telegram, TikTok, Binance) with eligibility and submission steps for authorised investigators.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Mugshots",
+   "url": "https://mugshots.com/",
+   "note": "",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Offendersearch",
+   "url": "https://offendersearch.app",
+   "note": "Free. Search all 58 US state, territory and tribal sex-offender registries in one query; scored, de-duplicated results with a link to the official registry record behind each match. Public API + open data + MCP server.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "OpenSanctions",
+   "url": "https://www.opensanctions.org/search/",
+   "note": "Information on sanctions and public office holders.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "PeekYou",
+   "url": "https://peekyou.com/",
+   "note": "PeekYou offers the ability to search for people with checks done against more sites. Can check for arrest records as well.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Reunion",
+   "url": "https://reunion.com",
+   "note": "People search. Limited free info, premium data upsell.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Socialcatfish",
+   "url": "https://socialcatfish.com/",
+   "note": "Superextensive people search which works worldwide. Searches are done from 200 Billion records.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "SearchBug",
+   "url": "https://www.searchbug.com",
+   "note": "People search. Limited free info, premium data upsell.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Spokeo",
+   "url": "https://www.spokeo.com",
+   "note": "People search. Limited free info, premium data upsell.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Surfface",
+   "url": "https://surfface.com",
+   "note": "Face search and people finder that links faces to social media profiles and other public data.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "The National Archives (UK)",
+   "url": "https://www.nationalarchives.gov.uk",
+   "note": "Search UK national archives.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "UniCourt",
+   "url": "https://unicourt.com/",
+   "note": "Limited free searches, premium data upsell. Nationwide search of 100 million+ United States court cases.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "UK Phone Book",
+   "url": "https://www.ukphonebook.com/",
+   "note": "Search people in a similar way as 192.com",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "VerifiedHer",
+   "url": "https://verifiedher.com",
+   "note": "Free registry of online creators and influencers answering \"is she real?\" — per-person pages with sourced verdicts (real / AI persona / unverified), documented official accounts, and known impersonations.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "VineLink",
+   "url": "https://www.vinelink.com/#state-selection",
+   "note": "Inmate search and notification service for victims of crime, linked to multiple correctional facilities' booking systems in the U.S.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Voter Records",
+   "url": "https://voterrecords.com/",
+   "note": "Free political research tool to study more than 100 Million US voter records.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "White Pages (US)",
+   "url": "https://www.whitepages.com",
+   "note": "People search. Limited free info, premium data upsell.",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "ZabaSearch",
+   "url": "https://www.zabasearch.com/",
+   "note": "",
+   "phase": "identity",
+   "group": "People"
+  },
+  {
+   "name": "Blacklist Checker",
+   "url": "https://blacklistchecker.com/",
+   "note": "Blacklist Checker is an email blacklist checker, monitor and API that checks 100+ blacklists in seconds",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "DeHashed",
+   "url": "https://dehashed.com/",
+   "note": "DeHashed helps prevent ATO with our extensive data set & breach notification solution. Match employee and consumer logins against the world’s largest repository of aggregated publicly available assets leaked from third-party breaches. Secure passwords before criminals can abuse stolen information, a",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Email Address Validator",
+   "url": "https://www.email-validator.net",
+   "note": "Improve deliverability, reduce bounce rates, prevent fraud and minimize funnel leaks.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Email Extractor",
+   "url": "https://99tools.net/email-extractor/",
+   "note": "A browser-based utility to quickly extract email addresses from bulk text or raw data for further investigation.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Email Format",
+   "url": "https://email-format.com",
+   "note": "is a website that allows you to find email address formats used by different companies.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Email Permutator",
+   "url": "https://www.polished.app/email-permutator/",
+   "note": "a powerful tool designed to aid professionals in generating a range of potential email addresses for a specific contact.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "EmailHippo",
+   "url": "https://tools.verifyemailaddress.io",
+   "note": "is an email address verification platform that will check whether a given email address exists or not.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "EmailRep",
+   "url": "https://emailrep.io",
+   "note": "Email address reputation and risk scoring service.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Epieos Tools",
+   "url": "https://tools.epieos.com",
+   "note": "Collection of OSINT tools for email investigations.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Ghunt",
+   "url": "https://github.com/mxrch/GHunt",
+   "note": "Investigate Google emails and documents.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Gitrecon",
+   "url": "https://github.com/atiilla/gitrecon",
+   "note": "Node.js tool to scan GitHub repositories for exposed email addresses and names.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "h8mail",
+   "url": "https://github.com/khast3x/h8mail",
+   "note": "Password Breach Hunting and Email OSINT, locally or using premium services. Supports chasing down related email.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Have I Been Pwned",
+   "url": "https://haveibeenpwned.com",
+   "note": "Search across multiple data breaches to see if your email address has been compromised.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Holehe",
+   "url": "https://github.com/megadose/holehe",
+   "note": "allows you to check if the mail is used on different sites like twitter, instagram and will retrieve information on sites with the forgotten password function.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Hunter",
+   "url": "https://hunter.io",
+   "note": "Hunter lets you find email addresses in seconds and connect with the people that matter for your business.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "InfoStealers",
+   "url": "https://infostealers.info/en/info",
+   "note": "Indexes darknet-exposed infostealer logs and makes them searchable and actionable for security teams, investigators, researchers, and digital forensics professionals.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "IntelBase",
+   "url": "https://intelbase.is/",
+   "note": "Forensics platform focused on reverse email lookup and email data enrichment.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "LeakCheck",
+   "url": "https://leakcheck.io/",
+   "note": "Data Breach Search Engine with 7.5B+ entries collected from more than 3000 databases. Search by e-mail, username, keyword, password or corporate domain name.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "LeakRadar",
+   "url": "https://leakradar.io/",
+   "note": "Scans for compromised emails and domains in stealer logs, offering proactive breach prevention and real-time alerts.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "MailAccess",
+   "url": "https://github.com/KatrielMoses/MailAccess",
+   "note": "Free email OSINT tool, checks 800+ platforms, breach exposure via HIBP, infostealer logs via Hudson Rock, and builds a cross-platform identity graph with confidence scoring. `pip install mailaccess`",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "MailTester",
+   "url": "https://mailtester.com",
+   "note": "hunt for emails and improve your email deliverability",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Minerva OSINT",
+   "url": "https://minervaosint.com",
+   "note": "Email search tool that finds and aggregates data on a target email from over a hundred websites.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Multirbl",
+   "url": "https://multirbl.valli.org/dnsbl-lookup",
+   "note": "MultiRBL Valli checks if an IP or domain is listed on multiple public RBLs (blacklists) simultaneously.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "mxtoolbox",
+   "url": "https://mxtoolbox.com/",
+   "note": "Free online tools to investigate/troubleshoot email server issues.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "OSINTEye",
+   "url": "https://github.com/atiilla/OsintEye",
+   "note": "OSINT Eye: A WPF Desktop Application for GitHub Intelligence, Social Media Reconnaissance, and Subdomain Discovery",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Peepmail",
+   "url": "https://www.samy.pl/peepmail",
+   "note": "is a tool that allows you to discover business email addresses for users, even if their email address may not be publicly available or shared.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Pipl",
+   "url": "https://pipl.com",
+   "note": "a provider of identity solutions.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Reacher",
+   "url": "https://reacher.email",
+   "note": "Real-time email verification API, written in Rust, 100% open-source.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Snov.io",
+   "url": "https://snov.io/email-finder",
+   "note": "Find email addresses on any website.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Spamhaus",
+   "url": "https://check.spamhaus.org/",
+   "note": "Lookup Reputation Checker.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "ThatsThem",
+   "url": "https://thatsthem.com/reverse-email-lookup",
+   "note": "Reverse Email Lookup.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Toofr",
+   "url": "https://www.toofr.com",
+   "note": "Find Anyone’s Email Address in Seconds.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "user-scanner",
+   "url": "https://github.com/kaifcodec/user-scanner.git",
+   "note": "Takes an email, scan on various popular sites, games and retrieve info if the email is registered there or not.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "Verify Email",
+   "url": "https://verify-email.org",
+   "note": "The fastest and most accurate email verification tool.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "VoilaNorbert",
+   "url": "https://www.voilanorbert.com",
+   "note": "Find anyone's contact information for lead research or talent acquisition.",
+   "phase": "identity",
+   "group": "Email"
+  },
+  {
+   "name": "EmobileTracker.com",
+   "url": "https://www.emobiletracker.com/",
+   "note": "a service specifically designed to Track Mobile Number, Location on Google Map including information such as the owner's Name,Location,Country,Telecom provider.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "FreeCarrierLookup",
+   "url": "https://freecarrierlookup.com/",
+   "note": "enter a phone number and we'll return the carrier name and whether the number is wireless or landline. We also return the email-to-SMS and email-to-MMS gateway addresses for USA and Canadian* phone numbers.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "Infobel",
+   "url": "https://www.infobel.com/",
+   "note": "Search 164+ million records across 73 countries for companies and individuals. Find places, local service providers, their contact details, reviews, opening hours and more.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "InMobPrefix",
+   "url": "https://github.com/hstsethi/in-mob-prefix",
+   "note": "Dataset, charts, models about mobile phone numbers prefixes in India along with their respective state, operator.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "Phone Validator",
+   "url": "https://www.phonevalidator.com/index.aspx",
+   "note": "Pretty accurate phone lookup service, particularly good against Google Voice numbers.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "PhoneInfoga",
+   "url": "https://github.com/sundowndev/PhoneInfoga",
+   "note": "Advanced information gathering & OSINT framework for phone numbers.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "Reverse Phone Check",
+   "url": "https://www.reversephonecheck.com",
+   "note": "Look up names, addresses, phone numbers, or emails and anonymously discover information about yourself, family, friends, or old schoolmates. Powered by infotracer.com",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "Reverse Phone Lookup",
+   "url": "https://www.reversephonelookup.com/",
+   "note": "Detailed information about phone carrier, region, service provider, and switch information.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "SearchPeopleFREE",
+   "url": "https://www.searchpeoplefree.com/phone-lookup",
+   "note": "a reverse name, address, email address, or phone lookup that allows you to discover the owner of a phone number or who lives at an address.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "Spy Dialer",
+   "url": "https://spydialer.com/",
+   "note": "Get the voicemail of a cell phone & owner name lookup.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "Sync.ME",
+   "url": "https://sync.me/",
+   "note": "a caller ID and spam blocker app.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "Truecaller",
+   "url": "https://truecaller.com",
+   "note": "Global reverse phone number search.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "Twilio",
+   "url": "https://www.twilio.com/docs/lookup/v2-api",
+   "note": "Look up a phone numbers carrier type, location, etc. Twilio offers free accounts that come with credits you can use with their API. Each lookup is only ~$0.01-$0.02 typically on US and CAN numbers.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "USPhoneBook",
+   "url": "https://www.usphonebook.com/",
+   "note": "Reverse phone and address lookups and leading data.",
+   "phase": "identity",
+   "group": "Phone"
+  },
+  {
+   "name": "AllStocksLinks",
+   "url": "https://www.allstocks.com/links",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Better Business Bureau",
+   "url": "https://www.bbb.org",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Bizeurope",
+   "url": "https://www.bizeurope.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Bloomberg",
+   "url": "https://www.bloomberg.com/research/company/overview/overview.asp",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "BrownBook",
+   "url": "https://www.brownbook.net/",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Bureau Van Dijk",
+   "url": "https://www.bvdinfo.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Business Source",
+   "url": "https://www.ebscohost.com/academic/business-source-complete",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Canadian Business Research",
+   "url": "https://www.canada.ca/en/services/business/research.html",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Caselaw Access Project",
+   "url": "https://case.law/",
+   "note": "Collection of full text of historical (not up-to-date) cases from United States state appellate courts.",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Company Registration Round the World",
+   "url": "https://www.commercial-register.sg.ch/home/worldwide.html",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Company Research Resources by Country Comparably",
+   "url": "https://www.comparably.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "CompeteShark",
+   "url": "https://competeshark.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Corporate Information",
+   "url": "https://www.corporateinformation.com",
+   "note": "Aggregated information from publicly available sources on publicly traded companies worldwide.",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "CorporationWiki",
+   "url": "https://www.corporationwiki.com/",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Data.com Connect",
+   "url": "https://connect.data.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "EDGAR U.S. Securities and Exchange Commission Filings",
+   "url": "https://www.edgar-online.com",
+   "note": "Periodic reports and extensive corporate disclosures from all businesses publicly traded in the United States.",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Europages",
+   "url": "https://www.europages.co.uk",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "European Business Register",
+   "url": "https://www.ebr.org",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Ezilon",
+   "url": "https://www.ezilon.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Factiva",
+   "url": "https://global.factiva.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Forbes Global 2000",
+   "url": "https://www.forbes.com/global2000/",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Fylings",
+   "url": "https://www.fylings.com",
+   "note": "Free company-intelligence platform for Africa: search and verify companies across 18+ official national registries (Nigeria's CAC, Tanzania's BRELA, Mauritius's CBRD, Senegal's RCCM and more), with the official source and a last-verified date on every record.",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Glassdoor",
+   "url": "https://www.glassdoor.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "globalEdge",
+   "url": "https://globaledge.msu.edu",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "GoodFirms",
+   "url": "https://www.goodfirms.co/",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "GuideStar",
+   "url": "https://www.guidestar.org",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Hoovers",
+   "url": "https://www.hoovers.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Inc. 5000",
+   "url": "https://www.inc.com/inc5000",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Knowledge guide to international company registration",
+   "url": "https://www.icaew.com/en/library/subject-gateways/business-management/company-administration/knowledge-guide-international-company-registration",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Linkedin",
+   "url": "https://www.linkedin.com",
+   "note": "Commonly used social-media platform with a focus on professional profiles and recruitment. Spans a wide variety of industries. Very useful for gathering information on what specific individuals are active within an entity.",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Mergent Intellect",
+   "url": "https://www.mergentintellect.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Mergent Online",
+   "url": "https://www.mergentonline.com/login.php",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "National Company Registers",
+   "url": "https://en.wikipedia.org/wiki/List_of_company_registers",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "OpenCorporates",
+   "url": "https://opencorporates.com",
+   "note": "Global search of registered corporate entities and their associated individual officers or investors.",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "OpenOwnership Register",
+   "url": "https://register.openownership.org/",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Orbis directory",
+   "url": "https://orbisdirectory.bvdinfo.com/version-20161014/OrbisDirectory/Companies",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Overseas Company Registers",
+   "url": "https://www.gov.uk/government/publications/overseas-registries/overseas-registries",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Plunkett Research",
+   "url": "https://www.plunkettresearchonline.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Scoot",
+   "url": "https://www.scoot.co.uk",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Section 16 Deadline Calculator",
+   "url": "https://github.com/Turner-Levey/section-16-deadline-calculator",
+   "note": "Open-source browser-only worksheet for common SEC Forms 3, 4, and 5 ownership-reporting deadline planning, with memo and CSV copy outputs.",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "SEMrush",
+   "url": "https://www.semrush.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Serpstat",
+   "url": "https://serpstat.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "SpyFu",
+   "url": "https://www.spyfu.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "TheWebCo",
+   "url": "https://thewebco.ai",
+   "note": "The single source of people intelligence.",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Tracxn",
+   "url": "https://tracxn.com",
+   "note": "Search information about a company such as aquisitions, investors, people, research, etc",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Vault",
+   "url": "https://www.vault.com",
+   "note": "Well-known ranking of largest United States Corporations.",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "WhiteIntel",
+   "url": "https://whiteintel.dev",
+   "note": "Free corporate and offshore ownership graph: trace a company to its beneficial owners across 31 public registries (Companies House, GLEIF, ICIJ Offshore Leaks, OpenSanctions, SEC EDGAR), with sanctions screening and fully cited dossiers. Queryable by AI agents over MCP.",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "Xing",
+   "url": "https://www.xing.com",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "YouControl",
+   "url": "https://youcontrol.com.ua/en/",
+   "note": "",
+   "phase": "organisation",
+   "group": "Company"
+  },
+  {
+   "name": "aa419 Fake Sites Database",
+   "url": "https://db.aa419.org/fakebankslist.php",
+   "note": "The site lists fraudulent websites, such as fake banks and online scams, identified by the Artists Against 419 community.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Accuranker",
+   "url": "https://www.accuranker.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "ahrefs",
+   "url": "https://ahrefs.com",
+   "note": "A tool for backlink research, organic traffic research, keyword research, content marketing & more.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Azure Tenant Resolution by PingCastle",
+   "url": "https://tenantresolution.pingcastle.com",
+   "note": "Search for Azure Tenant using its domain name or its ID",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Bgpview.io",
+   "url": "https://bgpview.io",
+   "note": "The website bgpview.io allows you to look up detailed information about ASNs, IPs, and BGP routes on the internet.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Bing Webmaster Tools",
+   "url": "https://www.bing.com/toolbox/webmaster",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Browserling",
+   "url": "https://www.browserling.com",
+   "note": "Browserling is an online sandbox that lets users safely test potentially malicious links across browsers and operating systems in real time.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "BuiltWith",
+   "url": "https://builtwith.com",
+   "note": "is a website that will help you find out all the technologies used to build a particular websites.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Central Ops",
+   "url": "https://centralops.net",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Cerast Intelligence",
+   "url": "https://search.cerast-intelligence.com/",
+   "note": "Searchable archive of exposed panels and misconfigurations found across domains by continuous internet-wide scanning; look up the exposure findings on record for a given domain.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "CC.LA",
+   "url": "https://cc.la",
+   "note": "Free WHOIS, RDAP, DNS, IP WHOIS, name server history, SSL certificate lookup, and network diagnostic tools (ping/traceroute/MTR). Also provides expiring domain calendars, TLD library, domain monitoring, and domain availability checker. No sign-up required.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "CrawlGraph",
+   "url": "https://crawlgraph.com",
+   "note": "Maps who links to any domain using the open Common Crawl hyperlink graph. Free, no-signup referring-domain and competitor link-footprint lookups for domain research.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Crypto Scam & Crypto Phishing URL Threat Intel Feed",
+   "url": "https://github.com/spmedia/Crypto-Scam-and-Crypto-Phishing-Threat-Intel-Feed",
+   "note": "A fresh feed of crypto phishing and crypto scam websites. Automatically updated daily.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Dedicated or Not",
+   "url": "https://dedicatedornot.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "digga",
+   "url": "https://digga.dev",
+   "note": "Free and open-source domain and infrastructure research toolkit combining DNS, RDAP, WHOIS, passive subdomain discovery, IP and ASN data, email authentication checks, and TLS certificate inspection. No account required.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "DNS History",
+   "url": "https://completedns.com/dns-history/",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "DNSai",
+   "url": "https://dnsai.com/dns-tools/",
+   "note": "Free DNS, WHOIS, DKIM discovery, SPF/DMARC analysis and blacklist checks with plain-English results, no signup.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "DNSDumpster",
+   "url": "https://dnsdumpster.com",
+   "note": "is a website that will help you discover hosts related to a specific domain.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "DNSStuff",
+   "url": "https://www.dnsstuff.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "DNSViz",
+   "url": "https://dnsviz.net",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Domain Crawler",
+   "url": "https://www.domaincrawler.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Domain Dossier",
+   "url": "https://centralops.net/co/DomainDossier.aspx",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Domain Hunter",
+   "url": "https://github.com/WhiteBite/Domain-Hunter",
+   "note": "Free, open-source, 100% client-side bulk domain availability checker and name generator: checks up to 3,000 names across 148 TLD zones by calling registry RDAP endpoints directly from the browser (no servers, no API keys, no tracking), with DNS-over-HTTPS corroboration for low-trust ccTLDs, live reg",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Domain Intelligence",
+   "url": "https://oti-labs.com/domain-intelligence-api",
+   "note": "Aggregate DNS, WHOIS/RDAP, SSL, subdomains (CT logs + DNS bruteforce), and SPF/DMARC posture in one call. Free tier; MIT.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "DomainRecon",
+   "url": "https://kriztalz.sh/domain-recon/",
+   "note": "Retrieve DNS records, subdomains, SSL certificates and WHOIS / RDAP data for a given website.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Domain Tools",
+   "url": "https://whois.domaintools.com",
+   "note": "Whois lookup and domain/ip historical data.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Easy whois",
+   "url": "https://www.easywhois.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Exonera Tor",
+   "url": "https://exonerator.torproject.org",
+   "note": "A database of IP addresses that have been part of the Tor network. It answers the question whether there was a Tor relay running on a given IP address on a given date.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Focsec",
+   "url": "https://focsec.com",
+   "note": "Threat Intelligence API that detects if a IP address is associated with a VPN, Proxy, TOR or Bots.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Follow.net",
+   "url": "https://follow.net",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "GraphyStories",
+   "url": "https://app.graphystories.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "HoneyLabs",
+   "url": "https://honeylabs.net",
+   "note": "Free per-IP reports from a distributed honeypot network: what an IP scanned for, matched CVE exploit paths, JA4/JA4H/HASSH client fingerprints, captured payloads and VirusTotal-verified malware it delivered. Queryable anonymously on the web, over a JSON API and via an MCP server.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Hudson Rock",
+   "url": "https://www.hudsonrock.com/threat-intelligence-cybercrime-tools",
+   "note": "is a free cybercrime intelligence toolkit to check exposure in Infostealer malware infection.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Hybrid Analysis",
+   "url": "https://www.hybrid-analysis.com",
+   "note": "Online service for detailed and free analysis of suspicious files and URLs.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "HypeStat",
+   "url": "https://www.hypestat.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "IP.THC.ORG",
+   "url": "https://ip.thc.org/",
+   "note": "Unlimited Reverse DNS, Subdomain and Reverse CNAME lookups, also provides JSON APIs.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Icann Lookup",
+   "url": "https://lookup.icann.org/en/lookup",
+   "note": "The site allows you to look up domain registration information (WHOIS) on the internet",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Infosniper",
+   "url": "https://www.infosniper.net",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "isMalicious",
+   "url": "https://ismalicious.com",
+   "note": "Threat intelligence platform aggregating malicious IP and domain data from multiple security feeds with real-time reputation scoring and threat categorization.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "IntoDNS.ai",
+   "url": "https://intodns.ai",
+   "note": "AI-powered DNS and email security scanner with SPF, DKIM, DMARC, DNSSEC checks and fix suggestions.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "IP 2 Geolocation",
+   "url": "https://ip2geolocation.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "IP2Location",
+   "url": "https://www.ip2location.com/demo",
+   "note": "A comprehensive IP intelligence database and API for accurate geolocation, ASN mapping, and VPN/Tor/Proxy detection.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "IP Geolocation API DB-IP",
+   "url": "https://db-ip.com",
+   "note": "Pprovides IP geolocation and intelligence.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "ip2geo.dev",
+   "url": "https://ip2geo.dev",
+   "note": "IP geolocation API providing city, country, timezone, ASN, and currency data from IP addresses.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "IP Checking",
+   "url": "https://www.ipchecking.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "IP Location",
+   "url": "https://www.iplocation.net",
+   "note": "is used for mapping of an IP address or MAC address to the real-world geographic location of an Internet-connected computing or a mobile device.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "IP Location.io",
+   "url": "https://iplocation.io",
+   "note": "IPLocation.io allows you to check the location of an IP for free",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "IPFingerprints",
+   "url": "https://www.ipfingerprints.com",
+   "note": "is used to find the approximate geographic location of an IP address along with some other useful information including ISP, TimeZone, Area Code, State.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "IPOK",
+   "url": "https://ipok.io",
+   "note": "Free, no-login IP reputation lookup that aggregates up to 8 risk sources, flags residential vs datacenter, and profiles /24 C-block neighbors. Also offers a CLI and a Chrome extension.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "IPVoid",
+   "url": "https://www.ipvoid.com",
+   "note": "IP address toolset.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "ISP.Tools",
+   "url": "https://www.isp.tools",
+   "note": "Is a free platform offering network diagnostic tools (ping, traceroute, MTR, DNS, WHOIS, HTTP, etc.) tailored for ISPs and infrastructure professionals.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Kloth",
+   "url": "https://www.kloth.net/services",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Majestic",
+   "url": "https://majestic.com",
+   "note": "Find out who links to your website.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Mark Monitor WHOIS",
+   "url": "https://whois-webform.markmonitor.com/whois/",
+   "note": "Displays domain registration information.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "MaxMind",
+   "url": "https://www.maxmind.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "MetaDefender",
+   "url": "https://metadefender.com",
+   "note": "Threat analysis service for URLs, files, certificates, domains, and suspicious hashes.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Netcraft Site Report",
+   "url": "https://toolbar.netcraft.com/site_report?url=undefined#last_reboot",
+   "note": "is an online database that will provide you a report with detail information about a particular website and the history associated with it.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "OpenLinkProfiler",
+   "url": "https://www.openlinkprofiler.org/",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "openSquat",
+   "url": "https://github.com/atenreiro/opensquat",
+   "note": "Open source tool that searches newly registered domain feeds to find typosquatting, IDN homograph, doppelganger and bitsquatting domains impersonating a given brand or keyword.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "osint-recon",
+   "url": "https://github.com/JMarchiori13/osint-recon",
+   "note": "Passive OSINT reconnaissance framework in Rust: subdomains, DNS, ASN, certificate transparency history, GitHub dorking, tech fingerprinting, emails and document metadata for authorized red team engagements.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "PageGlimpse",
+   "url": "https://www.pageglimpse.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Pentest-Tools.com",
+   "url": "https://pentest-tools.com/information-gathering/google-hacking",
+   "note": "uses advanced search operators (Google Dorks) to find juicy information about target websites.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "PhishStats",
+   "url": "https://phishstats.info/",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Pulsedive",
+   "url": "https://pulsedive.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Qualys SSL Check",
+   "url": "https://www.ssllabs.com/ssltest/",
+   "note": "SSL Test configuration compliance.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Quantcast",
+   "url": "https://www.quantcast.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Quick Sprout",
+   "url": "https://www.quicksprout.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "RedirectDetective",
+   "url": "https://redirectdetective.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Remote DNS Lookup",
+   "url": "https://remote.12dt.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Robtex",
+   "url": "https://www.robtex.com",
+   "note": "is an IP address and domain name based researching websites that offers multiple services such as Reverse DNS Lookup, Whois, and AS Macros.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "SameID",
+   "url": "https://sameid.net",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "ScanMalware",
+   "url": "https://scanmalware.com",
+   "note": "Free URL scanner that renders a page in a sandboxed browser and reports phishing and malware verdicts, network requests, technologies, TLS/JARM fingerprints and screenshots, with a public feed of recent scans searchable by domain, IP, ASN or favicon hash.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "SecurityTrails",
+   "url": "https://securitytrails.com/dns-trails",
+   "note": "API to search current and historical DNS records, current and historical WHOIS, technologies used by sites and whois search for phone, email, address, IPs etc.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "SubDomainRadar.io",
+   "url": "https://subdomainradar.io",
+   "note": "Fast subdomain finder with multiple search modes and the most extensive data sources, offering real-time notifications.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "SEO Chat Tools",
+   "url": "https://tools.seochat.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "SEOTools for Excel",
+   "url": "https://seotoolsforexcel.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Similar Web",
+   "url": "https://www.similarweb.com",
+   "note": "Compare any website traffic statistics & analytics.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "SmallSEOTools",
+   "url": "https://smallseotools.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Squatm3gator",
+   "url": "https://github.com/david3107/squatm3gator",
+   "note": "Enumerate available domains generated modifying the original domain name through different cybersquatting techniques",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "StatsCrop",
+   "url": "https://www.statscrop.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "TinyScan",
+   "url": "https://www.tiny-scan.com",
+   "note": "Another powerful URL scan tool that provides comprehensive information about any given URL. Get insights into IP address, location, screenshots, technology stack, performance metrics, and more.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "TracerouteVisualizer",
+   "url": "https://kriztalz.sh/traceroute-visualizer/",
+   "note": "An online tool that displays your mtr / traceroute / flyingroutes output on a map for visual analysis.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "urlDNA",
+   "url": "https://urldna.io/",
+   "note": "Unleash website insights! urldna.io analyzes url, monitors brands and track phishing sites.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "URLhaus",
+   "url": "https://urlhaus.abuse.ch",
+   "note": "URLhaus shares malicious URLs to combat malware and botnet threats",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "urlQuery",
+   "url": "https://urlquery.net",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "urlscan",
+   "url": "https://urlscan.io/",
+   "note": "is a free service to scan and analyse websites.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "URLVoid",
+   "url": "https://www.urlvoid.com",
+   "note": "Analyzes a website through multiple blacklist engines and online reputation tools to facilitate the detection of fraudulent and malicious websites.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Vacato",
+   "url": "https://vacato.io",
+   "note": "Free RDAP domain availability watchlist: scheduled checks + Telegram/email/Slack when status looks available (not a registrar or drop-catcher). Free tier: 10 domains.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Validin",
+   "url": "https://app.validin.com/",
+   "note": "Website and API to search current and historical DNS records for free",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Verisign",
+   "url": "https://dnssec-debugger.verisignlabs.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "ViewDNS.info",
+   "url": "https://viewdns.info",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Virus Total",
+   "url": "https://www.virustotal.com/",
+   "note": "Analyse suspicious domains, IPs URLs and files to detect malware and other breaches",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "w3snoop",
+   "url": "https://webboar.com.w3snoop.com",
+   "note": "is a website that gives you a free and comprehensive report about a specific website.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Web-Check",
+   "url": "https://web-check.as93.net/",
+   "note": "All-in-one tool for viewing website and server meta data.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "WebMeUp",
+   "url": "https://webmeup.com",
+   "note": "is the Web's freshest and fastest growing backlink index, and the primary source of backlink data for SEO PowerSuite.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Webscore",
+   "url": "https://garvit835.github.io/WebScore/",
+   "note": "Enter a website URL to check its legitimacy.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Webscout",
+   "url": "https://webscout.io/",
+   "note": "A Swiss Army knife for scaled intelligence and metadata on IP addresses and domains.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Website Informer",
+   "url": "https://website.informer.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "WebsiteTechMiner.py",
+   "url": "https://github.com/cybersader/WebsiteTechMiner-py",
+   "note": "automates gathering website profiling data into a CSV from the \"BuiltWith\" or \"Wappalyzer\" API for tech stack information, technographic data, website reports, website tech lookups, website architecture lookups, etc.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "WhatIsMyIPAddress",
+   "url": "https://whatismyipaddress.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Who.is",
+   "url": "https://who.is/",
+   "note": "Domain whois information.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Whois Arin Online",
+   "url": "https://whois.arin.net",
+   "note": "is a web service for Whois data contained within ARIN's registration database",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "WhoIsHostingThis",
+   "url": "https://www.whoishostingthis.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "WhoisMind",
+   "url": "https://www.whoismind.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Whoisology",
+   "url": "https://whoisology.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "WhoIsRequest",
+   "url": "https://whoisrequest.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "WiGLE",
+   "url": "https://wigle.net/",
+   "note": "Wi-fi \"wardriving\" database. Contains a global map containing crowdsourced information on the location, name, and other properties of wi-fi networks. Software available to download to contribute data to the public infoset.",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "You Get Signal",
+   "url": "https://www.yougetsignal.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Domain and IP"
+  },
+  {
+   "name": "Archive.is",
+   "url": "https://archive.is",
+   "note": "is a website that allows you to archive a snapshot of you websites that will always remains online evenif the original page disappears.",
+   "phase": "infrastructure",
+   "group": "Web history"
+  },
+  {
+   "name": "BlackWidow",
+   "url": "https://softbytelabs.com/wp/blackwidow/",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Web history"
+  },
+  {
+   "name": "CashedPages",
+   "url": "https://www.cachedpages.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Web history"
+  },
+  {
+   "name": "CachedView",
+   "url": "https://cachedview.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Web history"
+  },
+  {
+   "name": "stored.website",
+   "url": "https://stored.website",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Web history"
+  },
+  {
+   "name": "Wayback Machine",
+   "url": "https://web.archive.org/",
+   "note": "Explore the history of a website.",
+   "phase": "infrastructure",
+   "group": "Web history"
+  },
+  {
+   "name": "Wayback Machine Archiver",
+   "url": "https://github.com/jsvine/waybackpack",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Web history"
+  },
+  {
+   "name": "Wayback-Archive",
+   "url": "https://github.com/GeiserX/Wayback-Archive",
+   "note": "Download complete websites from the Wayback Machine with full asset preservation for offline viewing.",
+   "phase": "infrastructure",
+   "group": "Web history"
+  },
+  {
+   "name": "waybackpy",
+   "url": "https://github.com/akamhy/waybackpy",
+   "note": "Python package & CLI tool that interfaces the Wayback Machine APIs.",
+   "phase": "infrastructure",
+   "group": "Web history"
+  },
+  {
+   "name": "Baidu Images",
+   "url": "https://image.baidu.com",
+   "note": "",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Betaface",
+   "url": "https://www.betaface.com/demo.html",
+   "note": "",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Bing Images",
+   "url": "https://www.bing.com/images",
+   "note": "",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Clarify",
+   "url": "https://clarify.io",
+   "note": "",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Dupli Checker",
+   "url": "https://www.duplichecker.com/reverse-image-search.php",
+   "note": "You can search for an image by uploading + with URL or typing the keyword or any word you want to explore related to images.",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Faceagle",
+   "url": "https://faceagle.com/",
+   "note": "Faceagle is a face recognition search engine.",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Flickr",
+   "url": "https://flickr.com/search/",
+   "note": "",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Google Image",
+   "url": "https://images.google.com",
+   "note": "",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Google Lens",
+   "url": "https://lens.google.com/",
+   "note": "",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Image Identification Project",
+   "url": "https://www.imageidentify.com",
+   "note": "",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "KartaVision",
+   "url": "https://kartavision.com/",
+   "note": "search engine for KartaView imagery. It supports natural-language search and search by image",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Lenso.ai",
+   "url": "https://lenso.ai",
+   "note": "Reverse image search tool with facial recognition, created for finding people, similar images, copies of photos, identical places and more.",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Lycos Image Search",
+   "url": "https://search.lycos.com",
+   "note": "",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "PhotoBucket",
+   "url": "https://photobucket.com",
+   "note": "",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "PicTriev",
+   "url": "https://www.pictriev.com",
+   "note": "a face search engine.",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "PimEyes",
+   "url": "https://pimeyes.com",
+   "note": "an online face search engine that goes through the Internet to find pictures containing given faces.",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Pixsy",
+   "url": "https://www.pixsy.com/",
+   "note": "Take back control of your images. See where & how your images are being used online!",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Search4faces",
+   "url": "https://search4faces.com/",
+   "note": "a service for searching people on the Internet by photo.",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "TinEye",
+   "url": "https://tineye.com",
+   "note": "Reverse image search engine.",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Yahoo Image Search",
+   "url": "https://images.search.yahoo.com",
+   "note": "",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "Yandex Images",
+   "url": "https://www.yandex.com/images",
+   "note": "",
+   "phase": "media",
+   "group": "Image search"
+  },
+  {
+   "name": "ChronoVerify",
+   "url": "https://chronoverify.com",
+   "note": "API and free web tool that reads EXIF and XMP, validates C2PA Content Credentials against official trust lists, and runs classical pixel forensics, returning one typed verdict for any image.",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "DiffChecker",
+   "url": "https://www.diffchecker.com/image-diff/",
+   "note": "",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "EXIFEditor.io",
+   "url": "https://exifeditor.io",
+   "note": "In-browser EXIF image metadata editor, viewer, and analysis tool.",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "ExifLooter",
+   "url": "https://github.com/aydinnyunus/exiflooter",
+   "note": "",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "ExifTool",
+   "url": "https://www.sno.phy.queensu.ca/~phil/exiftool",
+   "note": "",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "Forensically",
+   "url": "https://29a.ch/photo-forensics/",
+   "note": "",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "forensics.media",
+   "url": "https://forensics.media/tools/",
+   "note": "Free in-browser image forensics suite: EXIF/metadata viewer, Error Level Analysis, clone/copy-move and double-JPEG detection. Runs client-side, nothing uploaded.",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "FotoForensics",
+   "url": "https://www.fotoforensics.com",
+   "note": "",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "GeoSpy",
+   "url": "https://geospy.web.app/",
+   "note": "AI based image osint tool",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "ImgOps",
+   "url": "https://imgops.com/",
+   "note": "",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "ImpulseAdventure",
+   "url": "https://www.impulseadventure.com/photo/jpeg-snoop.html",
+   "note": "",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "Jeffreys Image Metadata Viewer",
+   "url": "https://exif.regex.info/",
+   "note": "",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "JIMPL",
+   "url": "https://jimpl.com/",
+   "note": "Online EXIF data viewer",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "JPEG Audit",
+   "url": "https://jpegaudit.com",
+   "note": "Free online JPEG forensics: EXIF/IPTC/XMP and GPS, automated tamper checks with a severity-rated verdict, JPEG structure and quantization tables, perceptual hash, and a Street View comparison using the EXIF camera bearing.",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "JPEGsnoop",
+   "url": "https://sourceforge.net/projects/jpegsnoop",
+   "note": "",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "Metadata Viewer",
+   "url": "https://kriztalz.sh/metadata-viewer/",
+   "note": "Online EXIF data viewer.",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "ProfileImageIntel",
+   "url": "https://profileimageintel.com/",
+   "note": "Social media and WhatsApp profile image tool to find when a profile image was uploaded.",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "TracePoint",
+   "url": "https://kluter.github.io/TracePoint/",
+   "note": "Geolocate the origin point of a photograph using geometric ray intersection. Client-side, no uploads.",
+   "phase": "media",
+   "group": "Image analysis"
+  },
+  {
+   "name": "Alltop",
+   "url": "https://alltop.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Awasu",
+   "url": "https://www.awasu.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Bridge.Leslibres",
+   "url": "https://bridge.leslibres.org",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Bridge.Suumitsu",
+   "url": "https://bridge.suumitsu.eu",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "ChangeDetection.io",
+   "url": "https://changedetection.io",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "ChangeDetection.io Open Source",
+   "url": "https://github.com/dgtlmoon/changedetection.io",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "ChangeDetection",
+   "url": "https://www.changedetection.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Deltafeed",
+   "url": "https://bitreading.com/deltafeed",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "DiggReader",
+   "url": "https://digg.com/login?next=%2Freader",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "FeedBooster",
+   "url": "https://www.qsensei.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Feed Exileed",
+   "url": "https://feed.exileed.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Feed Filter Maker",
+   "url": "https://feed.janicek.co",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Feedly",
+   "url": "https://www.feedly.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "FeedReader",
+   "url": "https://www.feedreader.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "FetchRSS",
+   "url": "https://fetchrss.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Flipboard",
+   "url": "https://flipboard.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "FollowThatPage",
+   "url": "https://www.followthatpage.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Google Alerts",
+   "url": "https://www.google.com/alerts",
+   "note": "A content change detection and notification service.",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "InfoMinder",
+   "url": "https://www.infominder.com/webminder",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Mention",
+   "url": "https://en.mention.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Netvibes",
+   "url": "https://www.netvibes.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Newsblur",
+   "url": "https://newsblur.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "OmeaReader",
+   "url": "https://www.jetbrains.com/omea/reader",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "OnWebChange",
+   "url": "https://onwebchange.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Reeder",
+   "url": "https://reederapp.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "RSS Feed Reader",
+   "url": "https://chrome.google.com/webstore/detail/rss-feed-reader/pnjaodmkngahhkoihejjehlcdlnohgmp",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "RSS Search Engine",
+   "url": "https://ctrlq.org/rss",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "RSS Search Hub",
+   "url": "https://www.rsssearchhub.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "RSSOwl",
+   "url": "https://www.rssowl.org",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Selfoss",
+   "url": "https://selfoss.aditu.de",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Silobreaker",
+   "url": "https://www.silobreaker.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Talkwalker",
+   "url": "https://www.talkwalker.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "The Old Reader",
+   "url": "https://theoldreader.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "versionista",
+   "url": "https://versionista.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "visualping",
+   "url": "https://visualping.io",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "WebReader",
+   "url": "https://www.getwebreader.com",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "WebSite Watcher",
+   "url": "https://www.aignes.com/index.htm",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Website-Diff",
+   "url": "https://github.com/GeiserX/Website-Diff",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Winds",
+   "url": "https://winds.getstream.io",
+   "note": "",
+   "phase": "infrastructure",
+   "group": "Monitoring"
+  },
+  {
+   "name": "Amass",
+   "url": "https://github.com/owasp-amass/amass",
+   "note": "The amass tool searches Internet data sources, performs brute force subdomain enumeration, searches web archives, and uses machine learning to generate additional subdomain name guesses. DNS name resolution is performed across many public servers so the authoritative server will see the traffic comi",
+   "phase": "infrastructure",
+   "group": "DNS"
+  },
+  {
+   "name": "Columbus Project",
+   "url": "https://github.com/elmasy-com/columbus",
+   "note": "Columbus Project is an advanced subdomain discovery service with fast, powerful and easy to use API.",
+   "phase": "infrastructure",
+   "group": "DNS"
+  },
+  {
+   "name": "dnsx",
+   "url": "https://github.com/projectdiscovery/dnsx",
+   "note": "A fast and multi-purpose DNS toolkit from ProjectDiscovery for running DNS probes, resolving records and filtering DNS responses.",
+   "phase": "infrastructure",
+   "group": "DNS"
+  },
+  {
+   "name": "Merklemap",
+   "url": "https://www.merklemap.com/",
+   "note": "Discover and enumerate all subdomains associated with a website, including those not publicly advertised. Works by ingesting certificate transparency logs.",
+   "phase": "infrastructure",
+   "group": "DNS"
+  },
+  {
+   "name": "Subhunt",
+   "url": "https://github.com/ahmadouniass/Subdomains-finder-subhunt",
+   "note": "Multi-source subdomain enumeration tool querying crt.sh Certificate Transparency logs, HackerTarget, and RapidDNS. Features HTTP/HTTPS liveness probing with status codes, alive/dead filtering, multi-format export (TXT/JSON/CSV), and a full CLI.",
+   "phase": "infrastructure",
+   "group": "DNS"
+  },
+  {
+   "name": "aadinternals",
+   "url": "https://aadinternals.com/osint",
+   "note": "Provides tools and insights for advanced analysis and security testing of Azure Active Directory (AAD) and Microsoft 365.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "ArkhamMirror",
+   "url": "https://github.com/mantisfury/ArkhamMirror",
+   "note": "Local-first AI document intelligence with offline RAG, contradiction detection, knowledge graphs, and vision AI table extraction.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Barcode Reader",
+   "url": "https://online-barcode-reader.inliteresearch.com",
+   "note": "Decode barcodes in C#, VB, Java, C\\C++, Delphi, PHP and other languages.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "BeVigil-CLI",
+   "url": "https://github.com/Bevigil/BeVigil-OSINT-CLI",
+   "note": "A unified command line interface and python library for using BeVigil OSINT API to search for assets such as subdomains, URLs, applications indexed from mobile applications.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Cyberbro",
+   "url": "https://github.com/stanfrbd/cyberbro",
+   "note": "A self-hosted application, available as a Dockerized, for effortless searching and reputation checking of observables. Extracts IoCs from raw input and check their reputation using multiple services.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "CyberGordon",
+   "url": "https://cybergordon.com",
+   "note": "CyberGordon is a threat intelligence search engine. It leverages 30+ sources.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "CrowdSec",
+   "url": "https://github.com/crowdsecurity/crowdsec",
+   "note": "An open source, free, and collaborative IPS/IDS software written in Go, able to analyze visitor behavior & provide an adapted response to all kinds of attacks.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Datasploit",
+   "url": "https://github.com/DataSploit/datasploit",
+   "note": "Tool to perform various OSINT techniques on usernames, emails addresses, and domains.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Dehashed CLI",
+   "url": "https://github.com/hmaverickadams/DeHashed-API-Tool",
+   "note": "Command-line tool for searching breach databases via DeHashed API.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Dorkgpt",
+   "url": "https://www.dorkgpt.com",
+   "note": "Artificial intelligence that generates advanced search queries to find specific or hidden information on the internet.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "DuckDuckGo URL scraper",
+   "url": "https://github.com/its0x08/duckduckgo",
+   "note": "A simple DuckDuckGo URL scraper.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "FaviconHash",
+   "url": "https://kriztalz.sh/favicon-hash/",
+   "note": "Generate favicon hashes of a website for use on Shodan, VirusTotal, Censys, ZoomEye or FOFA.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Find osint tool",
+   "url": "https://find.osint-tool.com",
+   "note": "Searches multiple OSINT tools to find information across various sources.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "FOCA",
+   "url": "https://github.com/ElevenPaths/FOCA",
+   "note": "Tool to find metadata and hidden information in the documents.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Glit",
+   "url": "https://github.com/shadawck/glit",
+   "note": "Retrieve all mails of users related to a git repository, a git user or a git organization.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Greynoise",
+   "url": "https://greynoise.io/",
+   "note": "\"Anti-Threat Intelligence\" Greynoise characterizes the background noise of the internet, so the user can focus on what is actually important.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "IntelHub",
+   "url": "https://github.com/tomsec8/IntelHub",
+   "note": "Browser-based open-source OSINT extension. All analysis runs locally (no servers). Features include text profiler, metadata analyzer, site & archive analysis, reverse image search, crypto/telegram analyzers.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Hunchly",
+   "url": "https://www.hunch.ly/",
+   "note": "Hunchly is a web capture tool designed specifically for online investigations.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "IntellyWeave",
+   "url": "https://github.com/vericle/intellyweave",
+   "note": "AI-powered OSINT platform with GLiNER entity extraction, Mapbox 3D geospatial visualization, and multi-agent archive research across 30+ international archives.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "keyFinder",
+   "url": "https://github.com/momenbasel/keyFinder",
+   "note": "Chrome extension that passively discovers leaked API keys, tokens, secrets, and credentials on any web page by scanning scripts, meta tags, hidden fields, web storage, and network responses using 80+ detection patterns and Shannon entropy analysis.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "LinkScope Client",
+   "url": "https://github.com/AccentuSoft/LinkScope_Client",
+   "note": "LinkScope Client Github repository.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "LinkScope",
+   "url": "https://accentusoft.com/",
+   "note": "LinkScope is an open source intelligence (OSINT) graphical link analysis tool and automation platform for gathering and connecting information for investigative tasks.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Maltego",
+   "url": "https://www.maltego.com/",
+   "note": "Maltego is an open source intelligence (OSINT) and graphical link analysis tool for gathering and connecting information for investigative tasks.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Mozilla HTTP Observatory",
+   "url": "https://developer.mozilla.org/en-US/observatory",
+   "note": "Observatory⁩ enhances web security by analyzing compliance with best security practices.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Obsidian",
+   "url": "https://obsidian.md",
+   "note": "Knowledge base and note-taking tool ideal for OSINT case management.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "OpenGraph Intel (OGI)",
+   "url": "https://github.com/khashashin/ogi",
+   "note": "Open Source Link Analysis & OSINT Framework. AI Powered Investigation Tool",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "OpenRefine",
+   "url": "https://github.com/OpenRefine",
+   "note": "Free & open source power tool for working with messy data and improving it.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Orbit",
+   "url": "https://github.com/s0md3v/Orbit",
+   "note": "Draws relationships between crypto wallets with recursive crawling of transaction history.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "OSINT Framework",
+   "url": "https://osintframework.com/",
+   "note": "Web based framework for OSINT.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "OSINT-Tool",
+   "url": "https://www.osint-tool.com/",
+   "note": "A browser extension that gives you access to a suite of OSINT utilities (Dehashed, Epieos, Domaintools, Exif data, Reverse image search, etc) directly on any webpage you visit.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "OSINT.SH",
+   "url": "https://osint.sh/",
+   "note": "Information Gathering Toolset.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "OsintStalker",
+   "url": "https://github.com/milo2012/osintstalker",
+   "note": "Python script for Facebook and geolocation OSINT.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Outwit",
+   "url": "https://www.outwit.com",
+   "note": "Find, grab and organize all kinds of data and media from online sources.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "PGPKeyAnalyser",
+   "url": "https://kriztalz.sh/pgp-key-analyser/",
+   "note": "Analyse and view the details of a PGP key online without having to download the asc file.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Photon",
+   "url": "https://github.com/s0md3v/Photon",
+   "note": "Crawler designed for OSINT",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "PRISM",
+   "url": "https://github.com/NovaCode37/Prism-platform",
+   "note": "Self-hosted all-in-one OSINT platform that scans a domain, IP, email, phone, or username across 22+ modules and returns threat intel, breach data, subdomains, an OPSEC score, entity graph, GeoIP map, and HTML/PDF reports. [Live demo](https://getprism.su).",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Pyba",
+   "url": "https://github.com/fauvidoTechnologies/PyBrowserAutomation/",
+   "note": "A browser automation framework which requires low-code to search the web and perform OSINT using DFS and BFS modes, ideal for exploratory tasks.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "pygreynoise",
+   "url": "https://github.com/GreyNoise-Intelligence/pygreynoise",
+   "note": "Greynoise Python Library",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "QuickCode",
+   "url": "https://quickcode.io/",
+   "note": "Python and R data analysis environment.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "ReconFTW",
+   "url": "https://github.com/six2dez/reconftw",
+   "note": "Automated reconnaissance framework for bug bounty and pentesting with multiple integrated tools.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Router Passwords",
+   "url": "https://www.routerpasswords.com",
+   "note": "Online database of default router passwords.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "SerpApi",
+   "url": "https://serpapi.com/",
+   "note": "Scrapes Google search and 25+ search engines with ease and retruns a raw JSON. Supports 10 API wrappers.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "SerpScan",
+   "url": "https://github.com/Alaa-abdulridha/SerpScan",
+   "note": "Powerful PHP script designed to allow you to leverage the power of dorking straight from the comfort of your command line. Analyzes data from Google, Bing, Yahoo, Yandex, and Badiu.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Sintelix",
+   "url": "https://sintelix.com/",
+   "note": "Sintelix is an open source intelligence (OSINT) and graphical link analysis tool for gathering and connecting information for investigative tasks.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "sn0int",
+   "url": "https://github.com/kpcyrd/sn0int",
+   "note": "Semi-automatic OSINT framework and package manager.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "SpiderFoot",
+   "url": "https://github.com/smicallef/spiderfoot",
+   "note": "SpiderFoot Github repository.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "SpiderFoot",
+   "url": "https://www.spiderfoot.net",
+   "note": "SpiderFoot is an open source intelligence (OSINT) automation platform with over 200 modules for threat intelligence, attack surface monitoring, security assessments and asset discovery.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "SpiderSuite",
+   "url": "https://github.com/3nock/SpiderSuite",
+   "note": "An advance, cross-platform, GUI web security crawler.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Sub3 Suite",
+   "url": "https://github.com/3nock/sub3suite",
+   "note": "A research-grade suite of tools for intelligence gathering & target mapping with both active and passive(100+ modules) intelligence gathering capabilities.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Text Machine",
+   "url": "https://textmachine.org/en/text-tools/cipher-identifier",
+   "note": "Identifies an unknown encoded or enciphered string and decodes it in place when no key is needed (Base64, hex, binary, Morse, Baconian, Polybius, A1Z26, Atbash, Caesar), with frequency analysis and automatic Vigenère and substitution solvers for the rest. Runs in the browser, no signup, nothing uplo",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "The Harvester",
+   "url": "https://github.com/laramies/theHarvester",
+   "note": "Gather emails, subdomains, hosts, employee names, open ports and banners from different public sources like search engines, PGP key servers and SHODAN computer database.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Unfurl",
+   "url": "https://dfir.blog/unfurl/",
+   "note": "Unfurl analyzes and breaks down URLs into useful forensic components for digital investigation.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Waybackurls",
+   "url": "https://github.com/tomnomnom/waybackurls",
+   "note": "Fetch all URLs known by the Wayback Machine for a domain.",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "Zen",
+   "url": "https://github.com/s0md3v/Zen",
+   "note": "Find email addresses of Github users urls and other data effortlessly",
+   "phase": "misc",
+   "group": "Other tools"
+  },
+  {
+   "name": "defend.network",
+   "url": "https://defend.network",
+   "note": "Free, no-login cyber threat intelligence publishing daily threat briefings and weekly vulnerability reports, with every CVE cross-checked against NVD and the CISA KEV catalog. Content is structured by threat type, industry, and severity, with remediation guidance. RSS feed at defend.network/feed.xml",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "DFIR Platform",
+   "url": "https://platform.dfir-lab.ch",
+   "note": "Threat intelligence platform with multi-source IOC enrichment, phishing email analysis, exposure scanning, and domain reputation scoring. Free tier available.",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "Dropbase",
+   "url": "https://dropbase.fun",
+   "note": "a fast breach, malware log, and OSINT search workspace with daily credits, map tools, and live community chat.",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "GitGuardian - Public GitHub Monitoring",
+   "url": "https://www.gitguardian.com/monitor-public-github-for-secrets",
+   "note": "Monitor public GitHub repositories in real time. Detect secrets and sensitive information to prevent hackers from using GitHub as a backdoor to your business.",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "onion-lookup",
+   "url": "https://onion.ail-project.org/",
+   "note": "Free online service and API for checking the existence of Tor hidden services (.onion address) and retrieving their associated metadata. onion-lookup relies on an private AIL instance to obtain the metadata.",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "OnionScan",
+   "url": "https://github.com/s-rah/onionscan",
+   "note": "Free and open source tool for investigating the Dark Web. Its main goal is to help researchers and investigators monitor and track Dark Web sites.",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "MalwareIntel",
+   "url": "https://malwareintel.es",
+   "note": "Free threat intelligence platform aggregating 70+ CTI feeds into a knowledge graph. 273K+ IOCs, 4200+ malware families, 3632 detection rules (Sigma/YARA), Sigma-to-SIEM converter, and detection packages bundling TTPs + IOCs + rules per family.",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "Malwagon",
+   "url": "https://malwagon.com",
+   "note": "Online malware analysis sandbox. Detonates a submitted file or URL and publishes the report, and lets you search past public scans by indicator: IP, domain, URL, mutex, registry key, hash or JA3/JA4 fingerprint. Reports are readable without an account; a free tier adds submissions, an API and a comm",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "OTX AlienVault",
+   "url": "https://otx.alienvault.com/",
+   "note": "Open Threat Exchange is the neighborhood watch of the global intelligence community. It enables private companies, independent security researchers, and government agencies to openly collaborate and share the latest information about emerging threats, attack methods, and malicious actors, promoting ",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "Pharos AI",
+   "url": "https://conflicts.app",
+   "note": "Real-time open-source intelligence dashboard for conflict tracking with interactive geospatial visualization, multi-source RSS monitoring, and actor dossiers.",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "PhishingSecLists",
+   "url": "https://github.com/spmedia/PhishingSecLists",
+   "note": "This list is to be used with web scanning tools (Gobuster, ffuf, Burp Suite, DirBuster). These lists are specifically tailored and designed for fuzzing phishing, crypto scam landing pages, and other malicious sketch af websites. You can gain vaulable intel on successful hits.",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "REScure Threat Intel Feed",
+   "url": "https://rescure.fruxlabs.com/",
+   "note": "REScure is an independent threat intelligence project which we undertook to enhance our understanding of distributed systems, their integration, the nature of threat intelligence and how to efficiently collect, store, consume, distribute it.",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "STIX Viewer",
+   "url": "https://stix-viewer.threatlandscape.io/",
+   "note": "An online free STIX 2.1 viewer / visualizer.",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "Taranis AI",
+   "url": "https://github.com/taranis-ai/taranis-ai",
+   "note": "Open-source OSINT platform for collecting, enriching, analyzing, and publishing intelligence from web, RSS, email, and other sources with AI/NLP-assisted workflows.",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "ThreatLens",
+   "url": "https://github.com/AbdaullahAG/Threat_Intel_Project",
+   "note": "Professional multi-source Threat Intelligence CLI tool to investigate IPs, domains, hashes, and CVEs across multiple free APIs with automated log parsing and color-coded reporting.",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "VoidAccess",
+   "url": "https://github.com/KatrielMoses/voidaccess",
+   "note": "Self-hosted, open-source dark web threat intelligence platform that automates the full OSINT investigation workflow. Supports query refinement, multi-engine Tor search, entity extraction (wallets, CVEs, IPs, actor handles, hashes), relationship graphing, and structured export in STIX 2.1, MISP, Sigm",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  },
+  {
+   "name": "Voidly Censorship Index",
+   "url": "https://voidly.ai/censorship-index",
+   "note": "Real-time global internet censorship intelligence aggregating 19.6M live OONI samples and 1.6M historical records across 119+ countries. Provides a citable incident database (5,356 incidents, 16,822 evidence items), an ML-driven shutdown early-warning feed, ISP-level risk scoring, and a public REST/",
+   "phase": "threat",
+   "group": "Threat intelligence"
+  }
+ ]
+}

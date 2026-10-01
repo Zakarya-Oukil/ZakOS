@@ -1,13 +1,14 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import { Brain, ChartLineUp, CirclesFour, FileText, FolderSimple, GearSix, GitBranch, GitCommit, House, Kanban, Key, Plugs, Robot, Rocket, Scroll, ShieldCheck, Sparkle, Storefront, TerminalWindow, Timer, UsersThree, Globe, WebhooksLogo, Files, type Icon } from '@phosphor-icons/react';
+import { Brain, ChartLineUp, CirclesFour, FileText, FolderSimple, GearSix, GitBranch, GitCommit, House, Kanban, Key, Detective, Plugs, Robot, Rocket, Scroll, ShieldCheck, Sparkle, Storefront, TerminalWindow, Timer, UsersThree, Globe, WebhooksLogo, Files, type Icon } from '@phosphor-icons/react';
 
-export type ModuleGroup = 'workspace' | 'agents' | 'knowledge' | 'build' | 'connect' | 'system';
+export type ModuleGroup = 'workspace' | 'agents' | 'knowledge' | 'build' | 'security' | 'connect' | 'system';
 
 export const GROUPS: { id: ModuleGroup; label: string }[] = [
   { id: 'workspace', label: 'Workspace' },
   { id: 'agents', label: 'Agents' },
   { id: 'knowledge', label: 'Knowledge' },
   { id: 'build', label: 'Build' },
+  { id: 'security', label: 'Security' },
   { id: 'connect', label: 'Connections' },
   { id: 'system', label: 'System' },
 ];
@@ -165,6 +166,14 @@ export const MODULES: OsModule[] = [
     premium: 'pro',
     component: lazy(() => import('./templates/TemplatesPage')),
     description: 'Starter workflows, skills, prompts, themes and projects. Import and export as files.',
+  },
+  {
+    id: 'cyberlab',
+    label: 'CyberLab',
+    icon: Detective,
+    group: 'security',
+    component: lazy(() => import('./cyberlab/CyberLabPage')),
+    description: 'OSINT tools, investigation cases with evidence, a link graph, reports and exam study tracking.',
   },
   {
     id: 'integrations',
