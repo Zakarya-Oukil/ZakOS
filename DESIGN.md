@@ -32,8 +32,17 @@ The token is still named `--os-cyan` because every page already uses it; its val
 - Buttons are pills. Inputs and selects are 10px radius. Cards inside lists use the 8px radius.
 - No side-stripe borders, no gradient text, no glow halos.
 
+## What makes it its own
+- **Display voice.** `.os-display` is Bricolage at 78% width and weight 800: page titles, the greeting, empty-state titles and section headings. Everything else stays at normal width.
+- **Shape-coded state.** Status markers differ by shape, not only colour: hollow ring (idle), ring with a travelling arc (working), half disc (needs review), solid diamond (failed).
+- **Open sections.** Read-only summaries on Home use `Panel bare`: a heading and a rule, no box. Boxes are kept for things you edit or act on.
+- **Contour glyphs.** Empty states carry a generated contour glyph seeded from their title, so each page's empty state is its own.
+- **The map answers.** The background drifts to a different region of the terrain for each page, and a ripple leaves the Agents or Approvals item when a run ends or an approval arrives.
+- **Page reveal.** A page opens outward from the nav item you pressed (clip-path, 600ms), then drops the clip.
+- **Route, not list.** A workflow's plan is drawn as a route with waypoints that fill as work finishes.
+
 ## Components (`src/os/ui`)
-`Panel`, `Button` (primary, outline, ghost), `IconButton`, `Tabs`, `Segmented`, `Field`, `EmptyState`, `ErrorNote`, `SuccessNote`, `Skeleton`, `CommandPalette`, `Markdown`. Icons are Phosphor duotone through one `IconContext`.
+`Panel` (boxed or bare), `Button` (primary, outline, ghost), `DiffView` (unified or side by side), `ContourGlyph`, `IconButton`, `Tabs`, `Segmented`, `Field`, `EmptyState`, `ErrorNote`, `SuccessNote`, `Skeleton`, `CommandPalette`, `Markdown`. Icons are Phosphor duotone through one `IconContext`.
 
 ## Motion
 - One authored moment per surface: the setup intro, the Brain fly-to, the Home island ring that breathes when an agent runs.

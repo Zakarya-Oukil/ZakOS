@@ -184,7 +184,7 @@ function Attention({ a }: { a: HomeData['attention'] }) {
       </li>,
     );
   return (
-    <Panel title="Needs attention">
+    <Panel bare title="Needs attention">
       {items.length === 0 ? <Empty>Nothing needs you right now.</Empty> : <ul className="grid gap-2 text-sm">{items}</ul>}
     </Panel>
   );
@@ -195,7 +195,7 @@ function Attention({ a }: { a: HomeData['attention'] }) {
 function Running({ r, labelOf }: { r: HomeData['running']; labelOf: (id: string) => string }) {
   const none = r.sessions.length === 0 && r.runs.length === 0;
   return (
-    <Panel title="Running now">
+    <Panel bare title="Running now">
       {none ? (
         <Empty>No agents are working.</Empty>
       ) : (
@@ -293,7 +293,7 @@ function ProviderCard({ p }: { p: Provider }) {
 
 function Schedules({ items }: { items: HomeData['schedules'] }) {
   return (
-    <Panel title="Schedules" header={<a className="text-xs text-os-muted hover:text-os-text" href="#/workflows">Manage</a>}>
+    <Panel bare title="Schedules" header={<a className="text-xs text-os-muted hover:text-os-text" href="#/workflows">Manage</a>}>
       {items.length === 0 ? (
         <Empty>No schedules yet. Save a workflow as a template, then schedule it.</Empty>
       ) : (
@@ -328,7 +328,7 @@ function Schedules({ items }: { items: HomeData['schedules'] }) {
 function Activity({ items }: { items: HomeData['activity'] }) {
   const href = (e: HomeData['activity'][number]) => (e.run_id ? `#/workflows/${e.run_id}` : e.session_id ? `#/agents/claude/${e.session_id}` : undefined);
   return (
-    <Panel title="Recent activity" header={<a className="text-xs text-os-muted hover:text-os-text" href="#/audit">Audit log</a>}>
+    <Panel bare title="Recent activity" header={<a className="text-xs text-os-muted hover:text-os-text" href="#/audit">Audit log</a>}>
       {items.length === 0 ? (
         <Empty>Nothing has happened yet.</Empty>
       ) : (
@@ -351,7 +351,7 @@ function Activity({ items }: { items: HomeData['activity'] }) {
 
 function Limits({ l }: { l: HomeData['limits'] }) {
   return (
-    <Panel title="Workflow limits today">
+    <Panel bare title="Workflow limits today">
       <div className="grid gap-3 text-sm">
         <div className="grid gap-1">
           <div className="flex justify-between text-xs"><span className="text-os-muted">Runs started today</span><span className="text-os-text">{l.runsToday} of {l.maxRunsPerDay}</span></div>
@@ -380,7 +380,7 @@ function Pinned({ home, navigate }: { home: HomeData; navigate: ModuleProps['nav
   const list = home.projects.filter((p) => pinned.includes(p.id));
   if (list.length === 0) return null;
   return (
-    <Panel title="Pinned">
+    <Panel bare title="Pinned">
       <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {list.map((p) => (
           <li key={p.id} className="grid gap-2">
@@ -428,7 +428,7 @@ function CatchUp({ items }: { items: HomeData['activity'] }) {
   if (since === 0 || news.length === 0) return null;
   const hours = Math.round((Date.now() - since) / 3_600_000);
   return (
-    <Panel title={`Since you were last here${hours >= 1 ? `, ${hours >= 48 ? `${Math.round(hours / 24)} days` : `${hours} h`} ago` : ''}`}>
+    <Panel bare title={`Since you were last here${hours >= 1 ? `, ${hours >= 48 ? `${Math.round(hours / 24)} days` : `${hours} h`} ago` : ''}`}>
       <ul className="grid gap-1.5 text-sm">
         {news.slice(0, 6).map((e) => (
           <li key={e.id} className="flex items-baseline gap-3">
@@ -641,7 +641,7 @@ export default function HomePage({ navigate }: ModuleProps) {
                   <Running r={home.running} labelOf={labelOf} />
                   <Pinned home={home} navigate={navigate} />
                   <CatchUp items={home.activity} />
-                  <Panel title="Usage by provider">
+                  <Panel bare title="Usage by provider">
                     <div className="grid gap-4">
                       {home.providers.map((p) => (
                         <ProviderCard key={p.id} p={p} />

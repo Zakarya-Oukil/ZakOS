@@ -8,14 +8,14 @@ The interface is called **Atlas**: a map room with contour-line backgrounds, a d
 
 | Group | Pages |
 | --- | --- |
-| Workspace | Home (map of your projects), Projects, Tasks board, Reports |
-| Agents | Agents (real CLI sessions), Workflows (orchestrator, workers, reviewer), Approvals (risk labels, batch actions), Automations |
-| Knowledge | Brain (terrain map of the vault, time slider, search), Skills, Templates |
-| Build | Git, Dev (run and preview a project), Files (editor, search, follow the agent), Terminal |
-| Connections | Integrations (GitHub, Telegram, Discord, Slack), MCP servers, Webhooks and API key, Remote access |
-| System | Usage and cost (budgets, forecast), Audit (export, archive), Team (accounts and roles), Licence, Settings |
+| Workspace | Home (a map of your projects with the agents working on them), Projects (groups, tags, standing instructions, GitHub issues and PRs), Tasks board, Reports |
+| Agents | Agents (voice in and out, fork, compare answers, ask several at once, search every conversation, per-session model and permissions, session templates, cost meter, tool timeline), Workflows (route map, dry run, cost estimate, auto-stop, flows with conditions and retries, run comparison), Approvals (risk labels, batch, always-allow rules), Automations (cron, commit, file, webhook and chain triggers, quiet hours, calendar) |
+| Knowledge | Brain (terrain map, live activity, orphan and link finder, timeline, agent memory, quick capture with Alt+N), Skills (import after review, try on a sample, usage, export), Templates |
+| Build | Git (stash, merge with conflict helper, cherry-pick, pull requests, commit messages written from the staged diff), Dev (several apps and a port map, environment profiles, log filter, deploy recipe), Files, Terminal (split panes, record and replay, saved commands, ask for a command) |
+| Connections | Integrations (GitHub, Telegram, Discord, Slack), MCP servers (with usage log), Webhooks and API key, Remote access |
+| System | Usage and cost, Audit (export, archive, saved filters, alert rules), Team, Licence, Settings |
 
-First run opens a short setup tour. Settings has an appearance studio (accent, motion, background, density), a shortcut editor, module presets and backup/restore.
+First run opens a short setup tour. Settings has an appearance studio, a shortcut editor, module presets and backup/restore.
 
 ## Run it
 
@@ -65,4 +65,4 @@ scripts/         licence tool
 
 ## Not included yet
 
-Email and calendar, Notion, Google and GitHub single sign-on, in-app payments and invoices, a multi-user shared server. These need provider accounts or hosted infrastructure, so they are left out rather than faked.
+Email and calendar, Notion, Google and GitHub single sign-on, in-app payments and invoices, a multi-user shared server (all need provider accounts or hosted infrastructure, so they are left out rather than faked). Also not built: approving from a desktop notification button, per-session tags, and a free-form node editor for flows (flows are step lists drawn as a route).
