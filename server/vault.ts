@@ -283,6 +283,8 @@ export class VaultService {
         tags: note.tags,
         val,
         linkCount,
+        created: note.created || note.updated || undefined,
+        updated: note.updated || undefined,
       });
 
       // Links from parent relationship or wikilinks

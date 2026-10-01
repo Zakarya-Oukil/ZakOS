@@ -1,13 +1,13 @@
-import { Check, FileText, Hammer, ListTree, ScanSearch, X, type LucideIcon } from 'lucide-react';
+import { type Icon, Check, FileText, Hammer, ListBullets, Scan, X } from '@phosphor-icons/react';
 import { cx } from '../../ui/cx';
 import type { WorkflowRun } from './api';
 
 type NodeState = 'todo' | 'active' | 'done' | 'failed' | 'halted';
 
-const STAGES: Array<{ id: string; label: string; icon: LucideIcon }> = [
-  { id: 'plan', label: 'Plan', icon: ListTree },
+const STAGES: Array<{ id: string; label: string; icon: Icon }> = [
+  { id: 'plan', label: 'Plan', icon: ListBullets },
   { id: 'build', label: 'Build', icon: Hammer },
-  { id: 'review', label: 'Review', icon: ScanSearch },
+  { id: 'review', label: 'Review', icon: Scan },
   { id: 'report', label: 'Report', icon: FileText },
 ];
 
@@ -42,7 +42,7 @@ function detail(run: WorkflowRun, id: string, state: NodeState): string {
 const nodeStyle: Record<NodeState, string> = {
   todo: 'border-os-line bg-os-surface text-os-muted',
   active: 'border-os-cyan bg-[rgba(var(--os-cyan-rgb),0.12)] text-os-cyan shadow-[var(--os-glow-cyan)]',
-  done: 'border-os-cyan bg-os-cyan text-os-bg',
+  done: 'border-os-cyan bg-os-cyan text-os-on-accent',
   failed: 'border-os-danger bg-[rgba(255,107,107,0.12)] text-os-danger',
   halted: 'border-os-amber bg-[rgba(242,181,68,0.1)] text-os-amber',
 };
@@ -65,7 +65,7 @@ export function Pipeline({ run }: { run: WorkflowRun }) {
                   nodeStyle[state],
                 )}
               >
-                <Icon size={16} strokeWidth={2} aria-hidden />
+                <Icon size={16} aria-hidden />
               </span>
               {!last && (
                 <span className="relative mx-2 h-0.5 flex-1 overflow-hidden rounded-full bg-os-line" aria-hidden>

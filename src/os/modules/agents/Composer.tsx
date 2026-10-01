@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { ArrowUp, Bookmark, FileText, Folder, Globe, Network, NotebookText, Paperclip, Square, Trash2, X } from 'lucide-react';
+import { ArrowUp, BookmarkSimple, FileText, Folder, Globe, Notebook, Paperclip, Stop, Trash, TreeStructure, X } from '@phosphor-icons/react';
 import { cx } from '../../ui/cx';
 import { Kbd } from '../../ui';
 import {
@@ -14,14 +14,14 @@ import {
   type SavedPrompt,
 } from './attach';
 
-const ICON: Record<AttachKind, typeof FileText> = { file: FileText, folder: Folder, note: NotebookText, graph: Network, url: Globe, picked: Paperclip };
+const ICON: Record<AttachKind, typeof FileText> = { file: FileText, folder: Folder, note: Notebook, graph: TreeStructure, url: Globe, picked: Paperclip };
 
 const pop =
   'absolute bottom-full left-0 right-0 z-20 mb-2 max-h-72 overflow-y-auto rounded-[var(--os-radius-lg)] border border-os-line bg-os-surface p-1 shadow-lg';
 const row =
   'flex w-full items-center gap-2 rounded-[var(--os-radius)] px-2 py-1.5 text-left text-sm text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 const smallBtn =
-  'inline-flex h-7 items-center gap-1.5 rounded-[var(--os-radius)] border border-os-line px-2 text-xs text-os-muted hover:border-os-cyan hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-40';
+  'inline-flex h-7 items-center gap-1.5 rounded-full border border-os-line px-2 text-xs text-os-muted hover:border-os-cyan hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-40';
 
 type Popup = { type: 'mention'; query: string; start: number } | { type: 'slash'; query: string } | { type: 'add' } | null;
 type Tab = 'file' | 'note' | 'graph' | 'url';
@@ -212,7 +212,7 @@ export function Composer({ sessionId, running, agentLabel, onSend, onStop, sessi
               visiblePrompts.map((p, i) => (
                 <div key={p.id} className="group flex items-center">
                   <button type="button" role="option" aria-selected={i === active} className={cx(row, 'min-w-0 flex-1', i === active && 'bg-os-surface-2')} onMouseEnter={() => setActive(i)} onClick={() => pickPrompt(p)}>
-                    <Bookmark size={14} aria-hidden className="shrink-0 text-os-cyan" />
+                    <BookmarkSimple size={14} aria-hidden className="shrink-0 text-os-cyan" />
                     <span className="shrink-0 font-os-mono text-xs">/{p.name}</span>
                     <span className="truncate text-xs text-os-muted">{p.text}</span>
                   </button>
@@ -222,7 +222,7 @@ export function Composer({ sessionId, running, agentLabel, onSend, onStop, sessi
                     className="mx-1 rounded-[var(--os-radius-sm)] p-1 text-os-muted hover:text-os-danger focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
                     onClick={() => promptsApi.remove(p.id).then(() => setPrompts((l) => l.filter((x) => x.id !== p.id))).catch((e: Error) => setNote(e.message))}
                   >
-                    <Trash2 size={13} aria-hidden />
+                    <Trash size={13} aria-hidden />
                   </button>
                 </div>
               ))
@@ -280,7 +280,7 @@ export function Composer({ sessionId, running, agentLabel, onSend, onStop, sessi
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://…"
-                className="h-8 min-w-0 flex-1 rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+                className="h-8 min-w-0 flex-1 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
               />
               <button type="submit" className={smallBtn} disabled={!url.trim()}>
                 Attach page
@@ -294,7 +294,7 @@ export function Composer({ sessionId, running, agentLabel, onSend, onStop, sessi
                 value={addQuery}
                 onChange={(e) => setAddQuery(e.target.value)}
                 placeholder={tab === 'file' ? 'Search project files' : tab === 'note' ? 'Search Obsidian notes' : 'Search graph nodes'}
-                className="mb-1 h-8 w-full rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+                className="mb-1 h-8 w-full rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
               />
               {results.length === 0 ? (
                 <p className="px-2 py-2 text-xs text-os-muted">{tab === 'graph' ? 'No matching graph nodes. Build the project graph on the Projects page first.' : 'No matches.'}</p>
@@ -337,7 +337,7 @@ export function Composer({ sessionId, running, agentLabel, onSend, onStop, sessi
           }}
           className="grid h-8 w-8 shrink-0 place-items-center rounded-[var(--os-radius)] text-os-muted hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:opacity-40"
         >
-          <Paperclip size={16} strokeWidth={1.75} aria-hidden />
+          <Paperclip size={16} aria-hidden />
         </button>
         <textarea
           ref={input}
@@ -358,7 +358,7 @@ export function Composer({ sessionId, running, agentLabel, onSend, onStop, sessi
             aria-label="Stop the running agent"
             className="flex h-8 items-center gap-1.5 rounded-[var(--os-radius)] border border-os-amber px-3 text-sm text-os-amber hover:bg-os-surface-2 focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
           >
-            <Square size={12} strokeWidth={2} aria-hidden />
+            <Stop size={12} aria-hidden />
             Stop
           </button>
         ) : (
@@ -367,9 +367,9 @@ export function Composer({ sessionId, running, agentLabel, onSend, onStop, sessi
             onClick={() => void submit()}
             disabled={!draft.trim()}
             aria-label="Send message"
-            className="grid h-8 w-8 place-items-center rounded-[var(--os-radius)] bg-os-cyan text-os-bg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-30"
+            className="grid h-8 w-8 place-items-center rounded-[var(--os-radius)] bg-os-cyan text-os-on-accent transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-30"
           >
-            <ArrowUp size={16} strokeWidth={2.25} aria-hidden />
+            <ArrowUp size={16} aria-hidden />
           </button>
         )}
       </div>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Play, Plus, Trash2 } from 'lucide-react';
+import { Play, Plus, Trash } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { cx } from '../../ui/cx';
@@ -7,10 +7,10 @@ import { timeAgo } from '../../lib/projectsApi';
 import { automationsApi, describe, PRESETS, type Automation, type TemplateInfo, type Trigger } from './api';
 
 const btn =
-  'inline-flex h-8 items-center gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 px-3 text-sm text-os-text transition-colors ' +
+  'inline-flex h-9 items-center gap-2 rounded-full border border-os-line bg-os-surface-2 px-4 text-sm text-os-text transition-colors ' +
   'hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50';
 const field =
-  'rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
+  'rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
 const when = (ts: number) => new Date(ts).toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const STATUS_TONE: Record<string, string> = { done: 'text-os-cyan', error: 'text-os-danger', stopped: 'text-os-muted', deleted: 'text-os-muted' };
@@ -288,7 +288,7 @@ export default function AutomationsPage({ route, navigate }: ModuleProps) {
                   </span>
                 ) : (
                   <button type="button" className={cx(btn, 'text-os-muted hover:text-os-danger')} onClick={() => setConfirmDelete(true)}>
-                    <Trash2 size={14} aria-hidden /> Delete automation
+                    <Trash size={14} aria-hidden /> Delete automation
                   </button>
                 )}
               </div>

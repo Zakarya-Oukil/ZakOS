@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { AlertTriangle, ArrowUp, Bell, CalendarClock, GitBranch, ShieldCheck } from 'lucide-react';
+import { ArrowUp, Bell, CalendarCheck, GitBranch, ShieldCheck, Warning } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { Panel, StatusDot } from '../../ui';
@@ -19,9 +19,9 @@ const untilReset = (unixSeconds: number) => {
 };
 
 const field =
-  'rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
+  'rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 const primary =
-  'inline-flex h-8 items-center gap-2 rounded-[var(--os-radius)] bg-os-cyan px-3 text-sm font-medium text-os-bg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-40';
+  'inline-flex h-9 items-center gap-2 rounded-full bg-os-cyan px-4 text-sm font-medium text-os-on-accent transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-40';
 const link = 'text-os-text underline-offset-2 hover:text-os-cyan hover:underline focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
 function Bar({ value, label }: { value: number; label: string }) {
@@ -137,7 +137,7 @@ function Attention({ a }: { a: HomeData['attention'] }) {
   for (const r of a.failedRuns)
     items.push(
       <li key={`f${r.id}`} className="flex items-center gap-2">
-        <AlertTriangle size={15} aria-hidden className="shrink-0 text-os-danger" />
+        <Warning size={15} aria-hidden className="shrink-0 text-os-danger" />
         <a className={cx(link, 'truncate')} href={`#/workflows/${r.id}`} title={r.error ?? undefined}>Failed: {r.goal}</a>
       </li>,
     );
@@ -265,7 +265,7 @@ function Schedules({ items }: { items: HomeData['schedules'] }) {
           {items.map((s) => (
             <li key={s.id} className="grid gap-0.5">
               <span className="flex items-center gap-2">
-                <CalendarClock size={14} aria-hidden className={cx('shrink-0', s.enabled ? 'text-os-cyan' : 'text-os-muted')} />
+                <CalendarCheck size={14} aria-hidden className={cx('shrink-0', s.enabled ? 'text-os-cyan' : 'text-os-muted')} />
                 <span className="truncate text-os-text">{s.name}</span>
                 {!s.enabled && <span className="shrink-0 text-xs text-os-muted">paused</span>}
               </span>

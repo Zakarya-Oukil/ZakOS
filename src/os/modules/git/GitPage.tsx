@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowDownToLine, ArrowUpFromLine, Check, GitBranch, Minus, Plus, RefreshCw, Undo2 } from 'lucide-react';
+import { ArrowLineDown, ArrowLineUp, ArrowUUpLeft, ArrowsClockwise, Check, GitBranch, Minus, Plus } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { Panel, Tabs } from '../../ui';
@@ -9,12 +9,12 @@ import { DiffView } from '../agents/Changes';
 import { gitApi, STATE_TONE, STATE_WORD, type Branch, type Commit, type DiffResult, type GitFile, type GitStatus } from './api';
 
 const btn =
-  'inline-flex h-8 items-center gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 px-3 text-sm text-os-text transition-colors ' +
+  'inline-flex h-9 items-center gap-2 rounded-full border border-os-line bg-os-surface-2 px-4 text-sm text-os-text transition-colors ' +
   'hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50';
 const tiny =
   'rounded-[var(--os-radius-sm)] p-1 text-os-muted hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:opacity-40';
 const field =
-  'rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
+  'rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
 type Tab = 'changes' | 'history' | 'branches';
 const TABS = [
@@ -48,7 +48,7 @@ function FileRow({ f, staged, selected, busy, onSelect, onToggle, onDiscard }: {
         <>
           {!staged && onDiscard && (
             <button type="button" className={cx(tiny, 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100')} disabled={busy} aria-label={`Discard changes to ${f.path}`} title="Discard changes" onClick={() => setConfirm(true)}>
-              <Undo2 size={13} aria-hidden />
+              <ArrowUUpLeft size={13} aria-hidden />
             </button>
           )}
           <button type="button" className={tiny} disabled={busy} aria-label={`${staged ? 'Unstage' : 'Stage'} ${f.path}`} title={staged ? 'Unstage' : 'Stage'} onClick={onToggle}>
@@ -182,7 +182,7 @@ export default function GitPage({ route, navigate }: ModuleProps) {
               ))}
             </select>
             <button type="button" className={cx(btn, 'w-8 justify-center px-0')} aria-label="Refresh" onClick={refresh}>
-              <RefreshCw size={14} aria-hidden />
+              <ArrowsClockwise size={14} aria-hidden />
             </button>
           </>
         ) : undefined
@@ -205,7 +205,7 @@ export default function GitPage({ route, navigate }: ModuleProps) {
               <BranchChip s={status} />
               <span className="ml-auto flex items-center gap-2">
                 <button type="button" className={btn} disabled={busy || !status.upstream} title={status.upstream ? 'Fast-forward only' : 'No upstream to pull from'} onClick={() => void act(() => gitApi.pull(projectId), 'Pulled.')}>
-                  <ArrowDownToLine size={14} aria-hidden /> Pull
+                  <ArrowLineDown size={14} aria-hidden /> Pull
                 </button>
                 {confirmPush ? (
                   <span className="flex items-center gap-2 text-sm">
@@ -215,7 +215,7 @@ export default function GitPage({ route, navigate }: ModuleProps) {
                   </span>
                 ) : (
                   <button type="button" className={btn} disabled={busy || status.detached} onClick={() => setConfirmPush(true)}>
-                    <ArrowUpFromLine size={14} aria-hidden /> Push
+                    <ArrowLineUp size={14} aria-hidden /> Push
                   </button>
                 )}
               </span>

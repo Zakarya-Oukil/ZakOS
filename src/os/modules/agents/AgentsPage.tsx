@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { ArrowLeft, ArrowLeftRight, PanelRight, X } from 'lucide-react';
+import { ArrowLeft, ArrowsLeftRight, SidebarSimple, X } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { IconButton, StatusDot, Tabs, type TabItem } from '../../ui';
@@ -124,7 +124,7 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
             onClick={() => setRailOpen((v) => !v)}
             className="hidden lg:inline-flex"
           >
-            <PanelRight size={16} strokeWidth={1.75} />
+            <SidebarSimple size={16} />
           </IconButton>
         </>
       }
@@ -157,7 +157,7 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
                 href={`#/agents/${agentId}`}
                 className="flex h-9 items-center gap-2 border-b border-os-line px-3 text-sm text-os-muted hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] md:hidden"
               >
-                <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
+                <ArrowLeft size={14} aria-hidden />
                 Sessions
               </a>
               {split && (
@@ -205,10 +205,10 @@ export default function AgentsPage({ route, navigate }: ModuleProps) {
               actions={
                 <>
                   <IconButton aria-label="Swap the two sessions" onClick={() => go(split.agent, split.id, { agent: agentId, id: sessionId })}>
-                    <ArrowLeftRight size={14} strokeWidth={1.75} />
+                    <ArrowsLeftRight size={14} />
                   </IconButton>
                   <IconButton aria-label="Close the second session" onClick={() => go(agentId, sessionId, null)}>
-                    <X size={14} strokeWidth={1.75} />
+                    <X size={14} />
                   </IconButton>
                 </>
               }

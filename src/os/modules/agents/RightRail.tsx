@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Copy, Check, BookmarkPlus } from 'lucide-react';
+import { BookmarkSimple, Check, Copy } from '@phosphor-icons/react';
 import { Panel } from '../../ui';
 import { agentsApi, type ActionInfo, type SessionInfo } from './api';
 import { ago, resumeCommand } from './format';
@@ -87,7 +87,7 @@ export function RightRail({ session, actions, running, onChanged }: RightRailPro
               onBlur={() => void saveTitle()}
               onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
               maxLength={120}
-              className="h-8 rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+              className="h-8 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
             />
           </div>
           <div className="grid gap-1">
@@ -100,15 +100,15 @@ export function RightRail({ session, actions, running, onChanged }: RightRailPro
               <button
                 type="button"
                 onClick={() => void copy()}
-                className="flex items-start gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 py-1.5 text-left hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+                className="flex items-start gap-2 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 py-1.5 text-left hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
               >
                 <span className="min-w-0 flex-1 break-all font-os-mono text-xs text-os-text">
                   {resumeCommand(session.agent, session.cli_session_id)}
                 </span>
                 {copied ? (
-                  <Check size={14} strokeWidth={1.75} className="mt-0.5 shrink-0 text-os-cyan" aria-label="Copied" />
+                  <Check size={14} className="mt-0.5 shrink-0 text-os-cyan" aria-label="Copied" />
                 ) : (
-                  <Copy size={14} strokeWidth={1.75} className="mt-0.5 shrink-0 text-os-muted" aria-label="Copy command" />
+                  <Copy size={14} className="mt-0.5 shrink-0 text-os-muted" aria-label="Copy command" />
                 )}
               </button>
             ) : (
@@ -123,9 +123,9 @@ export function RightRail({ session, actions, running, onChanged }: RightRailPro
           type="button"
           disabled={running || !actions.some((a) => a.kind === 'prompt')}
           onClick={() => void saveToBrain()}
-          className="inline-flex h-8 items-center gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 px-3 text-sm text-os-text hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-9 items-center gap-2 rounded-full border border-os-line bg-os-surface-2 px-4 text-sm text-os-text hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <BookmarkPlus size={14} aria-hidden /> Save to Brain
+          <BookmarkSimple size={14} aria-hidden /> Save to Brain
         </button>
         <p className="mt-2 text-xs leading-relaxed text-os-muted">Adds the latest question and result to today's capture note in your vault. Keys and passwords are blanked out.</p>
         {brainNotice && (

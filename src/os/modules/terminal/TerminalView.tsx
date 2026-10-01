@@ -13,11 +13,11 @@ interface TerminalViewProps {
   onEnded?: (why: { exitCode?: number; gone?: boolean }) => void;
 }
 
-const THEME = {
-  background: '#0b0d10',
+const DARK_THEME = {
+  background: '#0a1513',
   foreground: '#e6eaf0',
-  cursor: '#5fe3f0',
-  cursorAccent: '#0b0d10',
+  cursor: '#ff6a3d',
+  cursorAccent: '#0a1513',
   selectionBackground: 'rgba(255, 106, 61, 0.28)',
   black: '#171b21',
   red: '#ff6b6b',
@@ -25,7 +25,7 @@ const THEME = {
   yellow: '#f2b544',
   blue: '#7aa7ff',
   magenta: '#c49bff',
-  cyan: '#5fe3f0',
+  cyan: '#4fd1c5',
   white: '#c9d1dc',
   brightBlack: '#5b6472',
   brightRed: '#ff8f8f',
@@ -36,6 +36,29 @@ const THEME = {
   brightCyan: '#8fefff',
   brightWhite: '#f4f7fb',
 };
+
+const LIGHT_THEME = {
+  ...DARK_THEME,
+  background: '#f6f8f4',
+  foreground: '#14231f',
+  cursor: '#d9461b',
+  cursorAccent: '#f6f8f4',
+  selectionBackground: 'rgba(217, 70, 27, 0.22)',
+  black: '#14231f',
+  white: '#55695f',
+  red: '#c42b2b',
+  green: '#4d7a12',
+  yellow: '#8a6100',
+  blue: '#2a5fb5',
+  magenta: '#7b3fa0',
+  cyan: '#0b7a75',
+  brightBlack: '#6b7f75',
+  brightWhite: '#14231f',
+};
+
+function currentTheme() {
+  return document.documentElement.dataset.theme === 'light' ? LIGHT_THEME : DARK_THEME;
+}
 
 export function TerminalView({ sessionId, active, onEnded }: TerminalViewProps) {
   const host = useRef<HTMLDivElement>(null);
@@ -59,13 +82,17 @@ export function TerminalView({ sessionId, active, onEnded }: TerminalViewProps) 
       lineHeight: 1.25,
       cursorBlink: true,
       scrollback: 5000,
-      theme: THEME,
+      theme: currentTheme(),
       allowProposedApi: false,
     });
     const fit = new FitAddon();
     term.loadAddon(fit);
     term.open(el);
     termRef.current = term;
+    const themeObserver = new MutationObserver(() => {
+      term.options.theme = currentTheme();
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     fitRef.current = fit;
     try {
       fit.fit();
@@ -122,6 +149,7 @@ export function TerminalView({ sessionId, active, onEnded }: TerminalViewProps) 
 
     return () => {
       ro.disconnect();
+      themeObserver.disconnect();
       dataSub.dispose();
       resizeSub.dispose();
       ws.onclose = null;

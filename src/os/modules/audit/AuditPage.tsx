@@ -18,10 +18,10 @@ interface AuditEntry {
 const PAGE = 50;
 
 const field =
-  'h-8 rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text placeholder:text-os-muted ' +
+  'h-8 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted ' +
   'focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 const btn =
-  'inline-flex h-8 items-center gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 px-3 text-sm text-os-text transition-colors ' +
+  'inline-flex h-9 items-center gap-2 rounded-full border border-os-line bg-os-surface-2 px-4 text-sm text-os-text transition-colors ' +
   'hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50';
 
 async function fetchAudit(params: { kind: string; q: string; before?: number }) {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Copy, Link2, Plus, Save, Trash2 } from 'lucide-react';
+import { Copy, FloppyDisk, LinkSimple, Plus, Trash } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { cx } from '../../ui/cx';
@@ -7,10 +7,10 @@ import { timeAgo } from '../../lib/projectsApi';
 import { skillsApi, type SkillDetail, type SkillInfo } from './api';
 
 const btn =
-  'inline-flex h-8 items-center gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 px-3 text-sm text-os-text transition-colors ' +
+  'inline-flex h-9 items-center gap-2 rounded-full border border-os-line bg-os-surface-2 px-4 text-sm text-os-text transition-colors ' +
   'hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50';
 const field =
-  'rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
+  'rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
 function Switch({ on, label, disabled, onChange }: { on: boolean; label: string; disabled?: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -171,7 +171,7 @@ export default function SkillsPage({ route, navigate }: ModuleProps) {
                     >
                       <span className="flex items-center gap-1.5 text-sm text-os-text">
                         <span className="truncate font-os-mono text-[13px]">{s.name}</span>
-                        {s.linked && <Link2 size={12} aria-label="Linked from another folder, read-only" className="shrink-0 text-os-muted" />}
+                        {s.linked && <LinkSimple size={12} aria-label="Linked from another folder, read-only" className="shrink-0 text-os-muted" />}
                       </span>
                       <span className="mt-0.5 line-clamp-2 block text-xs text-os-muted">{s.description || 'No description'}</span>
                     </a>
@@ -205,7 +205,7 @@ export default function SkillsPage({ route, navigate }: ModuleProps) {
                     <Copy size={14} aria-hidden /> Copy /{name}
                   </button>
                   <button type="button" className={btn} disabled={readOnly || !dirty} onClick={() => void run(async () => { await skillsApi.save(scope, name, draft); setDetail({ ...detail, content: draft }); }, 'Saved.')}>
-                    <Save size={14} aria-hidden /> Save
+                    <FloppyDisk size={14} aria-hidden /> Save
                   </button>
                 </span>
               </div>
@@ -251,7 +251,7 @@ export default function SkillsPage({ route, navigate }: ModuleProps) {
                     </form>
                   ) : (
                     <button type="button" className={cx(btn, 'w-fit text-os-muted hover:text-os-danger')} onClick={() => setDeleting(true)}>
-                      <Trash2 size={14} aria-hidden /> Delete skill
+                      <Trash size={14} aria-hidden /> Delete skill
                     </button>
                   ))}
               </div>

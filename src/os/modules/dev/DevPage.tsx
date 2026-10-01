@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, CheckCircle2, ExternalLink, Info, Play, RefreshCw, Square, XCircle } from 'lucide-react';
+import { ArrowSquareOut, ArrowsClockwise, CheckCircle, Info, Play, Stop, Warning, XCircle } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { Panel, Tabs } from '../../ui';
@@ -8,10 +8,10 @@ import { projectsApi, type ProjectInfo } from '../../lib/projectsApi';
 import { devApi, type AppState, type Check, type HeavyCheck, type HeavyResult, type Level, type ScriptInfo } from './api';
 
 const btn =
-  'inline-flex h-8 items-center gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 px-3 text-sm text-os-text transition-colors ' +
+  'inline-flex h-9 items-center gap-2 rounded-full border border-os-line bg-os-surface-2 px-4 text-sm text-os-text transition-colors ' +
   'hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50';
 const field =
-  'rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
+  'rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
 type Tab = 'run' | 'health';
 const TABS = [
@@ -20,8 +20,8 @@ const TABS = [
 ];
 
 const LEVEL: Record<Level, { icon: typeof Info; tone: string; word: string }> = {
-  pass: { icon: CheckCircle2, tone: 'text-os-cyan', word: 'Passed' },
-  warn: { icon: AlertTriangle, tone: 'text-os-amber', word: 'Needs attention' },
+  pass: { icon: CheckCircle, tone: 'text-os-cyan', word: 'Passed' },
+  warn: { icon: Warning, tone: 'text-os-amber', word: 'Needs attention' },
   fail: { icon: XCircle, tone: 'text-os-danger', word: 'Failed' },
   info: { icon: Info, tone: 'text-os-muted', word: 'Note' },
 };
@@ -128,7 +128,7 @@ function RunTab({ projectId }: { projectId: string }) {
           <div className="flex items-center gap-2">
             {running ? (
               <button type="button" className={cx(btn, 'border-os-amber text-os-amber')} disabled={busy} onClick={() => void stop()}>
-                <Square size={13} aria-hidden /> Stop
+                <Stop size={13} aria-hidden /> Stop
               </button>
             ) : (
               <button type="button" className={btn} disabled={busy || (!custom.trim() && !script)} onClick={() => void start()}>
@@ -161,10 +161,10 @@ function RunTab({ projectId }: { projectId: string }) {
           {state?.url && (
             <>
               <button type="button" className={cx(btn, 'h-7 w-7 justify-center px-0')} aria-label="Reload the preview" onClick={() => setFrameKey((k) => k + 1)}>
-                <RefreshCw size={13} aria-hidden />
+                <ArrowsClockwise size={13} aria-hidden />
               </button>
               <a className={cx(btn, 'h-7')} href={state.url} target="_blank" rel="noreferrer">
-                <ExternalLink size={13} aria-hidden /> Open in browser
+                <ArrowSquareOut size={13} aria-hidden /> Open in browser
               </a>
             </>
           )}
@@ -239,7 +239,7 @@ function HealthTab({ projectId }: { projectId: string }) {
               <span className={counts.warn ? 'text-os-amber' : 'text-os-muted'}>{counts.warn} to look at</span>
               <span className={counts.fail ? 'text-os-danger' : 'text-os-muted'}>{counts.fail} failed</span>
               <button type="button" className={cx(btn, 'ml-auto')} onClick={load}>
-                <RefreshCw size={13} aria-hidden /> Check again
+                <ArrowsClockwise size={13} aria-hidden /> Check again
               </button>
             </div>
             <ul className="grid gap-1">

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Bookmark, CalendarClock, Check, Folder, Play, Plus, Square, Trash2, Undo2, X } from 'lucide-react';
+import { ArrowUUpLeft, BookmarkSimple, CalendarCheck, Check, Folder, Play, Plus, Stop, Trash, X } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { agentsSocket } from '../../lib/agentsSocket';
@@ -30,11 +30,11 @@ const STATUS_LABEL: Record<WorkflowRun['status'], string> = {
 };
 
 const btn =
-  'inline-flex h-8 items-center gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 px-3 text-sm text-os-text transition-colors ' +
+  'inline-flex h-9 items-center gap-2 rounded-full border border-os-line bg-os-surface-2 px-4 text-sm text-os-text transition-colors ' +
   'hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-os-line';
 
 const field =
-  'rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text placeholder:text-os-muted ' +
+  'rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted ' +
   'focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
 function useRuns() {
@@ -136,7 +136,7 @@ function ApprovalPanel({ run, onDone }: { run: WorkflowRun; onDone: () => void }
             <Check size={14} aria-hidden /> Approve and run
           </button>
           <button type="button" className={btn} disabled={busy} onClick={() => submit(() => workflowsApi.stop(run.id))}>
-            <Square size={14} aria-hidden /> Cancel run
+            <Stop size={14} aria-hidden /> Cancel run
           </button>
         </div>
       </div>
@@ -198,24 +198,24 @@ function RunView({ run, onChanged }: { run: WorkflowRun; onChanged: () => void }
           <div className="min-w-0 max-w-[68ch]">
             <h2 className="text-balance text-lg font-medium leading-snug text-os-text break-words">{run.goal}</h2>
             <p className="mt-1.5 flex min-w-0 items-center gap-1.5 text-xs text-os-muted">
-              <Folder size={13} strokeWidth={1.75} className="shrink-0" aria-hidden />
+              <Folder size={13} className="shrink-0" aria-hidden />
               <span className="truncate font-os-mono">{run.cwd}</span>
               <span className="shrink-0">, started {timeAgo(run.created)}</span>
             </p>
           </div>
           {isActive(run.status) ? (
             <button type="button" className={btn} disabled={busy} onClick={() => act(() => workflowsApi.stop(run.id))}>
-              <Square size={14} aria-hidden /> Stop
+              <Stop size={14} aria-hidden /> Stop
             </button>
           ) : (
             <div className="flex gap-2">
               {!run.undone && (
                 <button type="button" className={btn} disabled={busy} onClick={undo}>
-                  <Undo2 size={14} aria-hidden /> Undo run
+                  <ArrowUUpLeft size={14} aria-hidden /> Undo run
                 </button>
               )}
               <button type="button" className={btn} disabled={busy} onClick={() => act(() => workflowsApi.remove(run.id))}>
-                <Trash2 size={14} aria-hidden /> Delete
+                <Trash size={14} aria-hidden /> Delete
               </button>
             </div>
           )}
@@ -394,7 +394,7 @@ function NewRun({ projects, onStarted, onTemplatesChanged }: { projects: Project
           className={cx(field, 'h-8 min-w-0 flex-1')}
         />
         <button type="button" className={btn} disabled={!goal.trim() || !tplName.trim()} onClick={saveTemplate}>
-          <Bookmark size={14} aria-hidden /> Save
+          <BookmarkSimple size={14} aria-hidden /> Save
         </button>
       </div>
       {saved && <p className="text-xs text-os-cyan" role="status">Template saved</p>}
@@ -421,7 +421,7 @@ function Templates({ templates, onRun, onDelete }: { templates: WorkflowTemplate
               <Play size={14} aria-hidden />
             </button>
             <button type="button" aria-label={`Delete template ${t.name}`} className={cx(btn, 'w-8 justify-center px-0')} onClick={() => onDelete(t)}>
-              <Trash2 size={14} aria-hidden />
+              <Trash size={14} aria-hidden />
             </button>
           </li>
         ))}
@@ -476,7 +476,7 @@ function Schedules({ templates, schedules, onChanged }: { templates: WorkflowTem
         </select>
         <input aria-label="Custom cron expression" className={field} placeholder="Or custom cron, e.g. 30 6 * * 1-5" value={custom} onChange={(e) => setCustom(e.target.value)} />
         <button type="button" className={btn} onClick={add}>
-          <CalendarClock size={14} aria-hidden /> Add schedule
+          <CalendarCheck size={14} aria-hidden /> Add schedule
         </button>
         {error && <p className="text-xs text-os-danger" role="alert">{error}</p>}
       </div>
@@ -503,7 +503,7 @@ function Schedules({ templates, schedules, onChanged }: { templates: WorkflowTem
               {s.enabled ? 'On' : 'Off'}
             </button>
             <button type="button" aria-label={`Delete schedule for ${nameOf(s.templateId)}`} className={cx(btn, 'w-8 justify-center px-0')} onClick={() => schedulesApi.remove(s.id).then(onChanged).catch((e: Error) => setError(e.message))}>
-              <Trash2 size={14} aria-hidden />
+              <Trash size={14} aria-hidden />
             </button>
           </li>
         ))}

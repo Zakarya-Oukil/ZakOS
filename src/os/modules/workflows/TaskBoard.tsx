@@ -1,4 +1,4 @@
-import { Check, CircleDashed, X } from 'lucide-react';
+import { Check, CircleDashed, X } from '@phosphor-icons/react';
 import { LayoutGroup, motion } from 'motion/react';
 import { cx } from '../../ui/cx';
 import { spring, usePrefersReducedMotion } from '../../theme/motion';
@@ -17,10 +17,10 @@ function firstLine(text?: string): string {
 }
 
 function StateIcon({ state }: { state: TaskState }) {
-  if (state === 'done') return <Check size={15} strokeWidth={2.25} className="text-os-cyan" aria-label="Done" />;
-  if (state === 'error') return <X size={15} strokeWidth={2.25} className="text-os-danger" aria-label="Failed" />;
+  if (state === 'done') return <Check size={15} className="text-os-cyan" aria-label="Done" />;
+  if (state === 'error') return <X size={15} className="text-os-danger" aria-label="Failed" />;
   if (state === 'running') return <span className="mt-0.5 h-2.5 w-2.5 rounded-full bg-os-cyan os-live-dot" role="img" aria-label="Running" />;
-  return <CircleDashed size={15} strokeWidth={1.75} className="text-os-muted" aria-label="Queued" />;
+  return <CircleDashed size={15} className="text-os-muted" aria-label="Queued" />;
 }
 
 function TaskCard({ task, selected, onSelect }: { task: WorkflowTask; selected: boolean; onSelect: () => void }) {

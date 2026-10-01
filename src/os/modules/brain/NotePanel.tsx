@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pencil, X } from 'lucide-react';
+import { PencilSimple, X } from '@phosphor-icons/react';
 import { IconButton, Markdown } from '../../ui';
 import { cx } from '../../ui/cx';
 import { brainApi } from './api';
@@ -69,7 +69,7 @@ export function NoteReader({ path, onClose }: NoteProps) {
       action={
         note && !editing ? (
           <IconButton aria-label="Edit this note" onClick={() => { setDraft(note.content); setEditing(true); }}>
-            <Pencil size={15} strokeWidth={1.75} />
+            <PencilSimple size={15} />
           </IconButton>
         ) : undefined
       }
@@ -95,7 +95,7 @@ export function NoteReader({ path, onClose }: NoteProps) {
               }
             }}
             spellCheck
-            className="min-h-[22rem] w-full resize-y rounded-[var(--os-radius)] border border-os-line bg-os-bg p-3 font-os-mono text-[13px] leading-relaxed text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+            className="min-h-[22rem] w-full resize-y rounded-[var(--os-input-radius)] border border-os-line bg-os-bg p-3 font-os-mono text-[13px] leading-relaxed text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
           />
           <div className="flex items-center gap-2">
             <button type="button" disabled={saving || draft === note.content} onClick={() => void save()} className="h-8 rounded-[var(--os-radius)] border border-os-cyan bg-os-surface-2 px-3 text-sm text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:opacity-50">
@@ -152,7 +152,7 @@ export function PanelShell({ title, subtitle, onClose, children, className, acti
         <div className="flex shrink-0 items-center gap-1">
           {action}
           <IconButton aria-label="Close details" onClick={onClose}>
-            <X size={16} strokeWidth={1.75} />
+            <X size={16} />
           </IconButton>
         </div>
       </div>

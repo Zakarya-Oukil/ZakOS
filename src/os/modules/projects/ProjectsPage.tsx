@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { FolderOpen, FolderPlus, GitBranch, Network, Trash2, Waypoints } from 'lucide-react';
+import { FolderOpen, FolderSimplePlus, GitBranch, Path, Trash, TreeStructure } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { agentsApi } from '../agents/api';
@@ -8,11 +8,11 @@ import { Panel } from '../../ui';
 import { cx } from '../../ui/cx';
 
 const btn =
-  'inline-flex h-8 items-center gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 px-3 text-sm text-os-text transition-colors ' +
+  'inline-flex h-9 items-center gap-2 rounded-full border border-os-line bg-os-surface-2 px-4 text-sm text-os-text transition-colors ' +
   'hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-os-line';
 
 const field =
-  'h-8 rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text placeholder:text-os-muted ' +
+  'h-8 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted ' +
   'focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
 function useProjects() {
@@ -164,11 +164,11 @@ export default function ProjectsPage({ navigate }: ModuleProps) {
       actions={
         <>
           <button type="button" className={btn} onClick={() => { setShowAdd((v) => !v); setShowClone(false); }} aria-expanded={showAdd}>
-            <FolderPlus size={15} strokeWidth={1.75} aria-hidden />
+            <FolderSimplePlus size={15} aria-hidden />
             Add folder
           </button>
           <button type="button" className={btn} onClick={() => { setShowClone((v) => !v); setShowAdd(false); }} aria-expanded={showClone}>
-            <GitBranch size={15} strokeWidth={1.75} aria-hidden />
+            <GitBranch size={15} aria-hidden />
             Clone from GitHub
           </button>
         </>
@@ -198,7 +198,7 @@ export default function ProjectsPage({ navigate }: ModuleProps) {
                   <div className="flex gap-2">
                     <input id="add-path" value={addPath} onChange={(e) => setAddPath(e.target.value)} placeholder="C:\\Users\\you\\projects\\my-app" spellCheck={false} className={cx(field, 'min-w-0 flex-1 font-os-mono text-xs')} />
                     <button type="button" className={btn} onClick={() => void browseAndAdd()}>
-                      <FolderOpen size={15} strokeWidth={1.75} aria-hidden />
+                      <FolderOpen size={15} aria-hidden />
                       Browse
                     </button>
                   </div>
@@ -235,7 +235,7 @@ export default function ProjectsPage({ navigate }: ModuleProps) {
                         if (chosen) setCloneDest(chosen);
                       }}
                     >
-                      <FolderOpen size={15} strokeWidth={1.75} aria-hidden />
+                      <FolderOpen size={15} aria-hidden />
                       Browse
                     </button>
                   </div>
@@ -317,11 +317,11 @@ export default function ProjectsPage({ navigate }: ModuleProps) {
                           </select>
                         </label>
                         <button type="button" className={btn} disabled={building || !p.exists} onClick={() => void graphify(p)}>
-                          <Waypoints size={15} strokeWidth={1.75} aria-hidden />
+                          <Path size={15} aria-hidden />
                           {building ? 'Building graph' : p.hasGraph ? 'Rebuild graph' : 'Build graph'}
                         </button>
                         <button type="button" className={btn} disabled={!p.hasGraph} onClick={() => navigate('brain', p.id)}>
-                          <Network size={15} strokeWidth={1.75} aria-hidden />
+                          <TreeStructure size={15} aria-hidden />
                           View graph
                         </button>
                         <button type="button" className={btn} disabled={!p.exists} onClick={() => void openSession(p)}>
@@ -343,7 +343,7 @@ export default function ProjectsPage({ navigate }: ModuleProps) {
                             onClick={() => setConfirmId(p.id)}
                             className="rounded-[var(--os-radius)] p-2 text-os-muted hover:text-os-danger focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
                           >
-                            <Trash2 size={15} strokeWidth={1.75} />
+                            <Trash size={15} />
                           </button>
                         )}
                       </div>

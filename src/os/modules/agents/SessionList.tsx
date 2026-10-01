@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Columns2, Plus, Trash2 } from 'lucide-react';
+import { Columns, Plus, Trash } from '@phosphor-icons/react';
 import { cx } from '../../ui/cx';
 import { StatusDot, type Status } from '../../ui';
 import type { SessionInfo } from './api';
@@ -133,7 +133,7 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
               onClick={() => onOpenBeside(s.id)}
               className="absolute right-7 top-2 hidden rounded-[var(--os-radius-sm)] p-1 text-os-muted opacity-0 hover:text-os-cyan focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] group-hover:opacity-100 lg:block"
             >
-              <Columns2 size={14} strokeWidth={1.75} />
+              <Columns size={14} />
             </button>
           )}
         <button
@@ -142,7 +142,7 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
           onClick={() => setConfirmId(s.id)}
           className="absolute right-1.5 top-2 rounded-[var(--os-radius-sm)] p-1 text-os-muted opacity-0 hover:text-os-danger focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] group-hover:opacity-100"
         >
-          <Trash2 size={14} strokeWidth={1.75} />
+          <Trash size={14} />
         </button>
         </>
       )}
@@ -160,7 +160,7 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
             onClick={() => setCreating(true)}
             className="flex h-8 w-full items-center justify-center gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 text-sm text-os-text transition-colors hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-os-line"
           >
-            <Plus size={15} strokeWidth={1.75} aria-hidden />
+            <Plus size={15} aria-hidden />
             New session
           </button>
         ) : (
@@ -174,7 +174,7 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
                   id="new-session-project"
                   value={useOther ? '__other' : (picked?.id ?? '')}
                   onChange={(e) => setChoice(e.target.value)}
-                  className="h-8 rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+                  className="h-8 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
                 >
                   {usable.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -197,7 +197,7 @@ export function SessionList({ agent, sessions, loading, error, activeId, disable
                   placeholder="Blank uses the Zak OS folder"
                   autoFocus
                   spellCheck={false}
-                  className="h-8 rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 font-os-mono text-xs text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+                  className="h-8 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 font-os-mono text-xs text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
                 />
               </>
             )}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, ExternalLink, X } from 'lucide-react';
+import { ArrowSquareOut, Check, X } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { timeAgo } from '../../lib/projectsApi';
@@ -7,7 +7,7 @@ import { cx } from '../../ui/cx';
 import { approvalsApi, useApprovalsApi, type ApprovalItem } from './api';
 
 const btn =
-  'inline-flex h-8 items-center gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 px-3 text-sm text-os-text transition-colors ' +
+  'inline-flex h-9 items-center gap-2 rounded-full border border-os-line bg-os-surface-2 px-4 text-sm text-os-text transition-colors ' +
   'hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50';
 
 function Row({ a, busy, onApprove, onDismiss, onOpen }: { a: ApprovalItem; busy: boolean; onApprove: () => void; onDismiss: () => void; onOpen: () => void }) {
@@ -38,7 +38,7 @@ function Row({ a, busy, onApprove, onDismiss, onOpen }: { a: ApprovalItem; busy:
           </>
         )}
         <button type="button" className={btn} onClick={onOpen}>
-          <ExternalLink size={14} aria-hidden /> Open session
+          <ArrowSquareOut size={14} aria-hidden /> Open session
         </button>
       </div>
     </li>

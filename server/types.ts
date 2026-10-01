@@ -51,6 +51,8 @@ export interface GraphNode {
   tags: string[];
   val: number; // size for force-graph
   linkCount: number;
+  created?: string;
+  updated?: string;
 }
 
 export interface GraphLink {

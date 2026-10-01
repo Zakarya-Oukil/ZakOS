@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { ChevronRight, Paperclip } from 'lucide-react';
+import { CaretRight, Paperclip } from '@phosphor-icons/react';
 import { cx } from '../../ui/cx';
 import { Markdown, StatusDot } from '../../ui';
 import { Composer } from './Composer';
@@ -15,7 +15,7 @@ function ToolCard({ item }: { item: Extract<Item, { kind: 'tool' }> }) {
   return (
     <details className="group rounded-[var(--os-radius)] border border-os-line bg-os-surface">
       <summary className="flex cursor-pointer list-none items-center gap-2 rounded-[var(--os-radius)] px-3 py-2 text-sm focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] [&::-webkit-details-marker]:hidden">
-        <ChevronRight size={14} strokeWidth={1.75} className="shrink-0 text-os-muted transition-transform group-open:rotate-90" aria-hidden />
+        <CaretRight size={14} className="shrink-0 text-os-muted transition-transform group-open:rotate-90" aria-hidden />
         <span className="font-os-mono text-[13px] text-os-text">{item.name}</span>
         {summary && <span className="min-w-0 flex-1 truncate font-os-mono text-xs text-os-muted">{summary}</span>}
         <StatusDot status={state} label={stateLabel} className="ml-auto" />

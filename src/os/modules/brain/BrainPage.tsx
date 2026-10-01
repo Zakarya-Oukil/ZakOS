@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Search, ScanEye, Wrench } from 'lucide-react';
+import { ArrowLeft, Eye, MagnifyingGlass, MapTrifold, Wrench } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
 import { projectsApi, type ProjectGraph, type ProjectInfo } from '../../lib/projectsApi';
 import { usePrefersReducedMotion } from '../../theme/motion';
 import { IconButton } from '../../ui';
 import { cx } from '../../ui/cx';
-import { Galaxy, type GalaxyLink, type GalaxyNode } from './galaxy';
+import type { GalaxyLink } from './galaxy';
+import { Terrain, type HeightMode, type TerrainNode } from './terrain';
 import { NoteReader, PanelShell } from './NotePanel';
 import { BrainTools } from './BrainTools';
 
@@ -17,6 +18,7 @@ interface VaultNode {
   branch?: string;
   category?: string;
   linkCount?: number;
+  created?: string;
 }
 interface VaultGraph {
   nodes: VaultNode[];
@@ -66,10 +68,10 @@ function hslToHex(h: number, s: number, l: number): string {
 /** graphify's Obsidian export lives in each project's `Graph/` folder. Those are a project's own graph. */
 const isGraphExport = (n: VaultNode) => n.path.split('/').includes('Graph');
 
-function buildGlobal(vault: VaultGraph, projects: ProjectInfo[]): { nodes: GalaxyNode[]; links: GalaxyLink[] } {
+function buildGlobal(vault: VaultGraph, projects: ProjectInfo[]): { nodes: TerrainNode[]; links: GalaxyLink[] } {
   const notes = vault.nodes.filter((n) => !isGraphExport(n));
   const kept = new Set(notes.map((n) => n.id));
-  const nodes: GalaxyNode[] = notes.map((n) => ({
+  const nodes: TerrainNode[] = notes.map((n) => ({
     id: n.id,
     label: n.label,
     color: NOTE_TONES[hash(n.branch || n.category || 'notes') % NOTE_TONES.length],
@@ -77,6 +79,7 @@ function buildGlobal(vault: VaultGraph, projects: ProjectInfo[]): { nodes: Galax
     group: n.branch || n.category || 'notes',
     kind: 'note',
     degree: n.linkCount,
+    created: n.created ? Date.parse(n.created) || undefined : undefined,
   }));
   const links: GalaxyLink[] = vault.links.filter((l) => kept.has(l.source) && kept.has(l.target)).map((l) => ({ source: l.source, target: l.target }));
 
@@ -100,7 +103,7 @@ function buildGlobal(vault: VaultGraph, projects: ProjectInfo[]): { nodes: Galax
   return { nodes, links };
 }
 
-function buildProject(graph: ProjectGraph, project: ProjectInfo): { nodes: GalaxyNode[]; links: GalaxyLink[] } {
+function buildProject(graph: ProjectGraph, project: ProjectInfo): { nodes: TerrainNode[]; links: GalaxyLink[] } {
   return {
     nodes: graph.nodes.map((n) => ({
       id: n.id,
@@ -119,7 +122,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
   const projectId = route[0];
   const reduced = usePrefersReducedMotion();
   const host = useRef<HTMLDivElement>(null);
-  const galaxy = useRef<Galaxy | null>(null);
+  const galaxy = useRef<Terrain | null>(null);
 
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
   const [vault, setVault] = useState<VaultGraph | null>(null);
@@ -132,6 +135,10 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
   const [webglError, setWebglError] = useState(false);
   const [tools, setTools] = useState(false);
   const [openNote, setOpenNote] = useState<string | null>(null);
+  const [mode, setMode] = useState<HeightMode>('importance');
+  const [flat, setFlat] = useState(reduced);
+  const [range, setRange] = useState<{ min: number; max: number } | null>(null);
+  const [pct, setPct] = useState(100);
 
   // ---- data ----
   useEffect(() => {
@@ -179,7 +186,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
     const el = host.current;
     if (!el) return;
     try {
-      galaxy.current = new Galaxy(el, { onSelect: (id) => { setOpenNote(null); setSelectedId(id); }, onHover: setHoverId }, reduced);
+      galaxy.current = new Terrain(el, { onSelect: (id) => { setOpenNote(null); setSelectedId(id); }, onHover: setHoverId }, reduced);
     } catch {
       setWebglError(true);
       return;
@@ -191,8 +198,29 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
   }, [reduced]);
 
   useEffect(() => {
-    if (data && galaxy.current) galaxy.current.setData(data.nodes, data.links);
+    const t = galaxy.current;
+    if (!data || !t) return;
+    t.setData(data.nodes, data.links);
+    t.setMode(mode);
+    t.setFlat(flat);
+    setRange(t.timeRange());
+    setPct(100);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, reduced]);
+
+  useEffect(() => {
+    galaxy.current?.setMode(mode);
+  }, [mode]);
+
+  useEffect(() => {
+    galaxy.current?.setFlat(flat);
+  }, [flat]);
+
+  const onTime = (p: number) => {
+    setPct(p);
+    if (!range) return;
+    galaxy.current?.setTime(p >= 100 ? null : range.min + ((range.max - range.min) * p) / 100);
+  };
 
   useEffect(() => {
     galaxy.current?.select(selectedId, true);
@@ -242,7 +270,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
               onClick={() => navigate('brain')}
               className="inline-flex shrink-0 items-center gap-1.5 rounded-[var(--os-radius)] px-2 py-1 text-os-muted hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
             >
-              <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
+              <ArrowLeft size={14} aria-hidden />
               All
             </button>
             {currentProject && (
@@ -262,27 +290,46 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
             <label htmlFor="brain-search" className="sr-only">
               Search the graph
             </label>
-            <Search size={14} strokeWidth={1.75} className="pointer-events-none absolute left-2 top-2 text-os-muted" aria-hidden />
+            <MagnifyingGlass size={14} className="pointer-events-none absolute left-2 top-2 text-os-muted" aria-hidden />
             <input
               id="brain-search"
               value={query}
               onChange={(e) => onSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && submitSearch()}
               placeholder="Search"
-              className="h-7 w-48 rounded-[var(--os-radius)] border border-os-line bg-os-bg pl-7 pr-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+              className="h-7 w-48 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg pl-7 pr-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
             />
           </div>
+          <div role="group" aria-label="Terrain height" className="hidden items-center rounded-full border border-os-line bg-os-surface p-0.5 md:flex">
+            {([['importance', 'Links'], ['freshness', 'Fresh'], ['size', 'Size']] as const).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={mode === id}
+                onClick={() => setMode(id)}
+                className={cx(
+                  'h-7 rounded-full px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]',
+                  mode === id ? 'bg-os-cyan text-os-on-accent' : 'text-os-muted hover:text-os-text',
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <IconButton aria-label={flat ? 'Switch to 3D terrain' : 'Switch to flat contour map'} active={flat} onClick={() => setFlat((f) => !f)}>
+            <MapTrifold size={16} />
+          </IconButton>
           <IconButton aria-label="Brain tools: search, ask, changes, memory" active={tools} onClick={() => setTools((v) => !v)}>
-            <Wrench size={16} strokeWidth={1.75} />
+            <Wrench size={16} />
           </IconButton>
           <IconButton aria-label="Reset the view" onClick={() => galaxy.current?.resetView()}>
-            <ScanEye size={16} strokeWidth={1.75} />
+            <Eye size={16} />
           </IconButton>
         </>
       }
     >
       <div className="relative h-full overflow-hidden bg-os-bg">
-        <div ref={host} className="absolute inset-0" aria-label="Interactive 3D graph" role="img" />
+        <div ref={host} className="absolute inset-0" aria-label="Interactive knowledge terrain" role="img" />
 
         {loading && (
           <p role="status" className="absolute left-4 top-4 text-sm text-os-muted">
@@ -291,7 +338,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
         )}
         {webglError && (
           <p role="alert" className="absolute left-4 top-4 max-w-sm text-sm text-os-danger">
-            This browser cannot run WebGL, so the 3D view is unavailable.
+            This browser cannot run WebGL, so the terrain view is unavailable.
           </p>
         )}
         {error && (
@@ -342,6 +389,26 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
           </p>
         )}
 
+        {!projectId && range && (
+          <div className="absolute bottom-4 left-1/2 z-[5] flex w-[min(520px,60%)] -translate-x-1/2 items-center gap-3 rounded-full border border-os-line bg-os-surface px-4 py-2 backdrop-blur-md">
+            <label htmlFor="terrain-time" className="shrink-0 text-xs font-medium text-os-muted">
+              Grown to
+            </label>
+            <input
+              id="terrain-time"
+              type="range"
+              min={0}
+              max={100}
+              value={pct}
+              onChange={(e) => onTime(Number(e.target.value))}
+              className="h-1 min-w-0 flex-1 cursor-pointer accent-[var(--os-cyan)]"
+            />
+            <output htmlFor="terrain-time" className="w-24 shrink-0 text-right font-os-mono text-xs text-os-text">
+              {new Date(range.min + ((range.max - range.min) * pct) / 100).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+            </output>
+          </div>
+        )}
+
         {tools && <BrainTools projectId={projectId} onOpenNote={showNote} onClose={() => setTools(false)} />}
 
         {/* A note opened from search, ask or the graph. */}
@@ -373,7 +440,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
   );
 }
 
-function ProjectCard({ node, project, onOpen, onClose }: { node: GalaxyNode; project?: ProjectInfo; onOpen: (id: string) => void; onClose: () => void }) {
+function ProjectCard({ node, project, onOpen, onClose }: { node: TerrainNode; project?: ProjectInfo; onOpen: (id: string) => void; onClose: () => void }) {
   return (
     <PanelShell title={node.label} subtitle="Project" onClose={onClose}>
       <div className="grid gap-4 text-sm">

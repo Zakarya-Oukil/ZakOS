@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FolderOpen, Plus, X } from 'lucide-react';
+import { FolderOpen, Plus, X } from '@phosphor-icons/react';
 import { PageFrame } from '../shell/PageFrame';
 import { cx } from '../ui/cx';
 import { projectsApi, type ProjectInfo } from '../lib/projectsApi';
@@ -29,9 +29,9 @@ const api = {
 };
 
 const select =
-  'hidden h-7 max-w-[12rem] rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-xs text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] md:block';
+  'hidden h-7 max-w-[12rem] rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-xs text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] md:block';
 const iconBtn =
-  'inline-flex h-7 w-7 items-center justify-center rounded-[var(--os-radius)] text-os-muted transition-colors hover:bg-os-surface-2 hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
+  'inline-flex h-7 w-7 items-center justify-center rounded-full text-os-muted transition-colors hover:bg-os-surface-2 hover:text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
 export default function TerminalPage() {
   const [terms, setTerms] = useState<Term[] | null>(null);
@@ -173,7 +173,7 @@ export default function TerminalPage() {
                   </button>
                 )}
                 <button type="button" aria-label={`Close ${t.title}`} onClick={() => void close(t.id)} className={cx(iconBtn, 'h-6 w-6')}>
-                  <X size={13} strokeWidth={1.75} aria-hidden />
+                  <X size={13} aria-hidden />
                 </button>
               </div>
             );
@@ -194,10 +194,10 @@ export default function TerminalPage() {
             ))}
           </select>
           <button type="button" className={iconBtn} aria-label="New terminal" title="New terminal" onClick={() => void open(startPath)}>
-            <Plus size={16} strokeWidth={1.75} aria-hidden />
+            <Plus size={16} aria-hidden />
           </button>
           <button type="button" className={iconBtn} aria-label="New terminal in another folder" title="Choose a folder" onClick={() => void chooseFolder()}>
-            <FolderOpen size={16} strokeWidth={1.75} aria-hidden />
+            <FolderOpen size={16} aria-hidden />
           </button>
         </>
       }

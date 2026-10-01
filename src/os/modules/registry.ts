@@ -62,7 +62,7 @@ export const MODULES: OsModule[] = [
     icon: Brain,
     group: 'knowledge',
     component: lazy(() => import('./brain/BrainPage')),
-    description: '3D galaxy of the Obsidian vault, with each project as its own star.',
+    description: 'Terrain map of the Obsidian vault: notes are peaks, projects are summits with flags.',
   },
   {
     id: 'workflows',

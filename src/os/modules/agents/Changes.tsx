@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, RefreshCw, Undo2 } from 'lucide-react';
+import { ArrowUUpLeft, ArrowsClockwise, CaretDown, CaretRight } from '@phosphor-icons/react';
 import { Panel } from '../../ui';
 import { cx } from '../../ui/cx';
 import { agentsApi, type ActionInfo, type FileChange, type SessionInfo } from './api';
@@ -64,7 +64,7 @@ function FileRow({ session, refId, change, running, onReverted }: { session: Ses
     <li>
       <div className="flex items-center gap-1.5 px-3 py-1.5">
         <button type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)} className="flex min-w-0 flex-1 items-center gap-1.5 text-left focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]">
-          {open ? <ChevronDown size={13} aria-hidden className="shrink-0 text-os-muted" /> : <ChevronRight size={13} aria-hidden className="shrink-0 text-os-muted" />}
+          {open ? <CaretDown size={13} aria-hidden className="shrink-0 text-os-muted" /> : <CaretRight size={13} aria-hidden className="shrink-0 text-os-muted" />}
           <span className={cx('w-3 shrink-0 font-os-mono text-xs', label.tone)} title={label.hint} aria-label={label.hint}>
             {label.text}
           </span>
@@ -81,7 +81,7 @@ function FileRow({ session, refId, change, running, onReverted }: { session: Ses
           </span>
         ) : (
           <button type="button" className={cx(small, 'shrink-0')} disabled={running} title={running ? 'Stop the run first' : `Revert ${change.file}`} aria-label={`Revert ${change.file}`} onClick={() => setConfirm(true)}>
-            <Undo2 size={13} aria-hidden />
+            <ArrowUUpLeft size={13} aria-hidden />
           </button>
         )}
       </div>
@@ -140,7 +140,7 @@ export function Changes({ session, actions, running }: { session: SessionInfo; a
               id="changes-base"
               value={refId}
               onChange={(e) => setRefId(e.target.value)}
-              className="h-7 min-w-0 flex-1 rounded-[var(--os-radius)] border border-os-line bg-os-bg px-1.5 text-xs text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
+              className="h-7 min-w-0 flex-1 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-1.5 text-xs text-os-text focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
             >
               {checkpoints.map((c, i) => (
                 <option key={c.id} value={c.checkpoint_ref!}>
@@ -149,7 +149,7 @@ export function Changes({ session, actions, running }: { session: SessionInfo; a
               ))}
             </select>
             <button type="button" className={small} aria-label="Refresh changes" onClick={load}>
-              <RefreshCw size={13} aria-hidden />
+              <ArrowsClockwise size={13} aria-hidden />
             </button>
           </div>
           {error && <p className="px-3 pb-2 text-xs text-os-danger" role="alert">{error}</p>}

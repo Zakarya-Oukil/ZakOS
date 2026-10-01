@@ -132,3 +132,29 @@
 
 /* Thin scrollbars that match the theme. */
 * { scrollbar-width: thin; scrollbar-color: var(--os-contour) transparent; }
+
+/* Form controls the pages do not style themselves still carry the palette. :where keeps the
+   specificity at zero so any utility class on a control wins. */
+:where(input[type='checkbox'], input[type='radio'], input[type='range'], progress) {
+  accent-color: var(--os-cyan);
+}
+:where(select) {
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--os-line);
+  border-radius: var(--os-input-radius);
+  background-color: var(--os-bg);
+  color: var(--os-text);
+  font-family: var(--os-font-sans);
+}
+:where(select, input, textarea):where(:focus-visible) {
+  outline: none;
+  box-shadow: var(--os-focus-ring);
+}
+:where(input, textarea)::placeholder {
+  color: var(--os-muted);
+  opacity: 0.8;
+}
+:where(input[type='text'], input[type='search'], input[type='number'], input[type='url'], input[type='password'], textarea) {
+  caret-color: var(--os-cyan);
+}

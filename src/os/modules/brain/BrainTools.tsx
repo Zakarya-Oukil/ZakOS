@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { X } from '@phosphor-icons/react';
 import { IconButton, Markdown, Tabs } from '../../ui';
 import { cx } from '../../ui/cx';
 import { timeAgo } from '../../lib/projectsApi';
@@ -8,10 +8,10 @@ import { brainApi, type Answer, type GraphDiff, type SearchHit, type Snapshot } 
 type ToolTab = 'search' | 'ask' | 'changes' | 'memory';
 
 const btn =
-  'inline-flex h-8 items-center gap-2 rounded-[var(--os-radius)] border border-os-line bg-os-surface-2 px-3 text-sm text-os-text transition-colors ' +
+  'inline-flex h-9 items-center gap-2 rounded-full border border-os-line bg-os-surface-2 px-4 text-sm text-os-text transition-colors ' +
   'hover:border-os-cyan focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50';
 const field =
-  'rounded-[var(--os-radius)] border border-os-line bg-os-bg px-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
+  'rounded-[var(--os-input-radius)] border border-os-line bg-os-bg px-3 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
 interface Props {
   projectId?: string;
@@ -274,7 +274,7 @@ export function BrainTools({ projectId, onOpenNote, onClose }: Props) {
       <div className="flex min-h-12 items-center justify-between gap-3 border-b border-os-line px-3">
         <Tabs aria-label="Brain tools" tabs={tabs} value={tab} onChange={(id) => setTab(id as ToolTab)} />
         <IconButton aria-label="Close tools" onClick={onClose}>
-          <X size={16} strokeWidth={1.75} />
+          <X size={16} />
         </IconButton>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
