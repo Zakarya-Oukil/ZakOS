@@ -1,3 +1,4 @@
+import { OwnerAvatar } from './OwnerAvatar';
 import { useState, type FormEvent } from 'react';
 import { LockSimple } from '@phosphor-icons/react';
 import { PageFrame } from './PageFrame';
@@ -64,6 +65,7 @@ export function SignIn() {
     <div className="grid min-h-[100dvh] place-items-center p-6">
       <Panel className="w-full max-w-sm" title="Sign in to Zak OS">
         <form onSubmit={submit} className="grid gap-4">
+          <OwnerAvatar size={56} />
           <Field label="Name" htmlFor="si-name">
             <input id="si-name" autoFocus autoComplete="username" value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
           </Field>

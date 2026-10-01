@@ -1,3 +1,4 @@
+import { OwnerAvatar } from '../../shell/OwnerAvatar';
 import { useState, type FormEvent } from 'react';
 import { Trash } from '@phosphor-icons/react';
 import type { ModuleProps } from '../registry';
@@ -114,7 +115,7 @@ export default function TeamPage(_props: ModuleProps) {
   const accountEvents = activity.data?.entries.filter((e) => e.kind.startsWith('auth-') || e.actor !== 'owner').slice(0, 15) ?? [];
 
   return (
-    <PageFrame title="Team" actions={auth.user && <Button size="sm" variant="ghost" onClick={signOut}>Sign out {auth.user.name}</Button>}>
+    <PageFrame title="Team" actions={auth.user && <><OwnerAvatar name={auth.user.name} size={32} /><Button size="sm" variant="ghost" onClick={signOut}>Sign out {auth.user.name}</Button></>}>
       <div className="h-full overflow-y-auto p-5">
         <div className="mx-auto grid max-w-[1000px] gap-5">
           {error && <ErrorNote>{error}</ErrorNote>}

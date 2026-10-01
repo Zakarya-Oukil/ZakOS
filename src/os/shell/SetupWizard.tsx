@@ -1,3 +1,4 @@
+import { OwnerAvatar } from './OwnerAvatar';
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, CheckCircle, WarningCircle } from '@phosphor-icons/react';
@@ -96,6 +97,7 @@ export function SetupWizard({ theme, onTheme, onDone }: { theme: Theme; onTheme:
 
         {step === 0 && (
           <motion.div variants={container} initial="hidden" animate="show" className="grid gap-6">
+            <OwnerAvatar size={64} />
             <h1 className="font-os-sans text-[56px] font-extrabold leading-[1.02] tracking-[-0.03em] text-os-text">
               {['Your', 'map', 'room', 'for', 'working', 'with', 'agents.'].map((w) => (
                 <motion.span key={w} variants={word} className="mr-[0.25em] inline-block">

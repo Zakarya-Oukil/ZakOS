@@ -1,3 +1,4 @@
+import { OwnerAvatar } from '../../shell/OwnerAvatar';
 import { useState, type FormEvent } from 'react';
 import type { ModuleProps } from '../registry';
 import { PageFrame } from '../../shell/PageFrame';
@@ -73,9 +74,12 @@ export default function LicencePage(_props: ModuleProps) {
           <Panel title="Your plan">
             <p className="font-os-sans text-[34px] font-extrabold leading-none tracking-tight text-os-text">{info ? PLAN_LABEL[info.plan] : '...'}</p>
             {info?.licensee && (
-              <p className="mt-2 text-sm text-os-muted">
+              <p className="mt-3 flex items-center gap-3 text-sm text-os-muted">
+                <OwnerAvatar name={info.licensee} size={44} />
+                <span>
                 Licensed to {info.licensee}
                 {info.expires ? `, valid until ${new Date(info.expires).toLocaleDateString()}` : ', no expiry'}.
+                </span>
               </p>
             )}
             {info?.reason && <p className="mt-2 text-sm text-os-danger">The saved key is no longer valid: {info.reason}</p>}

@@ -4,6 +4,7 @@ import { useAgentsConnection } from '../lib/agentsSocket';
 import { PageFrame } from '../shell/PageFrame';
 import { Button, ErrorNote, Panel, Segmented, StatusDot, SuccessNote, Tabs } from '../ui';
 import { ACCENTS, useAppearance, type Appearance } from '../theme/appearance';
+import { WorldCards } from '../worlds/WorldSwitcher';
 import { useTheme } from '../theme/useTheme';
 import { ACTIONS, bindingFor, comboFromEvent, prettyCombo, setShortcut, useShortcutBindings } from '../lib/shortcuts';
 import { api } from '../lib/api';
@@ -151,6 +152,10 @@ function AppearanceStudio() {
   const { theme, toggle } = useTheme();
   return (
     <div className="grid gap-5">
+      <Panel title="World">
+        <p className="mb-3 max-w-[68ch] text-sm text-os-muted">A world changes the whole look and navigation. Every page, feature and piece of data stays the same. The accent colour below belongs to Atlas; the other worlds carry their own palette.</p>
+        <WorldCards />
+      </Panel>
       <Panel title="Theme and colour">
         <div className="grid gap-5">
           <div className="grid gap-2">
