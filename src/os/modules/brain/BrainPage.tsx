@@ -8,7 +8,7 @@ import { IconButton } from '../../ui';
 import { cx } from '../../ui/cx';
 import type { GalaxyLink } from './galaxy';
 import { useHome } from '../home/api';
-import { Terrain, type HeightMode, type TerrainNode } from './terrain';
+import { Neural, type HeightMode, type NeuralNode } from './neural';
 import { NoteReader, PanelShell } from './NotePanel';
 import { BrainTools } from './BrainTools';
 
@@ -69,10 +69,10 @@ function hslToHex(h: number, s: number, l: number): string {
 /** graphify's Obsidian export lives in each project's `Graph/` folder. Those are a project's own graph. */
 const isGraphExport = (n: VaultNode) => n.path.split('/').includes('Graph');
 
-function buildGlobal(vault: VaultGraph, projects: ProjectInfo[]): { nodes: TerrainNode[]; links: GalaxyLink[] } {
+function buildGlobal(vault: VaultGraph, projects: ProjectInfo[]): { nodes: NeuralNode[]; links: GalaxyLink[] } {
   const notes = vault.nodes.filter((n) => !isGraphExport(n));
   const kept = new Set(notes.map((n) => n.id));
-  const nodes: TerrainNode[] = notes.map((n) => ({
+  const nodes: NeuralNode[] = notes.map((n) => ({
     id: n.id,
     label: n.label,
     color: NOTE_TONES[hash(n.branch || n.category || 'notes') % NOTE_TONES.length],
@@ -104,7 +104,7 @@ function buildGlobal(vault: VaultGraph, projects: ProjectInfo[]): { nodes: Terra
   return { nodes, links };
 }
 
-function buildProject(graph: ProjectGraph, project: ProjectInfo): { nodes: TerrainNode[]; links: GalaxyLink[] } {
+function buildProject(graph: ProjectGraph, project: ProjectInfo): { nodes: NeuralNode[]; links: GalaxyLink[] } {
   return {
     nodes: graph.nodes.map((n) => ({
       id: n.id,
@@ -123,7 +123,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
   const projectId = route[0];
   const reduced = usePrefersReducedMotion();
   const host = useRef<HTMLDivElement>(null);
-  const galaxy = useRef<Terrain | null>(null);
+  const galaxy = useRef<Neural | null>(null);
 
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
   const [vault, setVault] = useState<VaultGraph | null>(null);
@@ -188,7 +188,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
     const el = host.current;
     if (!el) return;
     try {
-      galaxy.current = new Terrain(el, { onSelect: (id) => { setOpenNote(null); setSelectedId(id); }, onHover: setHoverId }, reduced);
+      galaxy.current = new Neural(el, { onSelect: (id) => { setOpenNote(null); setSelectedId(id); }, onHover: setHoverId }, reduced);
     } catch {
       setWebglError(true);
       return;
@@ -214,7 +214,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
     galaxy.current?.setMode(mode);
   }, [mode]);
 
-  // Live activity: a project with a running agent pulses on the terrain.
+  // Live activity: a project with a running agent pulses in the galaxy.
   useEffect(() => {
     if (!home || projectId) return;
     const norm = (p: string) => p.split('\\').join('/').toLowerCase().replace(/\/$/, '');
@@ -310,7 +310,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
               className="h-7 w-48 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg pl-7 pr-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
             />
           </div>
-          <div role="group" aria-label="Terrain height" className="hidden items-center rounded-full border border-os-line bg-os-surface p-1 md:flex">
+          <div role="group" aria-label="Size cells by" className="hidden items-center rounded-full border border-os-line bg-os-surface p-1 md:flex">
             {([['importance', 'Links'], ['freshness', 'Fresh'], ['size', 'Size']] as const).map(([id, label]) => (
               <button
                 key={id}
@@ -326,7 +326,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
               </button>
             ))}
           </div>
-          <IconButton aria-label={flat ? 'Switch to 3D terrain' : 'Switch to flat contour map'} active={flat} onClick={() => setFlat((f) => !f)}>
+          <IconButton aria-label={flat ? 'Switch to the 3D galaxy' : 'Switch to the flat view'} active={flat} onClick={() => setFlat((f) => !f)}>
             <MapTrifold size={16} />
           </IconButton>
           <IconButton aria-label="Brain tools: search, ask, changes, memory" active={tools} onClick={() => setTools((v) => !v)}>
@@ -339,7 +339,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
       }
     >
       <div className="relative h-full overflow-hidden bg-os-bg">
-        <div ref={host} className="absolute inset-0" aria-label="Interactive knowledge terrain" role="img" />
+        <div ref={host} className="absolute inset-0" aria-label="Interactive knowledge galaxy of neurons" role="img" />
 
         {loading && (
           <p role="status" className="absolute left-4 top-4 text-sm text-os-muted">
@@ -348,7 +348,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
         )}
         {webglError && (
           <p role="alert" className="absolute left-4 top-4 max-w-sm text-sm text-os-danger">
-            This browser cannot run WebGL, so the terrain view is unavailable.
+            This browser cannot run WebGL, so the galaxy view is unavailable.
           </p>
         )}
         {error && (
@@ -406,11 +406,11 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
               openNote || selected ? 'left-[calc(50%-190px)] -translate-x-1/2' : 'left-1/2 -translate-x-1/2',
             )}
           >
-            <label htmlFor="terrain-time" className="shrink-0 text-xs font-medium text-os-muted">
+            <label htmlFor="brain-time" className="shrink-0 text-xs font-medium text-os-muted">
               Grown to
             </label>
             <input
-              id="terrain-time"
+              id="brain-time"
               type="range"
               min={0}
               max={100}
@@ -418,7 +418,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
               onChange={(e) => onTime(Number(e.target.value))}
               className="h-1 min-w-0 flex-1 cursor-pointer accent-[var(--os-cyan)]"
             />
-            <output htmlFor="terrain-time" className="w-24 shrink-0 text-right font-os-mono text-xs text-os-text">
+            <output htmlFor="brain-time" className="w-24 shrink-0 text-right font-os-mono text-xs text-os-text">
               {new Date(range.min + ((range.max - range.min) * pct) / 100).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
             </output>
           </div>
@@ -455,7 +455,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
   );
 }
 
-function ProjectCard({ node, project, onOpen, onClose }: { node: TerrainNode; project?: ProjectInfo; onOpen: (id: string) => void; onClose: () => void }) {
+function ProjectCard({ node, project, onOpen, onClose }: { node: NeuralNode; project?: ProjectInfo; onOpen: (id: string) => void; onClose: () => void }) {
   return (
     <PanelShell title={node.label} subtitle="Project" onClose={onClose}>
       <div className="grid gap-4 text-sm">

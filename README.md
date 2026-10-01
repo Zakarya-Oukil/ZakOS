@@ -2,7 +2,9 @@
 
 A local agentic OS. It runs real coding agents (Claude Code, Hermes, Antigravity) on your machine, keeps every session, asks before anything risky, and turns your notes into a map. No API keys are stored: it drives the command line tools you are already signed in to.
 
-The interface is called **Atlas**: a map room with contour-line backgrounds, a dark and a light theme, and a terrain view of your Obsidian vault. Design rules are in [DESIGN.md](DESIGN.md).
+The default interface is called **Atlas**: a map room with contour-line backgrounds and a dark and a light theme. **Worlds** re-skin the whole app without changing any feature: pick one in Settings or from the switcher. **Cybersec** is a dense investigation desk in the portfolio identity. The Brain draws your Obsidian vault as a galaxy of neurons: notes are cells, links are axons carrying light, projects with a running agent pulse. Design rules are in [DESIGN.md](DESIGN.md).
+
+CyberLab tools run against public sources only unless a tool is marked active, and every run is written to the audit log with a hash of its output. Third-party sources receive the target you enter (each tool says which). Drop-in tools go in `data/cyberlab-tools/<id>/manifest.json`; they run as you with no shell, a timeout and a minimal environment, but without an operating system sandbox, so read a script before you run it.
 
 ## What is inside
 
@@ -12,6 +14,7 @@ The interface is called **Atlas**: a map room with contour-line backgrounds, a d
 | Agents | Agents (voice in and out, fork, compare answers, ask several at once, search every conversation, per-session model and permissions, session templates, cost meter, tool timeline), Workflows (route map, dry run, cost estimate, auto-stop, flows with conditions and retries, run comparison), Approvals (risk labels, batch, always-allow rules), Automations (cron, commit, file, webhook and chain triggers, quiet hours, calendar) |
 | Knowledge | Brain (terrain map, live activity, orphan and link finder, timeline, agent memory, quick capture with Alt+N), Skills (import after review, try on a sample, usage, export), Templates |
 | Build | Git (stash, merge with conflict helper, cherry-pick, pull requests, commit messages written from the staged diff), Dev (several apps and a port map, environment profiles, log filter, deploy recipe), Files, Terminal (split panes, record and replay, saved commands, ask for a command) |
+| Security | **CyberLab**: 14 real OSINT tools (DNS, SPF/DMARC, RDAP, certificate transparency, Wayback, IP/ASN and exposed ports, email, username, GitHub, file metadata, security headers, plus Shodan, VirusTotal and HIBP with your own keys), cases with scope and evidence, a link graph, timeline and Markdown/PDF report, a catalogue of 589 tools from awesome-osint, drop-in tool folders, and a study tracker for BTL1 and Security+ |
 | Connections | Integrations (GitHub, Telegram, Discord, Slack), MCP servers (with usage log), Webhooks and API key, Remote access |
 | System | Usage and cost, Audit (export, archive, saved filters, alert rules), Team, Licence, Settings |
 
