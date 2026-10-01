@@ -21,8 +21,8 @@ export function pulse(el: HTMLElement | null): gsap.core.Timeline | null {
   const tl = gsap.timeline({ repeat: -1, yoyo: true });
   tl.fromTo(
     el,
-    { boxShadow: '0 0 0 0 rgba(95,227,240,0)' },
-    { boxShadow: '0 0 14px 2px rgba(95,227,240,0.45)', duration: 1.1, ease: 'sine.inOut' },
+    { boxShadow: '0 0 0 0 rgba(255,106,61,0)' },
+    { boxShadow: '0 0 14px 2px rgba(255,106,61,0.45)', duration: 1.1, ease: 'sine.inOut' },
   );
   return tl;
 }

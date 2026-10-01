@@ -24,7 +24,7 @@ export function DiffView({ text }: { text: string }) {
           key={i}
           className={cx(
             'block whitespace-pre',
-            l.startsWith('+') && !l.startsWith('+++') && 'bg-[rgba(95,227,240,0.08)] text-os-cyan',
+            l.startsWith('+') && !l.startsWith('+++') && 'bg-[rgba(var(--os-cyan-rgb),0.1)] text-os-cyan',
             l.startsWith('-') && !l.startsWith('---') && 'bg-[rgba(255,107,107,0.08)] text-os-danger',
             l.startsWith('@@') && 'text-os-muted',
           )}

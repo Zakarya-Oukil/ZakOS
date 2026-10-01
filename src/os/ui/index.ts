@@ -3,6 +3,7 @@ export { StatusDot } from './StatusDot';
 export type { Status } from './StatusDot';
 export { Kbd } from './Kbd';
 export { IconButton } from './IconButton';
+export { Button } from './Button';
 export { Tabs } from './Tabs';
 export type { TabItem } from './Tabs';
 export { CommandPalette } from './CommandPalette';

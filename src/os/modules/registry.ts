@@ -1,10 +1,22 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import { Bot, Brain, FolderGit2, GitBranch, GitCommitHorizontal, House, Rocket, Sparkles, Timer, ScrollText, ShieldCheck, Settings, SquareTerminal, type LucideIcon } from 'lucide-react';
+import { Brain, FolderSimple, GearSix, GitBranch, GitCommit, House, Robot, Rocket, Scroll, ShieldCheck, Sparkle, TerminalWindow, Timer, type Icon } from '@phosphor-icons/react';
+
+export type ModuleGroup = 'workspace' | 'agents' | 'knowledge' | 'build' | 'system';
+
+export const GROUPS: { id: ModuleGroup; label: string }[] = [
+  { id: 'workspace', label: 'Workspace' },
+  { id: 'agents', label: 'Agents' },
+  { id: 'knowledge', label: 'Knowledge' },
+  { id: 'build', label: 'Build' },
+  { id: 'system', label: 'System' },
+];
 
 export interface OsModule {
   id: string;
   label: string;
-  icon: LucideIcon;
+  icon: Icon;
+  /** Sidebar section the module sits under. */
+  group: ModuleGroup;
   component: LazyExoticComponent<ComponentType<ModuleProps>>;
   /** Cannot be switched off (the shell needs somewhere to land). */
   required?: boolean;
@@ -22,6 +34,7 @@ export const MODULES: OsModule[] = [
     id: 'home',
     label: 'Home',
     icon: House,
+    group: 'workspace',
     required: true,
     component: lazy(() => import('./home/HomePage')),
     description: 'What needs you, what is running, usage by provider, schedules and a quick start.',
@@ -29,7 +42,8 @@ export const MODULES: OsModule[] = [
   {
     id: 'agents',
     label: 'Agents',
-    icon: Bot,
+    icon: Robot,
+    group: 'agents',
     required: true,
     component: lazy(() => import('./agents/AgentsPage')),
     description: 'Real Claude Code, Hermes and Antigravity sessions you can resume, stop and delete.',
@@ -37,7 +51,8 @@ export const MODULES: OsModule[] = [
   {
     id: 'projects',
     label: 'Projects',
-    icon: FolderGit2,
+    icon: FolderSimple,
+    group: 'workspace',
     component: lazy(() => import('./projects/ProjectsPage')),
     description: 'Add folders or clone from GitHub, and build a graph for each project.',
   },
@@ -45,6 +60,7 @@ export const MODULES: OsModule[] = [
     id: 'brain',
     label: 'Brain',
     icon: Brain,
+    group: 'knowledge',
     component: lazy(() => import('./brain/BrainPage')),
     description: '3D galaxy of the Obsidian vault, with each project as its own star.',
   },
@@ -52,6 +68,7 @@ export const MODULES: OsModule[] = [
     id: 'workflows',
     label: 'Workflows',
     icon: GitBranch,
+    group: 'agents',
     component: lazy(() => import('./workflows/WorkflowsPage')),
     description: 'Orchestrator, sub-agents and reviewer working on a task.',
   },
@@ -59,13 +76,15 @@ export const MODULES: OsModule[] = [
     id: 'approvals',
     label: 'Approvals',
     icon: ShieldCheck,
+    group: 'agents',
     component: lazy(() => import('./approvals/ApprovalsPage')),
     description: 'Actions agents were refused permission for, waiting for your yes or no.',
   },
   {
     id: 'audit',
     label: 'Audit',
-    icon: ScrollText,
+    icon: Scroll,
+    group: 'system',
     component: lazy(() => import('./audit/AuditPage')),
     description: 'Searchable history of every prompt, tool call, error and run decision.',
   },
@@ -73,20 +92,23 @@ export const MODULES: OsModule[] = [
     id: 'automations',
     label: 'Automations',
     icon: Timer,
+    group: 'agents',
     component: lazy(() => import('./automations/AutomationsPage')),
     description: 'Run saved workflows on a schedule or when a commit lands, with history and Run now.',
   },
   {
     id: 'skills',
     label: 'Skills',
-    icon: Sparkles,
+    icon: Sparkle,
+    group: 'knowledge',
     component: lazy(() => import('./skills/SkillsPage')),
     description: 'Create, edit and switch on or off the skills your Claude agents can use.',
   },
   {
     id: 'git',
     label: 'Git',
-    icon: GitCommitHorizontal,
+    icon: GitCommit,
+    group: 'build',
     component: lazy(() => import('./git/GitPage')),
     description: 'Status, stage, commit, history and branches for each project.',
   },
@@ -94,20 +116,23 @@ export const MODULES: OsModule[] = [
     id: 'dev',
     label: 'Dev',
     icon: Rocket,
+    group: 'build',
     component: lazy(() => import('./dev/DevPage')),
     description: 'Run a project and preview it here, and check its health.',
   },
   {
     id: 'terminal',
     label: 'Terminal',
-    icon: SquareTerminal,
+    icon: TerminalWindow,
+    group: 'build',
     component: lazy(() => import('./TerminalPage')),
     description: 'Project shell.',
   },
   {
     id: 'settings',
     label: 'Settings',
-    icon: Settings,
+    icon: GearSix,
+    group: 'system',
     required: true,
     component: lazy(() => import('./SettingsPage')),
     description: 'Modules, agent status and workspace.',

@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell } from '@phosphor-icons/react';
 import { cx } from '../ui/cx';
 import { useNotifications } from '../lib/notifications';
 import { timeAgo } from '../lib/projectsApi';
 
 const linkBase =
-  'group flex h-9 w-full items-center gap-3 rounded-[var(--os-radius)] px-2.5 text-sm transition-colors ' +
+  'group flex h-9 w-full items-center gap-3 rounded-full px-3 text-sm transition-colors ' +
   'focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]';
 
 export function NotificationsMenu({ collapsed }: { collapsed: boolean }) {
@@ -34,21 +34,21 @@ export function NotificationsMenu({ collapsed }: { collapsed: boolean }) {
         aria-expanded={open}
         aria-haspopup="dialog"
         onClick={() => setOpen((o) => !o)}
-        className={cx(linkBase, 'text-os-muted hover:bg-os-surface-2 hover:text-os-text', collapsed ? 'justify-center px-0' : 'justify-center px-0 md:justify-start md:px-2.5')}
+        className={cx(linkBase, 'text-os-muted hover:bg-os-surface-2 hover:text-os-text', collapsed ? 'justify-center px-0' : 'justify-start')}
       >
         <span className="relative">
-          <Bell size={17} strokeWidth={1.75} aria-hidden />
+          <Bell size={19} weight="duotone" aria-hidden />
           {unread > 0 && <span className="absolute -right-1.5 -top-1.5 h-2 w-2 rounded-full bg-os-amber" aria-hidden />}
         </span>
-        {!collapsed && <span className="hidden truncate md:inline">Notifications{unread ? ` (${unread})` : ''}</span>}
-        <span className={collapsed ? 'sr-only' : 'sr-only md:hidden'}>Notifications{unread ? `, ${unread} unread` : ''}</span>
+        {!collapsed && <span className="truncate">Notifications{unread ? ` (${unread})` : ''}</span>}
+        <span className={collapsed ? 'sr-only' : 'sr-only hidden'}>Notifications{unread ? `, ${unread} unread` : ''}</span>
       </button>
 
       {open && (
         <div
           role="dialog"
           aria-label="Notifications"
-          className="absolute bottom-0 left-full z-40 ml-2 w-80 rounded-[var(--os-radius)] border border-os-line bg-os-surface shadow-[var(--os-shadow-panel)]"
+          className="absolute bottom-0 left-full z-40 ml-2 w-80 rounded-[var(--os-radius-lg)] border border-os-line bg-os-bg shadow-[var(--os-shadow-panel)]"
         >
           <div className="flex items-center justify-between border-b border-os-line px-3 py-2">
             <span className="text-sm font-medium text-os-text">Notifications</span>

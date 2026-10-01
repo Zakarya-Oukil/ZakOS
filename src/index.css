@@ -5,12 +5,12 @@
 
 @layer base {
   * {
-    border-color: rgba(0, 240, 255, 0.15);
+    border-color: var(--os-line, rgba(0, 240, 255, 0.15));
   }
 
   body {
-    background-color: #05070D;
-    color: #E2E8F0;
+    background-color: var(--os-bg, #05070D);
+    color: var(--os-text, #E2E8F0);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 

@@ -6,6 +6,8 @@ import { useHashRoute } from './lib/router';
 import { useModuleState } from './lib/useModuleState';
 import { MODULES, findModule } from './modules/registry';
 import { Sidebar } from './shell/Sidebar';
+import { Topography } from './shell/Topography';
+import { useTheme } from './theme/useTheme';
 import { bootSequence } from './theme/gsap';
 import { pageVariants, reducedPageVariants, usePrefersReducedMotion } from './theme/motion';
 import { CommandPalette, type Command } from './ui';
@@ -35,6 +37,7 @@ export function Shell() {
   const modules = useModuleState();
   const connected = useAgentsConnection();
   const reduced = usePrefersReducedMotion();
+  const { theme, toggle: toggleTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -68,11 +71,12 @@ export function Shell() {
   const commands: Command[] = useMemo(
     () => [
       ...visible.map((m) => ({ id: `go-${m.id}`, label: `Go to ${m.label}`, hint: m.description, run: () => navigate(m.id) })),
+      { id: 'toggle-theme', label: theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme', run: toggleTheme },
       { id: 'toggle-sidebar', label: collapsed ? 'Expand sidebar' : 'Collapse sidebar', run: toggleSidebar },
       { id: 'legacy', label: 'Open legacy UI', run: () => navigate('legacy') },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [visible, collapsed, navigate],
+    [visible, collapsed, navigate, theme],
   );
 
   if (isLegacy) {
@@ -95,9 +99,18 @@ export function Shell() {
 
   return (
     <ModuleContext.Provider value={modules}>
-      <div ref={rootRef} className="flex h-[100dvh] w-full bg-os-bg font-os-sans text-os-text">
-        <Sidebar modules={visible} activeId={active?.id} collapsed={collapsed} onToggle={toggleSidebar} connected={connected} />
-        <main className="min-w-0 flex-1">
+      <div ref={rootRef} className="relative flex h-[100dvh] w-full font-os-sans text-os-text">
+        <Topography className="pointer-events-none fixed inset-0 h-full w-full" />
+        <Sidebar
+          modules={visible}
+          activeId={active?.id}
+          collapsed={collapsed}
+          onToggle={toggleSidebar}
+          connected={connected}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
+        <main className="relative min-w-0 flex-1">
           {Page && (
             <motion.div
               key={active.id}

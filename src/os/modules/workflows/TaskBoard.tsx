@@ -33,7 +33,7 @@ function TaskCard({ task, selected, onSelect }: { task: WorkflowTask; selected: 
       className={cx(
         'relative block w-full min-w-0 overflow-hidden rounded-[var(--os-radius)] border bg-os-surface-2 px-3 py-2.5 text-left transition-colors',
         'focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]',
-        selected ? 'border-os-cyan' : task.state === 'running' ? 'border-[rgba(95,227,240,0.35)]' : 'border-os-line hover:border-os-muted',
+        selected ? 'border-os-cyan' : task.state === 'running' ? 'border-[rgba(var(--os-cyan-rgb),0.4)]' : 'border-os-line hover:border-os-muted',
       )}
     >
       <span className="flex items-start gap-2.5">

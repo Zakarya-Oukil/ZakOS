@@ -65,6 +65,9 @@ export default {
           text: 'var(--os-text)',
           muted: 'var(--os-muted)',
           danger: 'var(--os-danger)',
+          ok: 'var(--os-ok)',
+          contour: 'var(--os-contour)',
+          'on-accent': 'var(--os-on-accent)',
         },
         // Vault 6 Taxonomy Branches
         branch: {
@@ -131,8 +134,8 @@ export default {
         mono: ['"Fira Code"', '"JetBrains Mono"', 'Consolas', 'monospace'],
         sans: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
         // Agentic OS shell fonts (separate keys so src/legacy typography is unchanged)
-        'os-sans': ['"Space Grotesk"', 'system-ui', 'sans-serif'],
-        'os-mono': ['"JetBrains Mono"', 'ui-monospace', 'Consolas', 'monospace'],
+        'os-sans': ['"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
+        'os-mono': ['"Geist Mono"', 'ui-monospace', 'Consolas', 'monospace'],
       }
     },
   },

@@ -12,9 +12,9 @@ interface PageFrameProps {
 export function PageFrame({ title, leading, actions, children }: PageFrameProps) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-os-line bg-os-surface px-4">
+      <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-os-line bg-os-surface px-5 backdrop-blur-[6px]">
         <div className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto">
-          <h1 className="shrink-0 font-os-sans text-[15px] font-semibold text-os-text">{title}</h1>
+          <h1 className="shrink-0 font-os-sans text-[18px] font-semibold tracking-tight text-os-text">{title}</h1>
           {leading}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

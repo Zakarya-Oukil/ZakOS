@@ -1,18 +1,47 @@
 /* Agentic OS design tokens. Only defines new variables; no element rules. */
-:root {
-  --os-bg: #0b0d10;
-  --os-surface: #12151a;
-  --os-surface-2: #171b21;
-  --os-line: #1e232b;
-  --os-cyan: #5fe3f0;
-  --os-amber: #f2b544;
-  --os-text: #e6eaf0;
-  --os-muted: #8a93a3;
-  --os-danger: #ff6b6b;
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  /* Atlas: ink-teal map room. Token names are kept so every existing page re-skins at once.
+     --os-cyan is the live/accent signal (vermilion), --os-amber is caution (ochre). */
+  --os-bg: #0a1513;
+  --os-surface: rgba(15, 29, 27, 0.86);
+  --os-surface-2: rgba(22, 40, 37, 0.92);
+  --os-line: #1f3733;
+  --os-contour: #2f5a4a;
+  --os-cyan: #ff6a3d;
+  --os-cyan-rgb: 255, 106, 61;
+  --os-amber: #e9b949;
+  --os-ok: #c3e64a;
+  --os-text: #e8efe9;
+  --os-muted: #8fa89f;
+  --os-danger: #ff4d4d;
+  --os-on-accent: #1a0904;
+}
 
-  --os-radius-sm: 4px;
-  --os-radius: 6px;
-  --os-radius-lg: 10px;
+:root[data-theme='light'] {
+  color-scheme: light;
+  --os-bg: #edf0ec;
+  --os-surface: rgba(250, 251, 248, 0.9);
+  --os-surface-2: rgba(232, 237, 230, 0.95);
+  --os-line: #cdd6cc;
+  --os-contour: #a9bdae;
+  --os-cyan: #d9461b;
+  --os-cyan-rgb: 217, 70, 27;
+  --os-amber: #a8740a;
+  --os-ok: #5a7a0c;
+  --os-text: #14231f;
+  --os-muted: #55695f;
+  --os-danger: #c42b2b;
+  --os-on-accent: #fff6f2;
+}
+
+:root {
+  --os-radius-sm: 6px;
+  --os-radius: 8px;
+  --os-radius-lg: 12px;
+  --os-input-radius: 10px;
+  --os-chamfer: 14px;
 
   --os-space-1: 4px;
   --os-space-2: 8px;
@@ -21,19 +50,24 @@
   --os-space-5: 24px;
   --os-space-6: 32px;
 
-  --os-shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.02) inset, 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-  --os-glow-cyan: 0 0 12px -2px rgba(95, 227, 240, 0.35);
-  --os-glow-cyan-strong: 0 0 0 1px rgba(95, 227, 240, 0.5), 0 0 16px -2px rgba(95, 227, 240, 0.4);
-  --os-glow-amber: 0 0 10px -2px rgba(242, 181, 68, 0.35);
+  --os-shadow-panel: 0 10px 28px -14px rgba(0, 0, 0, 0.55);
+  --os-glow-cyan: 0 0 14px -2px rgba(var(--os-cyan-rgb), 0.4);
+  --os-glow-cyan-strong: 0 0 0 1px rgba(var(--os-cyan-rgb), 0.55), 0 0 18px -2px rgba(var(--os-cyan-rgb), 0.45);
+  --os-glow-amber: 0 0 10px -2px rgba(233, 185, 73, 0.35);
   --os-focus-ring: 0 0 0 2px var(--os-bg), 0 0 0 4px var(--os-cyan);
 
-  --os-font-sans: 'Space Grotesk', system-ui, sans-serif;
-  --os-font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  --os-font-sans: 'Bricolage Grotesque', system-ui, sans-serif;
+  --os-font-mono: 'Geist Mono', ui-monospace, Consolas, monospace;
+}
+
+/* Signature shape: one chamfered (cut) top-right corner. */
+.os-chamfer {
+  clip-path: polygon(0 0, calc(100% - var(--os-chamfer)) 0, 100% var(--os-chamfer), 100% 100%, 0 100%);
 }
 
 @keyframes os-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(95, 227, 240, 0.55); }
-  50% { box-shadow: 0 0 0 5px rgba(95, 227, 240, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--os-cyan-rgb), 0.55); }
+  50% { box-shadow: 0 0 0 5px rgba(var(--os-cyan-rgb), 0); }
 }
 
 .os-live-dot { animation: os-pulse 1.8s ease-in-out infinite; }
@@ -43,7 +77,7 @@
 }
 
 /* Text selection carries the accent instead of the browser blue. */
-::selection { background: rgba(95, 227, 240, 0.28); color: var(--os-text); }
+::selection { background: rgba(var(--os-cyan-rgb), 0.3); color: var(--os-text); }
 
 /* Workflows: a highlight that travels along the active pipeline connector, and an
    indeterminate bar on running task cards. Both are transform-only. */
@@ -77,3 +111,24 @@
   .os-flow { display: none; }
   .os-indeterminate::after { width: 100%; opacity: 0.5; }
 }
+
+/* The cut corner needs its diagonal edge drawn, because clip-path removes the border there. */
+.os-chamfer::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: calc(var(--os-chamfer) + 2px);
+  height: calc(var(--os-chamfer) + 2px);
+  pointer-events: none;
+  background: linear-gradient(
+    to top right,
+    transparent calc(50% - 0.75px),
+    var(--os-line) calc(50% - 0.75px),
+    var(--os-line) calc(50% + 0.75px),
+    transparent calc(50% + 0.75px)
+  );
+}
+
+/* Thin scrollbars that match the theme. */
+* { scrollbar-width: thin; scrollbar-color: var(--os-contour) transparent; }

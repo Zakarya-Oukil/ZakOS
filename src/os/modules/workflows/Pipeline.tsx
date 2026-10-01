@@ -41,7 +41,7 @@ function detail(run: WorkflowRun, id: string, state: NodeState): string {
 
 const nodeStyle: Record<NodeState, string> = {
   todo: 'border-os-line bg-os-surface text-os-muted',
-  active: 'border-os-cyan bg-[rgba(95,227,240,0.1)] text-os-cyan shadow-[var(--os-glow-cyan)]',
+  active: 'border-os-cyan bg-[rgba(var(--os-cyan-rgb),0.12)] text-os-cyan shadow-[var(--os-glow-cyan)]',
   done: 'border-os-cyan bg-os-cyan text-os-bg',
   failed: 'border-os-danger bg-[rgba(255,107,107,0.12)] text-os-danger',
   halted: 'border-os-amber bg-[rgba(242,181,68,0.1)] text-os-amber',

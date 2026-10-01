@@ -1205,10 +1205,10 @@ async function startServer() {
     .on('change', (p) => handleFsChange('change', p))
     .on('unlink', (p) => handleFsChange('unlink', p));
 
-  server.listen(PORT, () => {
+  server.listen(Number(PORT), '127.0.0.1', () => {
     console.log(`\n======================================================`);
     console.log(`🚀 Zak_OS Backend Server Online`);
-    console.log(`📡 REST API & WebSockets running on: http://localhost:${PORT}`);
+    console.log(`📡 REST API & WebSockets running on: http://127.0.0.1:${PORT}`);
     console.log(`🏛 Connected to Obsidian Vault: ${vaultPath}`);
     console.log(`======================================================\n`);
   });

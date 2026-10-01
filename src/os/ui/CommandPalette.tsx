@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import { Search } from 'lucide-react';
+import { MagnifyingGlass } from '@phosphor-icons/react';
 import { Kbd } from './Kbd';
 import { cx } from './cx';
 
@@ -114,7 +114,7 @@ export function CommandPalette({ commands, open: openProp, onOpenChange }: Comma
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-[14vh]"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-[color-mix(in_srgb,var(--os-bg)_70%,transparent)] px-4 pt-[14vh] backdrop-blur-sm"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) setOpen(false);
       }}
@@ -125,10 +125,10 @@ export function CommandPalette({ commands, open: openProp, onOpenChange }: Comma
         aria-modal="true"
         aria-label="Command palette"
         onKeyDown={onKeyDown}
-        className="w-full max-w-lg overflow-hidden rounded-[var(--os-radius-lg)] border border-os-line bg-os-surface font-os-sans text-os-text shadow-[var(--os-shadow-panel),var(--os-glow-cyan)]"
+        className="w-full max-w-lg overflow-hidden os-chamfer relative rounded-bl-[var(--os-radius-lg)] rounded-tl-[var(--os-radius-lg)] rounded-br-[var(--os-radius-lg)] border border-os-line bg-os-surface font-os-sans backdrop-blur-md text-os-text shadow-[var(--os-shadow-panel),var(--os-glow-cyan)]"
       >
         <div className="flex items-center gap-2 border-b border-os-line px-3">
-          <Search size={14} className="text-os-muted" aria-hidden />
+          <MagnifyingGlass size={16} weight="duotone" className="text-os-muted" aria-hidden />
           <input
             ref={inputRef}
             role="combobox"
@@ -156,11 +156,11 @@ export function CommandPalette({ commands, open: openProp, onOpenChange }: Comma
               onClick={() => runAt(i)}
               className={cx(
                 'flex cursor-pointer items-center justify-between gap-3 rounded-[var(--os-radius)] px-3 py-2 text-sm',
-                i === index ? 'bg-os-surface-2 text-os-text shadow-[inset_2px_0_0_var(--os-cyan)]' : 'text-os-muted',
+                i === index ? 'bg-os-surface-2 text-os-text ring-1 ring-inset ring-os-cyan' : 'text-os-muted',
               )}
             >
-              <span>{c.label}</span>
-              {c.hint && <span className="font-os-sans text-[12px] text-os-muted">{c.hint}</span>}
+              <span className="shrink-0 whitespace-nowrap">{c.label}</span>
+              {c.hint && <span className="truncate font-os-sans text-[12px] text-os-muted">{c.hint}</span>}
             </li>
           ))}
         </ul>

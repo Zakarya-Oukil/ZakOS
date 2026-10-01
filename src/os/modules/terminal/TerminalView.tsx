@@ -18,7 +18,7 @@ const THEME = {
   foreground: '#e6eaf0',
   cursor: '#5fe3f0',
   cursorAccent: '#0b0d10',
-  selectionBackground: 'rgba(95, 227, 240, 0.28)',
+  selectionBackground: 'rgba(255, 106, 61, 0.28)',
   black: '#171b21',
   red: '#ff6b6b',
   green: '#7fd6a0',
