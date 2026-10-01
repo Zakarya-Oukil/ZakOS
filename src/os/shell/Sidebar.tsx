@@ -96,7 +96,7 @@ export function Sidebar({ modules, activeId, collapsed, onToggle, connected, the
     <nav
       aria-label="Modules"
       className={cx(
-        'flex shrink-0 flex-col border-r border-os-line bg-os-surface backdrop-blur-[6px] transition-[width] duration-200 ease-out',
+        'relative z-20 flex shrink-0 flex-col border-r border-os-line bg-os-surface',
         collapsed ? 'w-[64px]' : 'w-[232px]',
       )}
     >

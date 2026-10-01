@@ -56,7 +56,7 @@ export function Skeleton({ className }: { className?: string }) {
 /** A row of mutually exclusive choices, shown as pills. */
 export function Segmented<T extends string>({ value, onChange, options, label }: { value: T; onChange: (v: T) => void; options: Array<{ id: T; label: string }>; label: string }) {
   return (
-    <div role="group" aria-label={label} className="inline-flex w-fit items-center justify-self-start rounded-full border border-os-line bg-os-bg p-0.5">
+    <div role="group" aria-label={label} className="inline-flex w-fit items-center justify-self-start rounded-full border border-os-line bg-os-bg p-1">
       {options.map((o) => (
         <button
           key={o.id}

@@ -140,6 +140,15 @@ export function TerminalView({ sessionId, active, onEnded }: TerminalViewProps) 
       if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(payload));
     };
     const dataSub = term.onData((data) => send({ type: 'input', data }));
+    // Saved commands are typed at the prompt; the owner presses Enter themselves.
+    const onInsert = (e: Event) => {
+      const d = (e as CustomEvent<{ sessionId: string; text: string }>).detail;
+      if (d?.sessionId === sessionId && typeof d.text === 'string') {
+        send({ type: 'input', data: d.text });
+        term.focus();
+      }
+    };
+    window.addEventListener('zakos:terminal-insert', onInsert);
     const resizeSub = term.onResize(({ cols, rows }) => send({ type: 'resize', cols, rows }));
 
     const ro = new ResizeObserver(() => {
@@ -156,6 +165,7 @@ export function TerminalView({ sessionId, active, onEnded }: TerminalViewProps) 
     return () => {
       ro.disconnect();
       themeObserver.disconnect();
+      window.removeEventListener('zakos:terminal-insert', onInsert);
       dataSub.dispose();
       resizeSub.dispose();
       ws.onclose = null;

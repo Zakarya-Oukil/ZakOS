@@ -15,7 +15,7 @@ export function Panel({ title, header, padded = true, square = false, className,
   return (
     <section
       className={cx(
-        'relative border border-os-line bg-os-surface text-os-text backdrop-blur-[6px]',
+        'relative border border-os-line bg-os-surface text-os-text',
         square ? 'rounded-[var(--os-radius)]' : 'os-chamfer rounded-bl-[var(--os-radius)] rounded-tl-[var(--os-radius)] rounded-br-[var(--os-radius)]',
         className,
       )}

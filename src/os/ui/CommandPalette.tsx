@@ -67,7 +67,19 @@ export function CommandPalette({ commands, open: openProp, onOpenChange }: Comma
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return commands;
-    return commands.filter((c) => `${c.label} ${c.hint ?? ''}`.toLowerCase().includes(q));
+    // Label matches rank above matches that only appear in the hint, so "usage" finds Usage before Home.
+    const rank = (c: Command) => {
+      const label = c.label.toLowerCase();
+      const words = label.split(/\s+/);
+      if (label.startsWith(q) || words.some((w) => w.startsWith(q))) return 0;
+      if (label.includes(q)) return 1;
+      return (c.hint ?? '').toLowerCase().includes(q) ? 2 : 3;
+    };
+    return commands
+      .map((c) => ({ c, r: rank(c) }))
+      .filter((x) => x.r < 3)
+      .sort((a, b) => a.r - b.r)
+      .map((x) => x.c);
   }, [commands, query]);
 
   useEffect(() => {
@@ -125,7 +137,7 @@ export function CommandPalette({ commands, open: openProp, onOpenChange }: Comma
         aria-modal="true"
         aria-label="Command palette"
         onKeyDown={onKeyDown}
-        className="w-full max-w-lg overflow-hidden os-chamfer relative rounded-bl-[var(--os-radius-lg)] rounded-tl-[var(--os-radius-lg)] rounded-br-[var(--os-radius-lg)] border border-os-line bg-os-surface font-os-sans backdrop-blur-md text-os-text shadow-[var(--os-shadow-panel),var(--os-glow-cyan)]"
+        className="w-full max-w-lg overflow-hidden os-chamfer relative rounded-bl-[var(--os-radius-lg)] rounded-tl-[var(--os-radius-lg)] rounded-br-[var(--os-radius-lg)] border border-os-line bg-os-surface font-os-sans text-os-text shadow-[var(--os-shadow-panel),var(--os-glow-cyan)]"
       >
         <div className="flex items-center gap-2 border-b border-os-line px-3">
           <MagnifyingGlass size={16} weight="duotone" className="text-os-muted" aria-hidden />
@@ -138,7 +150,7 @@ export function CommandPalette({ commands, open: openProp, onOpenChange }: Comma
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command..."
-            className="h-11 flex-1 bg-transparent font-os-sans text-sm text-os-text placeholder:text-os-muted focus:outline-none"
+            className="h-11 flex-1 bg-transparent font-os-sans text-sm text-os-text placeholder:text-os-muted focus:outline-none focus-visible:shadow-none"
           />
           <Kbd>Esc</Kbd>
         </div>

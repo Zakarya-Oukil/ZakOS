@@ -4,6 +4,7 @@ import { PageFrame } from '../shell/PageFrame';
 import { cx } from '../ui/cx';
 import { projectsApi, type ProjectInfo } from '../lib/projectsApi';
 import { TerminalView } from './terminal/TerminalView';
+import { SavedCommands } from './terminal/SavedCommands';
 
 interface Term {
   id: string;
@@ -181,6 +182,7 @@ export default function TerminalPage() {
       }
       actions={
         <>
+          {activeId && <SavedCommands sessionId={activeId} />}
           <label htmlFor="term-start" className="sr-only">
             Start the next terminal in
           </label>

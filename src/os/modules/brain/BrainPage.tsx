@@ -300,7 +300,7 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
               className="h-7 w-48 rounded-[var(--os-input-radius)] border border-os-line bg-os-bg pl-7 pr-2 text-sm text-os-text placeholder:text-os-muted focus-visible:outline-none focus-visible:shadow-[var(--os-focus-ring)]"
             />
           </div>
-          <div role="group" aria-label="Terrain height" className="hidden items-center rounded-full border border-os-line bg-os-surface p-0.5 md:flex">
+          <div role="group" aria-label="Terrain height" className="hidden items-center rounded-full border border-os-line bg-os-surface p-1 md:flex">
             {([['importance', 'Links'], ['freshness', 'Fresh'], ['size', 'Size']] as const).map(([id, label]) => (
               <button
                 key={id}
@@ -390,7 +390,12 @@ export default function BrainPage({ route, navigate }: ModuleProps) {
         )}
 
         {!projectId && range && (
-          <div className="absolute bottom-4 left-1/2 z-[5] flex w-[min(520px,60%)] -translate-x-1/2 items-center gap-3 rounded-full border border-os-line bg-os-surface px-4 py-2 backdrop-blur-md">
+          <div
+            className={cx(
+              'absolute bottom-4 z-[5] flex w-[min(520px,60%)] items-center gap-3 rounded-full border border-os-line bg-os-surface px-4 py-2',
+              openNote || selected ? 'left-[calc(50%-190px)] -translate-x-1/2' : 'left-1/2 -translate-x-1/2',
+            )}
+          >
             <label htmlFor="terrain-time" className="shrink-0 text-xs font-medium text-os-muted">
               Grown to
             </label>

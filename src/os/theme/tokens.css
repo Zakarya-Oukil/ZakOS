@@ -5,8 +5,8 @@
   /* Atlas: ink-teal map room. Token names are kept so every existing page re-skins at once.
      --os-cyan is the live/accent signal (vermilion), --os-amber is caution (ochre). */
   --os-bg: #0a1513;
-  --os-surface: rgba(15, 29, 27, 0.86);
-  --os-surface-2: rgba(22, 40, 37, 0.92);
+  --os-surface: rgba(15, 29, 27, 0.92);
+  --os-surface-2: rgba(22, 40, 37, 0.95);
   --os-line: #1f3733;
   --os-contour: #2f5a4a;
   --os-cyan: #ff6a3d;
@@ -22,8 +22,8 @@
 :root[data-theme='light'] {
   color-scheme: light;
   --os-bg: #edf0ec;
-  --os-surface: rgba(250, 251, 248, 0.9);
-  --os-surface-2: rgba(232, 237, 230, 0.95);
+  --os-surface: rgba(250, 251, 248, 0.94);
+  --os-surface-2: rgba(232, 237, 230, 0.96);
   --os-line: #cdd6cc;
   --os-contour: #a9bdae;
   --os-cyan: #b83a12;
@@ -139,7 +139,7 @@
   accent-color: var(--os-cyan);
 }
 :where(select) {
-  height: 2.25rem;
+  height: 2.5rem;
   padding: 0 0.75rem;
   border: 1px solid var(--os-line);
   border-radius: var(--os-input-radius);

@@ -256,7 +256,7 @@ export default function UsagePage(_props: ModuleProps) {
                   </form>
                 </Panel>
               </div>
-              <p className="text-xs text-os-muted">Only runs made through Zak OS are counted, and only Claude Code reports cost. Plan limits cover all your Claude use.</p>
+              <p className="max-w-[68ch] text-xs text-os-muted">Only runs made through Zak OS are counted, and only Claude Code reports cost. Plan limits cover all your Claude use.</p>
             </>
           )}
         </div>

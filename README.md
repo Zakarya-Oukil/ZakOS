@@ -1,84 +1,68 @@
-# 🏛 Zak_OS — JARVIS Personal Second Brain & Agentic Web OS
+# Zak OS
 
-A futuristic, high-performance **Cyberpunk HUD Glassmorphism** Web OS and Second Brain Dashboard for **Zakarya Oukil**, directly integrated with his local 115-note Obsidian Vault at `C:\Users\Zakar\Documents\Obsidian\My_Vault`.
+A local agentic OS. It runs real coding agents (Claude Code, Hermes, Antigravity) on your machine, keeps every session, asks before anything risky, and turns your notes into a map. No API keys are stored: it drives the command line tools you are already signed in to.
 
----
+The interface is called **Atlas**: a map room with contour-line backgrounds, a dark and a light theme, and a terrain view of your Obsidian vault. Design rules are in [DESIGN.md](DESIGN.md).
 
-## 🌟 6 Radial Taxonomy Branches & Color Matrix
-- 🟡 **Tier 0: Master Nucleus Center** — `#FFD700` (`🏛 Zakarya Oukil — Master Root.md`)
-- 🟢 **Branch 1: 01 Certifications** — `#10B981` (eJPTv2 Suite, Courses, Notes, Commands, CTF Labs, Cheatsheets)
-- 🔵 **Branch 2: 02 Coding Projects** — `#3B82F6` (Python Async Scanner, Security Recon, Vault Sync, AI Agents)
-- 🟣 **Branch 3: 03 AI OS — Agentic System** — `#A855F7` (6 Specialized Agents, 4 Workflows, 4 Prompt Catalogs)
-- 🟠 **Branch 4: 04 Knowledge Base** — `#F97316` (TCP/IP Protocols, Burp Suite, Wireshark, Ghidra, Docker, Git)
-- 🌸 **Branch 5: 05 Templates** — `#EC4899` (8 Parameterized Obsidian Templates)
+## What is inside
 
----
+| Group | Pages |
+| --- | --- |
+| Workspace | Home (map of your projects), Projects, Tasks board, Reports |
+| Agents | Agents (real CLI sessions), Workflows (orchestrator, workers, reviewer), Approvals (risk labels, batch actions), Automations |
+| Knowledge | Brain (terrain map of the vault, time slider, search), Skills, Templates |
+| Build | Git, Dev (run and preview a project), Files (editor, search, follow the agent), Terminal |
+| Connections | Integrations (GitHub, Telegram, Discord, Slack), MCP servers, Webhooks and API key, Remote access |
+| System | Usage and cost (budgets, forecast), Audit (export, archive), Team (accounts and roles), Licence, Settings |
 
-## 🚀 Key Modules Built
+First run opens a short setup tour. Settings has an appearance studio (accent, motion, background, density), a shortcut editor, module presets and backup/restore.
 
-### 1. 🌟 Module 1: Omni-Search & Command Matrix (`Ctrl + K` / `Cmd + K`)
-- **Spotlight/Raycast Overlay**: Real-time fuzzy-search across all 115 vault notes, tags, and category tiers.
-- **Cyber Command Matrix**: 100+ offensive cybersecurity & sysadmin commands (Nmap, Gobuster, SQLmap, Hydra, Metasploit, Socat, Docker, Git).
-- **Live Parameter Substitution**: Dynamic inputs for `<TARGET_IP>`, `<PORT>`, `<WORDLIST>`, `<LHOST>`, `<LPORT>`, `<USER>`, `<PASS>` with one-click copy and instant toast notifications.
-- **+ Add New Command Modal**: Add new commands with custom tools, flags, and descriptions that automatically create/update markdown files in the vault.
+## Run it
 
-### 2. 🕸️ Module 2: Interactive 2D / 3D Force Graph Explorer
-- **6-Branch Radial Tree Simulation**: Visual force simulation displaying all 115 notes and 240+ cross-links.
-- **Glow & Particle Halos**: Color-coded halos according to the 6 vault taxonomy colors.
-- **Node Inspection Card**: Displays incoming backlinks, outgoing wikilinks, word count, tags, and an "Open in Studio" button.
-- **Branch & Tier Toggles**: Filter by Level 0-4 or specific branches.
-- **Focus Center Button**: Smoothly re-centers viewport on Master Root (`🏛 Zakarya Oukil — Master Root`).
+Requires Node 22 or newer, Git, and at least one of the `claude`, `hermes` CLIs.
 
-### 3. 📝 Module 3: Monaco Markdown Studio & Recon Cockpit
-- **Dual-Pane Studio**: Monaco Editor on the left + Live HUD Markdown Preview on the right.
-- **Syntax Highlighting**: Bash, Python, PowerShell, JSON, YAML, PHP, C, SQL.
-- **Diagrams & Math**: Integrated live Mermaid.js graph rendering and KaTeX math formula visualizer.
-- **Frontmatter Inspector**: Interactive badge tags (Status, Difficulty, Target IP, Tier, Category).
-- **Live 2-Way Disk Sync**: Direct filesystem read/write to `C:\Users\Zakar\Documents\Obsidian\My_Vault` with `Ctrl+S` hotkey and automated backups.
-- **Wikilink Navigation**: Clicking any `[[Note Name]]` instantly navigates to that note in the studio.
-
-### 4. 🤖 Module 4: Autonomous AI Agent Cockpit ("JARVIS CREW")
-Interfaces with all 6 specialized AI agents:
-1. 🔍 **Research Agent (ORACLE-01)**: OSINT, CVE lookups, threat intelligence.
-2. 💻 **Coding Agent (ARCHITECT-02)**: Python asyncio, fullstack TypeScript, concurrency architectures.
-3. 🛡️ **Pentesting Agent (SPECTRE-03)**: eJPTv2 methodology, exploit chains, SUID privilege escalation, pivoting.
-4. 📖 **Study Agent (SOCRATES-04)**: Socratic quizzer, eJPT flashcards, active recall spaced repetition.
-5. 📑 **Summarization Agent (SYNTHESIS-05)**: Executive note summaries, high-density takeaways.
-6. 🗄️ **Memory Agent (CHRONOS-06)**: Orphan note detection, cross-branch wikilink recommendations.
-- **Save Output to Vault**: One-click action saving agent output directly into a new or existing note.
-
-### 5. 📊 Module 5: Mission Control Telemetry & Daily Logger
-- **eJPTv2 Readiness Radar**: Tracks progress across Assessment Methodologies, Host & Network Pentesting, Web Application Pentesting, and Next-Gen Cloud modules.
-- **Coding Projects Kanban**: Interactive status tracking for active engineering suites.
-- **Quick Daily Note Initializer**: One-click button creating today's structured daily note in `04 Knowledge Base/Daily Logs/`.
-
----
-
-## 🛠️ Quick Launch Instructions
-
-### 1. Launch Dev Mode (Server + Client concurrently)
 ```bash
-cd "c:\Users\Zakar\Documents\Web_Dev\Zak_OS"
-npm run dev
+npm install
+npm run dev          # Vite on :5173 and the API on 127.0.0.1:4000
 ```
-- **Web Dashboard**: `http://localhost:3000`
-- **Backend API & WebSockets**: `http://localhost:4000`
 
-### 2. Standalone Commands
+Production, one process:
+
 ```bash
-# Start backend server only
-npm run server:dev
-
-# Start frontend client only
-npm run client:dev
-
-# Production build
 npm run build
+npm run server:start # serves the built app and the API on 127.0.0.1:4000
 ```
 
----
+## Security model
 
-## ⌨️ Global Keyboard Shortcuts
-- `Ctrl + K` / `Cmd + K`: Open Omni-Search & Command Palette
-- `Ctrl + S` / `Cmd + S`: Save active note to Obsidian disk in Monaco Studio
-- `ESC`: Close modals & overlays
+- The API listens on **127.0.0.1 only**. Requests that arrive through a tunnel (forwarded headers or a foreign Host) are treated as remote and refused by every local-only route.
+- Terminal, Files, secrets, MCP and settings are local-only, always.
+- **Remote access** is opt-in, needs sign-in, and exposes only the approvals list and approve/dismiss, for owner and operator accounts.
+- Tokens live in an AES-256-GCM encrypted file unlocked with a master password that is never stored. Webhooks are HMAC-SHA256 signed; the personal API key is stored as a hash.
+- Files are confined to registered project folders. Key material (`.pem`, `.key`, `.ssh`, the secrets file) and `.env` contents are never shown.
+- Every agent prompt is preceded by a git checkpoint and written to the audit log with credentials redacted.
+
+## Licensing (for sellers)
+
+Offline Ed25519 keys. The app ships with `licence/public.pem` only.
+
+```bash
+node scripts/licence.mjs keygen                                  # once; the private key goes to ~/.zak-os-licence/
+node scripts/licence.mjs issue --plan pro --name "Acme Ltd" --days 365
+```
+
+Plans: Free, Pro (Integrations, MCP, Webhooks, Templates, Reports), Team (adds Remote access and Team). Without a key, those pages show an upgrade page. Nothing is deleted. Point the Upgrade button and the update check at your own links in the Licence page.
+
+## Layout
+
+```
+server/          Express API, agent runners, workflows, SQLite (data/zakos.db)
+server/os/       tasks, files, usage, reports, secrets, integrations, webhooks, MCP, auth, licence, backup
+src/os/          the app: shell, theme, ui kit, modules/<page>
+src/legacy/      the previous UI, still reachable at #/legacy
+scripts/         licence tool
+```
+
+## Not included yet
+
+Email and calendar, Notion, Google and GitHub single sign-on, in-app payments and invoices, a multi-user shared server. These need provider accounts or hosted infrastructure, so they are left out rather than faked.

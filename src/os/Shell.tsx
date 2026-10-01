@@ -70,6 +70,12 @@ export function Shell() {
     };
   }, []);
 
+  // While the setup dialog is open the app behind it cannot be tabbed into or read by a screen reader.
+  useEffect(() => {
+    const nodes = rootRef.current?.querySelectorAll(':scope > nav, :scope > main');
+    nodes?.forEach((n) => (showSetup ? n.setAttribute('inert', '') : n.removeAttribute('inert')));
+  }, [showSetup]);
+
   const toggleSidebar = () =>
     setCollapsed((c) => {
       try {

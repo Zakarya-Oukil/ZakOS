@@ -7,7 +7,7 @@
 web
 
 ## Users
-Zakarya, a cybersecurity master's student and software engineer, using Zak OS daily on their own Windows machine as a personal agentic operating system. Later, possibly sold to clients, who would add or remove features. Right now it is for one person.
+Zakarya, a cybersecurity master's student and software engineer, using Zak OS daily on their own Windows machine as a personal agentic operating system. It is being prepared to sell to clients (developers and small teams) who each run their own copy, switch modules on and off, and unlock higher plans with an offline licence key.
 
 ## Product Purpose
 A local agentic OS platform that runs on the owner's machine without API keys. It wraps real coding agents (Claude Code now, Hermes, Antigravity later) so every prompt lands in a real, saved CLI session that can be listed, resumed, stopped and deleted. Success: the owner works through the OS instead of separate terminals, and can watch agents and their memory live.
@@ -22,15 +22,16 @@ Not a desktop or macOS-style skin. A sidebar-and-top-bar platform in the family 
 - Every agent prompt is preceded by a git checkpoint and logged, so tracked-file changes can be restored.
 
 ## Capabilities and Constraints
-- Pages: Agents, Brain (3D neural-galaxy view of the vault, click a node to open the note), Workflows (orchestrator, sub-agents, reviewer, then the owner), Terminal, Settings. Each page has its own top bar.
+- Pages: Home, Agents, Projects, Tasks, Files, Reports, Brain (terrain map of the vault), Workflows, Approvals, Automations, Skills, Templates, Git, Dev, Terminal, Integrations, MCP servers, Webhooks and keys, Remote access, Usage and cost, Audit, Team, Licence, Settings. Each page has its own top bar.
 - Modular: a module registry decides what appears in the sidebar; modules can be toggled.
 - Agents run under the CLI's normal permission system (`acceptEdits` by default). Fully permission-free runs were the owner's stated preference but are not enabled.
 - Sessions live server-side (SQLite at `data/zakos.db`) and are grouped per agent.
 - Old UI is archived under `src/legacy/` and ported module by module.
-- Undecided: pricing, licensing and client packaging.
+- Licensing: offline Ed25519 keys (Free, Pro, Team). Premium pages show an upgrade page, never delete data. Pricing and payment provider are the seller's choice.
+- Security: the API binds 127.0.0.1 only. Remote access is opt-in, needs sign-in, and exposes approvals only. Terminal, files and secrets never leave the machine.
 
 ## Brand Commitments
-Name: Zak OS. Owner asked for a cinematic HUD feel, alive and animated (GSAP and Motion), explicitly not a fake OS desktop and not "AI slop". Accent direction agreed: ice cyan for live and agent state, amber for review and alerts, on a graphite base.
+Name: Zak OS. Concept: Atlas, a cartographic map room (see DESIGN.md). Not a fake OS desktop and not "AI slop". Dark ink-teal and light chart-paper themes, a vermilion accent for live state, chartreuse for done, Bricolage Grotesque with Geist Mono, chamfered panels, pill buttons, contour-line background. Motion is cinematic but optional (Full, Calm, Off).
 
 ## Evidence on Hand
 No customers, testimonials or benchmarks exist. Do not invent any. The Hermes account currently returns a billing error (model locked) on real runs.
