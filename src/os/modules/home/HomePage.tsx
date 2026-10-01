@@ -148,7 +148,7 @@ function Attention({ a }: { a: HomeData['attention'] }) {
       </li>,
     );
   return (
-    <Panel title="Needs attention" header={items.length > 0 ? <StatusDot status="error" label="Needs attention" /> : undefined}>
+    <Panel title="Needs attention">
       {items.length === 0 ? <Empty>Nothing needs you right now.</Empty> : <ul className="grid gap-2 text-sm">{items}</ul>}
     </Panel>
   );
@@ -289,29 +289,6 @@ function Schedules({ items }: { items: HomeData['schedules'] }) {
   );
 }
 
-function Projects({ items }: { items: HomeData['projects'] }) {
-  return (
-    <Panel title="Projects" header={<a className="text-xs text-os-muted hover:text-os-text" href="#/projects">Manage</a>}>
-      {items.length === 0 ? (
-        <Empty>No projects yet. Add one on the Projects page.</Empty>
-      ) : (
-        <ul className="grid gap-2 text-sm">
-          {items.map((p) => (
-            <li key={p.id} className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: p.color }} aria-hidden />
-              <span className="min-w-0 flex-1 truncate text-os-text">{p.name}</span>
-              <span className="shrink-0 text-xs text-os-muted">
-                {!p.exists ? 'folder missing' : p.graphUpdated ? `graph ${timeAgo(p.graphUpdated)}` : 'no graph'}
-                {p.lastSessionAt ? ` · active ${timeAgo(p.lastSessionAt)}` : ''}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Panel>
-  );
-}
-
 function Activity({ items }: { items: HomeData['activity'] }) {
   const href = (e: HomeData['activity'][number]) => (e.run_id ? `#/workflows/${e.run_id}` : e.session_id ? `#/agents/claude/${e.session_id}` : undefined);
   return (
@@ -354,7 +331,112 @@ function Limits({ l }: { l: HomeData['limits'] }) {
   );
 }
 
+// ---- territory ---------------------------------------------------------------------------------
+
+const norm = (p: string) => p.replace(/\\/g, '/').toLowerCase().replace(/\/$/, '');
+
+/** A closed, hand-wobbled ring: the outline of one contour around a project's summit. */
+function ring(cx: number, cy: number, r: number, seed: number, k: number): string {
+  const pts: string[] = [];
+  const steps = 48;
+  for (let i = 0; i <= steps; i++) {
+    const t = (i / steps) * Math.PI * 2;
+    const wob = 1 + 0.13 * Math.sin(3 * t + seed) + 0.07 * Math.sin(5 * t + seed * 1.7 + k) + 0.04 * Math.sin(8 * t + seed * 0.6);
+    pts.push(`${(cx + Math.cos(t) * r * wob * 1.25).toFixed(1)},${(cy + Math.sin(t) * r * wob * 0.82).toFixed(1)}`);
+  }
+  return `M${pts.join('L')}Z`;
+}
+
+function seedOf(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  return Math.abs(h % 628) / 100;
+}
+
+function Territory({ home }: { home: HomeData }) {
+  const items = home.projects;
+  const W = 720;
+  const H = 330;
+  const golden = 2.399963229728653;
+  const placed = items.map((p, i) => {
+    const a = i * golden + 0.6;
+    const spread = items.length === 1 ? 0 : 0.32 + 0.1 * Math.min(items.length, 4);
+    const rx = i === 0 ? 0 : Math.sqrt(i / items.length) * spread * W;
+    const ry = i === 0 ? 0 : Math.sqrt(i / items.length) * spread * H * 1.1;
+    const running = home.running.sessions.filter((s) => norm(s.cwd).startsWith(norm(p.path))).length;
+    const recent = p.lastSessionAt ? Math.max(0, 1 - (Date.now() - p.lastSessionAt) / (7 * 86_400_000)) : 0;
+    return { p, x: W / 2 + Math.cos(a) * rx, y: H / 2 + Math.sin(a) * ry, r: (34 + recent * 22 + (p.graphUpdated ? 8 : 0)) * (items.length < 3 ? 1.9 : 1), running };
+  });
+  return (
+    <Panel title="Territory" header={<a className="text-xs text-os-muted hover:text-os-text" href="#/projects">Manage projects</a>} padded={false} className="overflow-hidden">
+      {items.length === 0 ? (
+        <div className="grid h-[300px] place-items-center p-6 text-center">
+          <p className="max-w-xs text-sm text-os-muted">
+            No projects on the map yet. <a className={link} href="#/projects">Add a folder or clone a repo</a> and it appears here as land.
+          </p>
+        </div>
+      ) : (
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Map of ${items.length} project${items.length === 1 ? '' : 's'}`} className="block h-auto w-full">
+          {placed.map(({ p, x, y, r, running }) => {
+            const seed = seedOf(p.id);
+            const to = p.graphUpdated ? `#/brain/${p.id}` : '#/projects';
+            return (
+              <a key={p.id} href={to} className="group outline-none">
+                <title>{`${p.name}${running ? `, ${running} running` : ''}`}</title>
+                {[1, 0.8, 0.6, 0.4, 0.2].map((f, k) => (
+                  <path
+                    key={k}
+                    d={ring(x, y, r * f, seed, k)}
+                    fill={k === 0 ? p.color : 'none'}
+                    fillOpacity={k === 0 ? 0.1 : 0}
+                    stroke={k === 0 ? p.color : 'var(--os-contour)'}
+                    strokeWidth={k === 0 ? 1.6 : 1}
+                    strokeOpacity={k === 0 ? 0.9 : 0.8}
+                  />
+                ))}
+                <path d={`M${x},${y} v-22`} stroke="var(--os-text)" strokeWidth={1.4} />
+                <path d={`M${x},${y - 22} l15,5 l-15,5z`} fill={p.color} />
+                {running > 0 && <circle cx={x} cy={y} r={r * 0.34} fill="none" stroke="var(--os-cyan)" strokeWidth={2} className="os-territory-live" />}
+                <text x={x} y={y + r * 0.82 + 20} textAnchor="middle" className="fill-[var(--os-text)] text-[13px] font-semibold" style={{ paintOrder: 'stroke', stroke: 'var(--os-bg)', strokeWidth: 4 }}>
+                  {p.name}
+                </text>
+                {running > 0 && (
+                  <text x={x} y={y + r * 0.82 + 36} textAnchor="middle" className="fill-[var(--os-cyan)] text-[11px] font-medium" style={{ paintOrder: 'stroke', stroke: 'var(--os-bg)', strokeWidth: 4 }}>
+                    {running} running
+                  </text>
+                )}
+              </a>
+            );
+          })}
+        </svg>
+      )}
+    </Panel>
+  );
+}
+
 // ---- page --------------------------------------------------------------------------------------
+
+function greeting(): string {
+  const h = new Date().getHours();
+  return h < 5 ? 'Still up' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+}
+
+function profileName(): string {
+  try {
+    return window.localStorage.getItem('zakos_profile_name')?.trim() ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function summary(h: HomeData): string {
+  const need = h.attention.approvals + h.attention.runsAwaiting.length + h.attention.failedRuns.length;
+  const running = h.running.sessions.length + h.running.runs.length;
+  const parts: string[] = [];
+  parts.push(need === 0 ? 'Nothing needs you' : `${need} ${need === 1 ? 'item needs' : 'items need'} you`);
+  parts.push(running === 0 ? 'no agents running' : `${running} running`);
+  return parts.join(', ') + '.';
+}
 
 export default function HomePage({ navigate }: ModuleProps) {
   const { home, error } = useHome();
@@ -369,34 +451,38 @@ export default function HomePage({ navigate }: ModuleProps) {
 
   return (
     <PageFrame title="Home">
-      <div className="h-full overflow-y-auto p-4">
-        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-4">
+      <div className="h-full overflow-y-auto p-5">
+        <div className="mx-auto grid max-w-[1280px] grid-cols-[minmax(0,1fr)] gap-5">
           {error && !home && <p className="text-sm text-os-danger" role="alert">{error}</p>}
           {!home && !error && <p className="text-sm text-os-muted">Loading</p>}
           {home && (
             <>
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-                <QuickStart home={home} projects={projects} navigate={navigate} />
-                <Attention a={home.attention} />
+              <div>
+                <p className="font-os-sans text-[34px] font-extrabold leading-[1.1] tracking-tight text-os-text">{greeting()}{profileName() ? `, ${profileName()}` : ''}.</p>
+                <p className="mt-1 text-[15px] text-os-muted">{summary(home)}</p>
               </div>
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-                <div className="grid content-start gap-4">
+              <QuickStart home={home} projects={projects} navigate={navigate} />
+              <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+                <Territory home={home} />
+                <div className="grid content-start gap-5">
+                  <Attention a={home.attention} />
                   <Running r={home.running} labelOf={labelOf} />
-                  <Schedules items={home.schedules} />
-                  <Limits l={home.limits} />
                 </div>
+              </div>
+              <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
                 <Panel title="Usage by provider">
-                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
                     {home.providers.map((p) => (
                       <ProviderCard key={p.id} p={p} />
                     ))}
                   </div>
                 </Panel>
+                <div className="grid content-start gap-5">
+                  <Schedules items={home.schedules} />
+                  <Limits l={home.limits} />
+                </div>
               </div>
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                <Projects items={home.projects} />
-                <Activity items={home.activity} />
-              </div>
+              <Activity items={home.activity} />
             </>
           )}
         </div>

@@ -4,6 +4,7 @@ import type { Broadcast } from '../agents/runner';
 import { audit } from '../audit';
 import { notify } from '../notifications';
 import { getRun } from '../workflows/engine';
+import { budgetExhausted } from '../os/usageApi';
 import { launchRun, parseLaunch, toBody } from '../workflows/launch';
 import { LimitError } from '../workflows/limits';
 import { getTemplate, markTemplateRun } from '../workflows/templates';
@@ -31,6 +32,14 @@ export function nextFire(s: Schedule): number | null {
 export type FireResult = { ok: true; runId: string } | { ok: false; error: string };
 
 async function fire(s: Schedule, why: string, broadcast: Broadcast): Promise<FireResult> {
+  // A budget the owner set holds scheduled runs back; Run now is always the owner's call.
+  if (!why.startsWith('Started by you')) {
+    const held = budgetExhausted();
+    if (held.exhausted) {
+      recordSchedule(s.id, { lastError: held.reason });
+      return { ok: false, error: held.reason ?? 'Budget used up' };
+    }
+  }
   const template = getTemplate(s.templateId);
   if (!template) {
     recordSchedule(s.id, { lastError: 'Template no longer exists' });

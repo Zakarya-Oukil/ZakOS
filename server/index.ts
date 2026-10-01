@@ -37,12 +37,22 @@ import { mountBrainRoutes } from './brain/routes';
 import { mountSkillRoutes } from './skills/routes';
 import { mountScheduleRoutes } from './automations/routes';
 import { startScheduler } from './automations/scheduler';
+import { mountOsGate, mountOsRoutes } from './os';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.use(cors({ origin: '*' }));
-app.use(express.json({ limit: '10mb' }));
+app.use(
+  express.json({
+    limit: '10mb',
+    // Webhook signatures are computed over the exact bytes that were sent.
+    verify: (req, _res, buf) => {
+      (req as unknown as { rawBody?: string }).rawBody = buf.toString('utf8');
+    },
+  }),
+);
+mountOsGate(app);
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
@@ -117,6 +127,7 @@ mountBrainRoutes(app);
 mountSkillRoutes(app);
 mountTerminalRoutes(app);
 mountScheduleRoutes(app, broadcast);
+mountOsRoutes(app);
 startScheduler(broadcast);
 
 // ==========================================

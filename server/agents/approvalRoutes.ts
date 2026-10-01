@@ -7,6 +7,7 @@ import { clearResolved, getApproval, listApprovals, resolveApproval } from './ap
 import { isRunning, SessionBusyError, sendMessage, type Broadcast } from './runner';
 import { isTrust } from './settings';
 import * as store from './store';
+import { remoteGuard } from '../os/remote';
 
 /** Approving lets an agent run a command or edit a file, so these routes are local-only like the terminal. */
 function localOnly(req: Request, res: Response, next: NextFunction) {
@@ -19,6 +20,7 @@ function localOnly(req: Request, res: Response, next: NextFunction) {
 
 const fail = (res: Response, status: number, error: string) => res.status(status).json({ success: false, error });
 const pid = (req: Request) => String(req.params.id);
+const actorOf = (req: Request) => (req as Request & { zUser?: { name: string } }).zUser?.name ?? 'owner';
 
 export function mountApprovalRoutes(app: Express, broadcast: Broadcast) {
   app.use('/api/approvals', localOnly);
@@ -33,7 +35,7 @@ export function mountApprovalRoutes(app: Express, broadcast: Broadcast) {
     res.json({ success: true });
   });
 
-  app.post('/api/approvals/:id/approve', async (req: Request, res: Response) => {
+  const approve = async (req: Request, res: Response) => {
     const a = getApproval(pid(req));
     if (!a) return fail(res, 404, 'Approval not found');
     if (a.state !== 'pending') return fail(res, 409, `Already ${a.state}`);
@@ -55,16 +57,27 @@ export function mountApprovalRoutes(app: Express, broadcast: Broadcast) {
       return fail(res, 500, err instanceof Error ? err.message : String(err));
     }
     resolveApproval(a.id, 'approved');
-    audit('approval', 'owner', `Approved ${a.rule}`, { sessionId: a.sessionId, project: a.project });
+    audit('approval', actorOf(req), `Approved ${a.rule}`, { sessionId: a.sessionId, project: a.project });
     res.json({ success: true });
-  });
+  };
 
-  app.post('/api/approvals/:id/dismiss', (req: Request, res: Response) => {
+  const dismiss = (req: Request, res: Response) => {
     const a = getApproval(pid(req));
     if (!a) return fail(res, 404, 'Approval not found');
     if (a.state !== 'pending') return fail(res, 409, `Already ${a.state}`);
     resolveApproval(a.id, 'dismissed');
-    audit('approval', 'owner', `Dismissed ${a.rule}`, { sessionId: a.sessionId, project: a.project });
+    audit('approval', actorOf(req), `Dismissed ${a.rule}`, { sessionId: a.sessionId, project: a.project });
     res.json({ success: true });
+  };
+
+  app.post('/api/approvals/:id/approve', approve);
+  app.post('/api/approvals/:id/dismiss', dismiss);
+
+  // The same two actions for a signed-in person on another device (phone), once remote access is switched on.
+  app.get('/api/remote/approvals', remoteGuard, (_req: Request, res: Response) => {
+    const approvals = listApprovals().filter((a) => a.state === 'pending').map((a) => ({ id: a.id, summary: a.summary, project: a.project, ts: a.created, sessionTitle: store.getSession(a.sessionId)?.title }));
+    res.json({ success: true, approvals });
   });
+  app.post('/api/remote/approvals/:id/approve', remoteGuard, approve);
+  app.post('/api/remote/approvals/:id/dismiss', remoteGuard, dismiss);
 }

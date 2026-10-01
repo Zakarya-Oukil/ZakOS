@@ -22,11 +22,18 @@ const MAX_SESSIONS = 12;
  * listens on every interface. So this endpoint accepts only loopback peers, and only pages
  * served from a localhost origin (which stops other websites from driving it via the browser).
  */
+const LOCAL_HOST = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i;
+
 export function isTrustedLocalRequest(req: IncomingMessage): boolean {
   const peer = req.socket.remoteAddress ?? '';
   if (!LOOPBACK.has(peer)) return false;
-  const origin = req.headers.origin;
-  // Non-browser local clients send no Origin; browsers always do.
+  // A tunnel (Tailscale, Cloudflare) forwards remote visitors from loopback. They arrive with their public
+  // hostname or proxy headers, and same-origin GETs carry no Origin, so loopback alone cannot be trusted.
+  const h = req.headers;
+  if (h['x-forwarded-for'] || h['x-forwarded-host'] || h['forwarded'] || h['cf-connecting-ip'] || h['tailscale-user-login']) return false;
+  if (h.host && !LOCAL_HOST.test(h.host)) return false;
+  const origin = h.origin;
+  // Non-browser local clients send no Origin; browsers send one on cross-site requests.
   return origin === undefined || LOCAL_ORIGIN.test(origin);
 }
 
