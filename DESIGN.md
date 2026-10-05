@@ -58,3 +58,11 @@ The token is still named `--os-cyan` because every page already uses it; its val
 
 ## Verification used
 Playwright through system Chrome, axe-core (WCAG 2 A and AA) on all 24 pages in both themes with zero violations, and `impeccable detect` on the source and the live page.
+
+## World: J.A.R.V.I.S. (rebuilt 2026-10-05)
+Deep navy ground (`#040a14`), arc-reactor cyan (`#5fe3ff`), amber for anything that needs the owner. Exo 2 for display, Geist for text, Geist Mono for numbers and paths only. Sentence case everywhere; no caps labels, no glowing boxes: panels are a faint wash with corner ticks that appear on hover or focus.
+- **The orb** (`src/os/worlds/jarvis/JarvisOrb.tsx`) is the one bold element. It sits top-centre in the header and reads the agent socket (`orbStore.ts`): idle, thinking (a session runs, no tool open), running (a tool call is open, arc shows steps done), error (a run failed, a permission was refused, or approvals are waiting). Click opens Approvals when something waits, Agents otherwise.
+- **Flat fallback:** reduced motion, Appearance motion off, a slow GPU (first 90 frames averaging over 34 ms) or `localStorage zakos_orb_flat=1` draw flat rings with no blur or animation.
+- **Boot** (`JarvisBoot.tsx`): once per browser session, about 2 s, three beats (pulse, name plus real API/link/vault checks, orb docks into the header). Any key or click skips. Reduced motion never shows it.
+- Focus rings are drawn in `worlds.css` for this world because Tailwind reads `shadow-[var(--os-focus-ring)]` as a colour.
+- Figma frames: file `97Uk4XRAHSwQTWZLN3WWDW`, page J.A.R.V.I.S. (Agents, Orb states, Boot sequence).

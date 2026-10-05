@@ -33,15 +33,6 @@ function pinnedFor(modules: OsModule[], activeId: string | undefined) {
   return extra ? [...list, extra] : list;
 }
 
-function Clock({ className }: { className?: string }) {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-  return <time className={className} dateTime={now.toISOString()}>{now.toLocaleTimeString([], { hour12: false })}</time>;
-}
-
 function ThemeButton({ theme, onToggle, className }: { theme: Theme; onToggle: () => void; className?: string }) {
   return (
     <button type="button" onClick={onToggle} title={theme === 'dark' ? 'Light theme' : 'Dark theme'} className={cx('grid h-9 w-9 place-items-center rounded-full text-os-muted transition-colors hover:bg-os-surface-2 hover:text-os-text', focus, className)}>
@@ -114,101 +105,6 @@ export function Launcher({ open, onClose, modules, plan, activeId, navigate }: P
         })}
       </div>
     </div>
-  );
-}
-
-// ------------------------------------------------------------------ J.A.R.V.I.S.: top HUD
-
-export function HudNav({ modules, activeId, connected, theme, onToggleTheme, plan }: NavProps) {
-  const { pending } = useApprovalsApi();
-  const activeGroup = modules.find((m) => m.id === activeId)?.group ?? 'workspace';
-  const [group, setGroup] = useState(activeGroup);
-  useEffect(() => setGroup(activeGroup), [activeGroup]);
-  const groups = GROUPS.filter((g) => modules.some((m) => m.group === g.id));
-  const items = modules.filter((m) => m.group === group);
-  return (
-    <nav aria-label="Modules" className="relative z-20 shrink-0 border-b border-os-line bg-os-surface backdrop-blur-md" data-boot>
-      <div className="flex h-12 items-center gap-4 px-4">
-        <a href="#/home" className={cx('flex items-center gap-2.5 pr-2', focus)} aria-label="Zak OS, home">
-          <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden className="text-os-cyan">
-            <polygon points="13,1.5 23.5,7.25 23.5,18.75 13,24.5 2.5,18.75 2.5,7.25" fill="none" stroke="currentColor" strokeWidth="1.6" />
-            <circle cx="13" cy="13" r="4.2" fill="none" stroke="currentColor" strokeWidth="1.6" />
-            <circle cx="13" cy="13" r="1.4" fill="currentColor" />
-          </svg>
-          <span className="leading-none">
-            <span className="block text-[15px] font-semibold uppercase tracking-[0.2em] text-os-text">J.A.R.V.I.S.</span>
-            <span className="mt-0.5 block font-os-mono text-xs uppercase tracking-[0.14em] text-os-muted">Zak OS // {connected ? 'online' : 'link lost'}</span>
-          </span>
-        </a>
-        <div role="group" aria-label="Sections" className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
-          {groups.map((g) => (
-            <button
-              key={g.id}
-              type="button"
-              aria-pressed={g.id === group}
-              onClick={() => setGroup(g.id)}
-              className={cx(
-                'h-8 shrink-0 border-b-2 px-3 text-xs font-semibold uppercase tracking-[0.16em] transition-colors',
-                g.id === group ? 'border-os-cyan text-os-cyan' : 'border-transparent text-os-muted hover:text-os-text',
-                focus,
-              )}
-            >
-              {g.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex shrink-0 items-center gap-1.5">
-          <div className="mr-1 hidden text-right leading-none lg:block" aria-hidden>
-            <Clock className="block font-os-mono text-[15px] tracking-[0.12em] text-os-text" />
-            <span className="mt-0.5 flex items-center justify-end gap-1.5 font-os-mono text-xs uppercase tracking-[0.12em] text-os-muted">
-              <StatusDot status={connected ? 'live' : 'error'} label="" /> {connected ? 'link ok' : 'no link'}
-            </span>
-          </div>
-          <span className="sr-only">{connected ? 'Server connected' : 'Server disconnected'}</span>
-          {pending > 0 && (
-            <a href="#/approvals" className={cx('flex h-8 items-center gap-1.5 border border-os-amber px-2.5 font-os-mono text-xs uppercase tracking-[0.1em] text-os-amber', focus)} aria-label={`${pending} approvals waiting`}>
-              {pending} awaiting
-            </a>
-          )}
-          <button type="button" onClick={openPalette} className={cx('grid h-9 w-9 place-items-center text-os-muted hover:text-os-text', focus)} title="Command palette (Ctrl+K)">
-            <MagnifyingGlass size={19} aria-hidden />
-            <span className="sr-only">Open the command palette</span>
-          </button>
-          <div className="w-9"><NotificationsMenu collapsed placement="below" /></div>
-          <ThemeButton theme={theme} onToggle={onToggleTheme} />
-          <WorldSwitcher placement="below" />
-        </div>
-      </div>
-      <ul className="flex h-10 items-center gap-1 overflow-x-auto border-t border-os-line px-4">
-        {items.map((m) => {
-          const Icon = m.icon;
-          const on = m.id === activeId;
-          return (
-            <li key={m.id} className="shrink-0">
-              <a
-                href={`#/${m.id}`}
-                aria-current={on ? 'page' : undefined}
-                className={cx(
-                  'relative flex h-8 items-center gap-2 px-3 text-[13px] uppercase tracking-[0.1em] transition-colors',
-                  on ? 'bg-[rgba(var(--os-cyan-rgb),0.12)] text-os-text shadow-[inset_0_0_0_1px_rgba(var(--os-cyan-rgb),0.55)]' : 'text-os-muted hover:bg-os-surface-2 hover:text-os-text',
-                  focus,
-                )}
-              >
-                <Icon size={16} weight="duotone" aria-hidden className={on ? 'text-os-cyan' : undefined} />
-                {m.label}
-                {locked(m, plan) && (
-                  <>
-                    <LockSimple size={12} aria-hidden className="opacity-70" />
-                    <span className="sr-only">, needs the {m.premium === 'team' ? 'Team' : 'Pro'} plan</span>
-                  </>
-                )}
-                {m.id === 'approvals' && pending > 0 && <span className="bg-os-cyan px-1 font-os-mono text-xs leading-4 text-os-on-accent" aria-label={`${pending} waiting`}>{pending}</span>}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
   );
 }
 

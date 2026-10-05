@@ -23,10 +23,9 @@ export function WorldBackdrop({ world, theme, still }: Props) {
         <div className="jarvis-bg absolute inset-0">
           {!still && dark && (
             <Suspense fallback={null}>
-              <Particles className="absolute inset-0" particleCount={150} particleSpread={11} speed={0.045} particleColors={['#33e6ff', '#7bf0ff', '#ffffff']} moveParticlesOnHover particleHoverFactor={0.6} alphaParticles particleBaseSize={70} sizeRandomness={1} cameraDistance={22} />
+              <Particles className="absolute inset-0" particleCount={90} particleSpread={11} speed={0.04} particleColors={['#5fe3ff', '#9defff', '#ffffff']} moveParticlesOnHover particleHoverFactor={0.6} alphaParticles particleBaseSize={70} sizeRandomness={1} cameraDistance={22} />
             </Suspense>
           )}
-          {!still && <div className="jarvis-scan" />}
         </div>
       )}
       {world === 'valley' && (

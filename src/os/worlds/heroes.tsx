@@ -4,15 +4,14 @@ import { Draggable } from 'gsap/Draggable';
 import type { HomeData } from '../modules/home/api';
 import { setAppearance, useAppearance, type Motion } from '../theme/appearance';
 import { prefersReducedMotion } from '../theme/motion';
-import { useTheme } from '../theme/useTheme';
 import { cx } from '../ui/cx';
-import Orb from '../reactbits/Orb';
-import DecryptedText from '../reactbits/DecryptedText';
 import CountUp from '../reactbits/CountUp';
 import BlurText from '../reactbits/BlurText';
 import type { WorldId } from './worlds';
 import { CyberHero } from './CyberHome';
 import { OpenBar } from '../shell/OpenBar';
+import { JarvisOrb } from './jarvis/JarvisOrb';
+import { useOrbFlat, useOrbState } from './jarvis/orbStore';
 
 gsap.registerPlugin(Draggable);
 
@@ -73,8 +72,9 @@ function Arc({ r, pct, color, label }: { r: number; pct: number; color: string; 
 
 function JarvisHero({ home, hello, summary }: HeroProps) {
   const f = figures(home);
-  const { theme } = useTheme();
   const root = useRef<HTMLElement>(null);
+  const orb = useOrbState(home.attention.approvals);
+  const flat = useOrbFlat();
 
   useLayoutEffect(() => {
     const el = root.current;
@@ -86,53 +86,42 @@ function JarvisHero({ home, hello, summary }: HeroProps) {
         return;
       }
       arcs.forEach((a, i) => gsap.to(a, { strokeDashoffset: Number(a.dataset.len) * (1 - Number(a.dataset.pct)), duration: 1.6, delay: 0.25 + i * 0.18, ease: 'power3.out' }));
-      gsap.to('.jarvis-ticks', { rotation: 360, svgOrigin: '200 200', duration: 90, ease: 'none', repeat: -1 });
-      gsap.to('.jarvis-ticks-rev', { rotation: -360, svgOrigin: '200 200', duration: 140, ease: 'none', repeat: -1 });
-      gsap.from('.jarvis-read', { opacity: 0, x: 18, duration: 0.5, stagger: 0.1, delay: 0.5, ease: 'power2.out' });
+      gsap.from('.jarvis-read', { opacity: 0, y: 8, duration: 0.5, stagger: 0.1, delay: 0.4, ease: 'power2.out' });
     }, el);
     return () => ctx.revert();
   }, [f.fiveHour, f.runsToday, f.running, f.need]);
 
   const rows: Array<{ k: string; v: string; color: string }> = [
-    { k: 'Usage, 5 h window', v: f.fiveHour === null ? 'no reading' : `${Math.round(f.fiveHour * 100)} %`, color: 'var(--os-cyan)' },
-    { k: 'Runs today', v: `${f.runsToday} / ${f.maxRuns}`, color: 'var(--os-ok)' },
-    { k: 'Agents active', v: `${f.running}`, color: 'var(--os-amber)' },
-    { k: 'Awaiting you', v: `${f.need}`, color: f.need > 0 ? 'var(--os-danger)' : 'var(--os-muted)' },
+    { k: 'Usage, 5 hour window', v: f.fiveHour === null ? 'no reading' : `${Math.round(f.fiveHour * 100)} %`, color: 'var(--os-cyan)' },
+    { k: 'Runs today', v: `${f.runsToday} of ${f.maxRuns}`, color: 'var(--os-ok)' },
+    { k: 'Agents running', v: `${f.running}`, color: 'var(--os-amber)' },
+    { k: 'Waiting for you', v: `${f.need}`, color: f.need > 0 ? 'var(--os-danger)' : 'var(--os-muted)' },
   ];
 
   return (
-    <section ref={root} className="relative -mx-5 -mt-5 min-h-[420px] overflow-hidden px-8 pt-8" aria-label="Status">
+    <section ref={root} className="relative -mx-5 -mt-5 min-h-[420px] overflow-hidden px-8 pt-10" aria-label="Status">
       <div className="relative z-10 max-w-[34rem]">
-        <p className="font-os-mono text-xs uppercase tracking-[0.3em] text-os-cyan">Zak OS // command</p>
-        <h2 className="os-display mt-3 text-[46px] text-os-text">
-          <DecryptedText text={hello} animateOn="view" sequential revealDirection="start" speed={45} maxIterations={14} parentClassName="whitespace-pre-wrap" encryptedClassName="text-os-cyan" />
-        </h2>
-        <p className="mt-3 max-w-[30rem] font-os-mono text-[15px] uppercase tracking-[0.08em] text-os-muted">{summary}</p>
-        <dl className="mt-7 grid max-w-sm gap-2.5">
+        <h2 className="os-display text-[52px] text-os-text">{hello}</h2>
+        <p className="mt-3 max-w-[30rem] text-[16px] text-os-muted">{summary}</p>
+        <dl className="mt-8 grid max-w-sm gap-3">
           {rows.map((r) => (
-            <div key={r.k} className="jarvis-read flex items-center gap-3 border-l-2 pl-3" style={{ borderColor: r.color }}>
-              <dt className="flex-1 text-xs uppercase tracking-[0.16em] text-os-muted">{r.k}</dt>
-              <dd className="font-os-mono text-[17px] tabular-nums text-os-text">{r.v}</dd>
+            <div key={r.k} className="jarvis-read flex items-baseline gap-3">
+              <dt className="flex-1 text-sm text-os-muted">{r.k}</dt>
+              <dd className="font-os-mono text-[17px] tabular-nums" style={{ color: r.color }}>{r.v}</dd>
             </div>
           ))}
         </dl>
-        <OpenBar className="mt-6 max-w-lg" />
+        <OpenBar className="mt-7 max-w-lg" />
       </div>
       <div className="pointer-events-none absolute right-6 top-3 hidden h-[400px] w-[400px] md:block lg:right-[8%]" aria-hidden>
-        <div className="absolute inset-[66px] overflow-hidden rounded-full">
-          <Orb hue={78} hoverIntensity={0.35} forceHoverState={f.running > 0} backgroundColor={theme === 'dark' ? '#020911' : '#e3eff5'} />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <JarvisOrb state={orb.state} progress={orb.progress} flat={flat} size={150} />
         </div>
         <svg viewBox="0 0 400 400" className="absolute inset-0 h-full w-full">
-          <g className="jarvis-ticks">
-            <circle cx="200" cy="200" r="196" fill="none" stroke="var(--os-contour)" strokeWidth="6" strokeDasharray="1 11" />
-          </g>
-          <g className="jarvis-ticks-rev">
-            <circle cx="200" cy="200" r="184" fill="none" stroke="var(--os-cyan)" strokeOpacity="0.55" strokeWidth="1.5" strokeDasharray="60 38 8 38" />
-          </g>
-          <Arc r={166} pct={f.fiveHour ?? 0} color="var(--os-cyan)" label="Usage in the 5 hour window" />
-          <Arc r={154} pct={f.maxRuns ? f.runsToday / f.maxRuns : 0} color="var(--os-ok)" label="Runs today" />
-          <Arc r={142} pct={f.maxActive ? f.activeRuns / f.maxActive : 0} color="var(--os-amber)" label="Running at once" />
-          <Arc r={130} pct={Math.min(1, f.need / 5)} color="var(--os-danger)" label="Waiting for you" />
+          <Arc r={186} pct={f.fiveHour ?? 0} color="var(--os-cyan)" label="Usage in the 5 hour window" />
+          <Arc r={174} pct={f.maxRuns ? f.runsToday / f.maxRuns : 0} color="var(--os-ok)" label="Runs today" />
+          <Arc r={162} pct={f.maxActive ? f.activeRuns / f.maxActive : 0} color="var(--os-amber)" label="Running at once" />
+          <Arc r={150} pct={Math.min(1, f.need / 5)} color="var(--os-danger)" label="Waiting for you" />
         </svg>
       </div>
     </section>

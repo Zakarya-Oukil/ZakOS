@@ -26,7 +26,9 @@ import { WORLDS, useWorld } from './worlds/worlds';
 import { chooseWorld } from './worlds/WorldSwitcher';
 import { WorldBackdrop } from './worlds/WorldBackdrop';
 import { WorldTransition } from './worlds/WorldTransition';
-import { DockNav, HudNav, RackNav, RailNav, SheetNav, type NavProps } from './worlds/navs';
+import { DockNav, RackNav, RailNav, SheetNav, type NavProps } from './worlds/navs';
+import { JarvisNav } from './worlds/jarvis/JarvisNav';
+import { JarvisBoot } from './worlds/jarvis/JarvisBoot';
 
 const LegacyApp = lazy(() => import('../legacy/App').then((m) => ({ default: m.App })));
 
@@ -195,7 +197,7 @@ export function Shell() {
   const mainLeft = () => mainRef.current?.getBoundingClientRect().left ?? 0;
   const mainTop = () => mainRef.current?.getBoundingClientRect().top ?? 0;
   const navProps: NavProps = { modules: visible, activeId: active?.id, connected, theme, onToggleTheme: toggleTheme, plan: licence.plan, navigate };
-  const WorldNav = world.nav === 'sheet' ? SheetNav : world.nav === 'hud' ? HudNav : world.nav === 'rail' ? RailNav : world.nav === 'rack' ? RackNav : DockNav;
+  const WorldNav = world.nav === 'sheet' ? SheetNav : world.nav === 'hud' ? JarvisNav : world.nav === 'rail' ? RailNav : world.nav === 'rack' ? RackNav : DockNav;
 
   return (
     <ModuleContext.Provider value={modules}>
@@ -246,6 +248,7 @@ export function Shell() {
           )}
         </main>
         <WorldTransition />
+        {world.id === 'jarvis' && <JarvisBoot />}
         <CommandPalette commands={commands} dynamic={dynamicCommands} />
         <FloatingWindows />
         <QuickCapture />

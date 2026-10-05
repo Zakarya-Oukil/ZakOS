@@ -2,31 +2,38 @@
    Atlas is the default and lives in theme/tokens.css. Everything here is scoped by [data-world]. */
 
 /* ------------------------------------------------------------------ J.A.R.V.I.S. */
+:root {
+  --jv-arc: #5fe3ff;
+  --jv-warn: #ffb84d;
+}
 :root[data-world='jarvis'] {
-  --os-font-sans: 'Chakra Petch', system-ui, sans-serif;
-  --os-font-mono: 'Share Tech Mono', ui-monospace, Consolas, monospace;
+  --os-font-sans: 'Geist Variable', 'Geist', system-ui, sans-serif;
+  --os-font-mono: 'Geist Mono', ui-monospace, Consolas, monospace;
+  --jv-display: 'Exo 2 Variable', 'Exo 2', system-ui, sans-serif;
   --os-radius-sm: 2px;
   --os-radius: 3px;
   --os-radius-lg: 4px;
   --os-input-radius: 3px;
-  --os-btn-radius: 3px;
-  --os-chamfer: 12px;
+  --os-btn-radius: 999px;
+  --os-chamfer: 0px;
 }
 :root[data-world='jarvis'][data-theme='dark'] {
-  --os-bg: #020911;
-  --os-surface: rgba(4, 22, 36, 0.8);
-  --os-surface-2: rgba(8, 40, 62, 0.88);
-  --os-line: #11506d;
-  --os-contour: #1a6f94;
-  --os-cyan: #33e6ff;
-  --os-cyan-rgb: 51, 230, 255;
-  --os-amber: #ffb02e;
+  --os-bg: #040a14;
+  --os-surface: rgba(10, 24, 48, 0.55);
+  --os-surface-2: rgba(18, 48, 82, 0.6);
+  --os-line: #123052;
+  --os-contour: #1d4a76;
+  --os-cyan: #5fe3ff;
+  --os-cyan-rgb: 95, 227, 255;
+  --os-amber: #ffb84d;
   --os-ok: #5cf29a;
-  --os-text: #d6f6ff;
-  --os-muted: #86bdd2;
-  --os-danger: #ff5470;
-  --os-on-accent: #00131a;
-  --os-shadow-panel: 0 0 24px -10px rgba(51, 230, 255, 0.35);
+  --os-text: #dceef7;
+  --os-muted: #7e9bb3;
+  --os-danger: #ff6b6b;
+  --os-on-accent: #031019;
+  --os-shadow-panel: none;
+  --jv-arc: #5fe3ff;
+  --jv-warn: #ffb84d;
 }
 :root[data-world='jarvis'][data-theme='light'] {
   --os-bg: #e3eff5;
@@ -42,7 +49,9 @@
   --os-muted: #3b5f6f;
   --os-danger: #b3203a;
   --os-on-accent: #ffffff;
-  --os-shadow-panel: 0 8px 24px -14px rgba(0, 70, 95, 0.4);
+  --os-shadow-panel: none;
+  --jv-arc: #006580;
+  --jv-warn: #8a5600;
 }
 
 /* ------------------------------------------------------------------ Valley */
@@ -189,11 +198,23 @@
 .world-root[data-nav='hud'], .world-root[data-nav='dock'] { flex-direction: column; }
 
 /* ============ J.A.R.V.I.S. ============ */
-:root[data-world='jarvis'] .os-display { text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; line-height: 1.05; }
+.jv-display, :root[data-world='jarvis'] .os-display {
+  font-family: var(--jv-display);
+  font-weight: 200;
+  font-stretch: 100%;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  line-height: 1.1;
+}
+.jv-display { letter-spacing: 0.08em; font-weight: 600; }
+/* Open columns instead of glowing boxes: a faint wash, corner ticks only where the owner is working. */
 :root[data-world='jarvis'] .os-panel:not(.os-panel-square) {
   border-radius: 0;
-  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
-  backdrop-filter: blur(6px);
+  border-color: transparent;
+  clip-path: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  background: rgba(var(--os-cyan-rgb), 0.035);
 }
 :root[data-world='jarvis'] .os-panel:not(.os-panel-square)::before {
   content: '';
@@ -201,52 +222,76 @@
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(var(--os-cyan), var(--os-cyan)) right 0 top 0 / 16px 2px no-repeat,
-    linear-gradient(var(--os-cyan), var(--os-cyan)) right 0 top 0 / 2px 16px no-repeat,
-    linear-gradient(var(--os-cyan), var(--os-cyan)) left 0 bottom 0 / 16px 2px no-repeat,
-    linear-gradient(var(--os-cyan), var(--os-cyan)) left 0 bottom 0 / 2px 16px no-repeat;
-  opacity: 0.85;
+    linear-gradient(var(--os-cyan), var(--os-cyan)) left 0 top 0 / 9px 1.5px no-repeat,
+    linear-gradient(var(--os-cyan), var(--os-cyan)) left 0 top 0 / 1.5px 9px no-repeat,
+    linear-gradient(var(--os-cyan), var(--os-cyan)) right 0 top 0 / 9px 1.5px no-repeat,
+    linear-gradient(var(--os-cyan), var(--os-cyan)) right 0 top 0 / 1.5px 9px no-repeat,
+    linear-gradient(var(--os-cyan), var(--os-cyan)) left 0 bottom 0 / 9px 1.5px no-repeat,
+    linear-gradient(var(--os-cyan), var(--os-cyan)) left 0 bottom 0 / 1.5px 9px no-repeat,
+    linear-gradient(var(--os-cyan), var(--os-cyan)) right 0 bottom 0 / 9px 1.5px no-repeat,
+    linear-gradient(var(--os-cyan), var(--os-cyan)) right 0 bottom 0 / 1.5px 9px no-repeat;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
-:root[data-world='jarvis'] .os-panel h2 { text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; }
-:root[data-world='jarvis'] .os-btn[data-variant='primary'] {
-  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
-  box-shadow: 0 0 18px -2px rgba(var(--os-cyan-rgb), 0.55);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 600;
+:root[data-world='jarvis'] .os-panel:not(.os-panel-square):is(:hover, :focus-within)::before { opacity: 0.9; }
+:root[data-world='jarvis'] .os-panel h2 {
+  font-family: var(--jv-display);
+  font-weight: 300;
+  font-size: 18px;
+  letter-spacing: 0.01em;
+  text-transform: none;
 }
-:root[data-world='jarvis'] .os-btn[data-variant='outline'] { text-transform: uppercase; letter-spacing: 0.08em; border-color: var(--os-contour); }
+:root[data-world='jarvis'] .os-btn[data-variant='primary'] { box-shadow: none; font-weight: 600; }
+:root[data-world='jarvis'] .os-btn[data-variant='outline'] { border-color: rgba(var(--os-cyan-rgb), 0.6); }
 :root[data-world='jarvis'] body, :root[data-world='jarvis'] { background: var(--os-bg); }
+
+/* Tailwind reads shadow-[var(--os-focus-ring)] as a shadow colour, so the ring never drew. Draw it here for every control. */
+:root[data-world='jarvis'] :is(a, button, summary, [tabindex]):focus-visible { box-shadow: var(--os-focus-ring) !important; outline: none; }
+
+/* Header: the orb sits top-centre; a ray runs under the header and opens around it. */
+.jv-nav { background: linear-gradient(180deg, rgba(var(--os-cyan-rgb), 0.05), transparent); }
+.jv-nav::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 -60px 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 34% 100% at 50% 20%, rgba(var(--os-cyan-rgb), 0.14), transparent 72%);
+}
+.jv-ray {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0, var(--os-line) 26%, transparent 41%, transparent 59%, var(--os-line) 74%, transparent 100%);
+}
+.jv-orb-slot { transition: opacity 0.2s ease; }
+:root[data-jv-booting] .jv-orb-slot { opacity: 0; }
+.jv-link { white-space: nowrap; }
+.jv-boot .jv-bg {
+  background: radial-gradient(ellipse 60% 55% at 50% 45%, rgba(var(--os-cyan-rgb), 0.16), transparent 70%), var(--os-bg);
+}
+
+/* Orb motion. Flat orbs and reduced-motion users get none. */
+@keyframes jv-breathe { 0%, 100% { transform: scale(0.94); } 50% { transform: scale(1.06); } }
+@keyframes jv-spin { to { transform: rotate(360deg); } }
+.jv-orb .jv-core { transform-box: fill-box; transform-origin: center; animation: jv-breathe 5s ease-in-out infinite; }
+.jv-orb[data-state='thinking'] .jv-core { animation-duration: 1.8s; }
+.jv-orb[data-state='running'] .jv-core { animation-duration: 1.1s; }
+.jv-orb[data-state='error'] .jv-core { animation-duration: 0.8s; }
+.jv-orb :is(.jv-drift, .jv-drift-rev, .jv-wisps, .jv-orbit, .jv-ticks) { transform-box: view-box; transform-origin: 50% 50%; }
+.jv-orb .jv-drift { animation: jv-spin 90s linear infinite; }
+.jv-orb .jv-drift-rev { animation: jv-spin 140s linear infinite reverse; }
+.jv-orb .jv-wisps { animation: jv-spin 38s linear infinite reverse; }
+.jv-orb[data-state='thinking'] .jv-wisps { animation-duration: 14s; }
+.jv-orb .jv-orbit { animation: jv-spin 6s linear infinite; }
+.jv-orb .jv-ticks { animation: jv-spin 40s linear infinite; }
+.jv-orb .jv-progress { transition: stroke-dasharray 0.5s ease; }
+.jv-orb[data-flat='true'] * { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .jv-orb * { animation: none !important; } }
+
 .jarvis-bg::before {
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 60% 45% at 62% 30%, rgba(var(--os-cyan-rgb), 0.16), transparent 70%),
-    repeating-linear-gradient(0deg, rgba(var(--os-cyan-rgb), 0.05) 0 1px, transparent 1px 3px);
+  background: radial-gradient(ellipse 55% 42% at 50% 0%, rgba(var(--os-cyan-rgb), 0.14), transparent 70%);
 }
-.jarvis-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(var(--os-cyan-rgb), 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(var(--os-cyan-rgb), 0.07) 1px, transparent 1px);
-  background-size: 64px 64px;
-  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 20%, transparent 85%);
-  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 20%, transparent 85%);
-}
-@keyframes jarvis-scan { from { transform: translateY(-20%); } to { transform: translateY(120vh); } }
-.jarvis-scan {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 120px;
-  background: linear-gradient(180deg, transparent, rgba(var(--os-cyan-rgb), 0.08), transparent);
-  animation: jarvis-scan 9s linear infinite;
-}
-:root[data-theme='light'] .jarvis-scan { display: none; }
 
 /* ============ Valley ============ */
 :root[data-world='valley'] .os-display { letter-spacing: -0.035em; font-weight: 600; }
